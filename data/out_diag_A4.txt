@@ -1,0 +1,20 @@
+# NOTA (auditoria 2026-09): este script requiere run_decode_0059h.py, que NO
+# esta incluido en el repo (ver src/diag_A4.py). Esta salida es evidencia
+# archivada de esa corrida original, no reproducible desde un clon limpio.
+#
+=== A4: verificacion directa sobre run_decode_0059h.py real ===
+VS,VR,VO reales en 0059h (OJO: NO son los de 16 simbolos de base_fhrr.py):
+VS: ['lobo', 'zorro', 'ave', 'venado'] len= 4
+VR: ['come', 'corre', 'esta_en', 'persigue'] len= 4
+VO: ['manzana', 'pasto', 'rio', 'arbol'] len= 4
+
+K |    N |  BLK | vec_dist |   rho | rank(M0) |   cond(M0)
+1 |   64 |   64 |       12 |  0.19 |       12 |  6.950e+17
+1 |  128 |  128 |       12 |  0.09 |       12 |  1.142e+19
+1 |  192 |  192 |       12 |  0.06 |       12 |  3.069e+18
+2 |   64 |   32 |        8 |  0.25 |        8 |  1.351e+18
+2 |  128 |   64 |        8 |  0.12 |        8 |  2.749e+18
+2 |  192 |   96 |        8 |  0.08 |        8 |  1.324e+18
+3 |   64 |   21 | (K=nroles, sin M) |
+3 |  128 |   42 | (K=nroles, sin M) |
+3 |  192 |   64 | (K=nroles, sin M) |

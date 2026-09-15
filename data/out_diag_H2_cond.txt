@@ -1,0 +1,6 @@
+caso                                   |  BLK |  rank |         cond |   lambda_min | rcond_pinv=1e-10 trunca?
+n=6 K=1 N=128 (rho=0.75)               |  128 |    96 |    2.496e+17 |   -1.442e-13 | SI (elimina modos)
+n=6 K=3 N=120 (rho=0.80)               |   40 |    32 |    9.645e+16 |   -3.452e-14 | SI (elimina modos)
+n=6 K=3 N=96  (rho=1.00, CUADRADO)     |   32 |    32 |    9.379e+02 |    1.255e-01 | NO (usa el modo chico -> amplifica ruido)
+n=6 K=3 N=72  (rho=1.33)               |   24 |    24 |    7.846e+01 |    1.119e+00 | NO (usa el modo chico -> amplifica ruido)
+n=6 K=2 N=64  (rho=1.50)               |   32 |    32 |    5.393e+01 |    2.654e+00 | NO (usa el modo chico -> amplifica ruido)

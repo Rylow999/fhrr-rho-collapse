@@ -1,0 +1,63 @@
+==============================================================================
+H2: gram vs gradient vs pure vs pinv  +  grid de rho
+==============================================================================
+
+--- n=4 K=1 N=128 | BLK=128 | b0:64/128=0.50 ---
+  decoder |    T=25 |   T=100
+     gram |   0.025 |   0.050
+ gradient |   0.500 |   0.500
+     pure |   1.000 |   1.000
+     pinv |   1.000 |   1.000
+
+--- n=6 K=1 N=128 | BLK=128 | b0:96/128=0.75 ---
+  decoder |    T=25 |   T=100
+     gram |   0.083 |   0.083
+ gradient |   0.500 |   0.450
+     pure |   1.000 |   1.000
+     pinv |   1.000 |   1.000
+
+--- n=6 K=2 N=128 | BLK=64 | b0:48/64=0.75  b1:48/64=0.75 ---
+  decoder |    T=25 |   T=100
+     gram |   0.050 |   0.100
+ gradient |   0.367 |   0.400
+     pure |   1.000 |   1.000
+     pinv |   1.000 |   1.000
+
+--- n=6 K=3 N=120 | BLK=40 | b0:32/40=0.80  b1:32/40=0.80  b2:32/40=0.80 ---
+  decoder |    T=25 |   T=100
+     gram |   0.217 |   0.200
+ gradient |   0.283 |   0.217
+     pure |   1.000 |   1.000
+     pinv |   0.950 |   0.950
+
+--- n=6 K=3 N=96 (CUADRADO, replica Prueba B) | BLK=32 | b0:32/32=1.00  b1:32/32=1.00  b2:32/32=1.00 ---
+  decoder |    T=25 |   T=100
+     gram |   0.617 |   0.550
+ gradient |   0.300 |   0.217
+     pure |   1.000 |   1.000
+     pinv |   0.583 |   0.550
+
+--- n=6 K=3 N=72 | BLK=24 | b0:32/24=1.33  b1:32/24=1.33  b2:32/24=1.33 ---
+  decoder |    T=25 |   T=100
+     gram |   1.000 |   0.983
+ gradient |   0.233 |   0.233
+     pure |   0.983 |   1.000
+     pinv |   0.967 |   0.983
+
+--- n=6 K=2 N=64 | BLK=32 | b0:48/32=1.50  b1:48/32=1.50 ---
+  decoder |    T=25 |   T=100
+     gram |   1.000 |   1.000
+ gradient |   0.150 |   0.200
+     pure |   1.000 |   1.000
+     pinv |   1.000 |   0.967
+
+--- n=3 K=3 N=126 (control) | BLK=42 | b0:1rol  b1:1rol  b2:1rol ---
+  decoder |    T=25 |   T=100
+     gram |   1.000 |   1.000
+ gradient |   1.000 |   1.000
+     pure |   1.000 |   1.000
+     pinv |   1.000 |   1.000
+
+Predicho: gram colapsa para rho<=1 (basura si rho<1, dual degenerado
+si rho=1); pure/gradient funcionan en todo el grid; pinv arregla rho<1
+pero NO el caso cuadrado. Esa doble disociacion es el resultado clave.

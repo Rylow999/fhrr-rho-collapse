@@ -1,0 +1,170 @@
+# NOTA (auditoria 2026-09): las secciones A3/A4 de abajo se generaron ANTES de
+# que base_fhrr.py corrigiera ROLE_CONFIGS[6] (TERR compartido con LOC, VM con
+# 14 simbolos unicos). Con el codigo actual del repo, para n=6/K=1/N=128 se
+# obtiene vec_dist=96, rho=0.75 (no 78/0.61 como figura abajo). Se conserva tal
+# cual como evidencia archivada del proceso de auditoria, no como referencia de
+# reproducibilidad -- para eso usar data/out_F2.txt y data/out_H2.txt, que si
+# son bit-identicos entre corridas con el codigo shippeado en src/.
+#
+=== A3: rank/cond de M para K=1, N=128, todo n_roles disponible ===
+n | vec_dist_teorico |  BLK |   rho |  rank |       cond
+2 |               32 |  128 |  0.25 |    32 |  1.181e+18
+3 |               48 |  128 |  0.38 |    48 |  7.904e+17
+4 |               64 |  128 |  0.50 |    64 |  3.163e+17
+6 |               78 |  128 |  0.61 |    78 |  3.137e+17
+
+Chequeo directo: para n=6, ROLE_CONFIGS[6] tiene TERR=VL (=LOC), y TIME=VM (14 unicos, no 16).
+simbolos por rol en ROLE_CONFIGS[6]: {'SUJ': 16, 'ROL': 16, 'OBJ': 16, 'LOC': 16, 'TIME': 16, 'TERR': 16}
+simbolos UNICOS post-dedup (self.sym) para ROLE_CONFIGS[6]: 78
+
+=== A4: verificacion directa sobre run_decode_0059h.py real ===
+VS,VR,VO reales en 0059h (OJO: NO son los de 16 simbolos de base_fhrr.py):
+VS: ['lobo', 'zorro', 'ave', 'venado'] len= 4
+VR: ['come', 'corre', 'esta_en', 'persigue'] len= 4
+VO: ['manzana', 'pasto', 'rio', 'arbol'] len= 4
+
+K |    N |  BLK | vec_dist |   rho | rank(M0) |   cond(M0)
+1 |   64 |   64 |       12 |  0.19 |       12 |  6.950e+17
+1 |  128 |  128 |       12 |  0.09 |       12 |  1.142e+19
+1 |  192 |  192 |       12 |  0.06 |       12 |  3.069e+18
+2 |   64 |   32 |        8 |  0.25 |        8 |  1.351e+18
+2 |  128 |   64 |        8 |  0.12 |        8 |  2.749e+18
+2 |  192 |   96 |        8 |  0.08 |        8 |  1.324e+18
+3 |   64 |   21 | (K=nroles, sin M) |
+3 |  128 |   42 | (K=nroles, sin M) |
+3 |  192 |   64 | (K=nroles, sin M) |
+
+=== A4 empirico: accuracy REAL de run_decode_0059h.py para hechos PLANOS (depth=1), 50 trials ===
+K |    N |  BLK | acc_depth1
+1 |   64 |   64 |      0.273
+1 |  128 |  128 |      0.167
+1 |  192 |  192 |      0.307
+2 |   64 |   32 |      0.560
+2 |  128 |   64 |      0.453
+2 |  192 |   96 |      0.513
+3 |   64 |   21 |      1.000
+3 |  128 |   42 |      1.000
+3 |  192 |   64 |      1.000
+
+=== 0059h BARRIDO BINDINGS-POR-BLOQUE (K bloques, N dims) ===
+K\N |  prof-max alcanzable (acierto>=0.85)
+K=1 | N=64:prof0 | N=128:prof0 | N=192:prof0 |
+K=2 | N=64:prof0 | N=128:prof0 | N=192:prof0 |
+K=3 | N=64:prof8 | N=128:prof8 | N=192:prof8 |
+
+==============================================================================
+F2: variar T, tres modos de decode (original/pure/pinv), K=1
+==============================================================================
+DIAGNOSTICO bloque 0 (K=1 => un bloque con todos los roles):
+n | vec_dist |  BLK |   rho |  rank |      cond
+2 |       32 |  128 |  0.25 |    32 |  9.45e+17
+3 |       48 |  128 |  0.38 |    48 |  1.06e+18
+4 |       64 |  128 |  0.50 |    64 |  3.98e+17
+6 |       78 |  128 |  0.61 |    78 |  2.86e+17
+Teoria: rank = vec_dist < BLK => M EXACTAMENTE singular (Minv = basura).
+
+--- n_roles=2, K=1, N=128 (BLK=128) ---
+T |  original |      pure |      pinv
+25 |     0.000 |     1.000 |     1.000
+50 |     0.050 |     1.000 |     1.000
+100 |     0.050 |     1.000 |     1.000
+200 |     0.100 |     1.000 |     1.000
+500 |     0.150 |     1.000 |     1.000
+
+--- n_roles=3, K=1, N=128 (BLK=128) ---
+T |  original |      pure |      pinv
+25 |     0.067 |     1.000 |     1.000
+50 |     0.100 |     1.000 |     1.000
+100 |     0.000 |     1.000 |     1.000
+200 |     0.067 |     1.000 |     1.000
+500 |     0.000 |     1.000 |     1.000
+
+--- n_roles=4, K=1, N=128 (BLK=128) ---
+T |  original |      pure |      pinv
+25 |     0.025 |     1.000 |     1.000
+50 |     0.050 |     1.000 |     1.000
+100 |     0.050 |     1.000 |     1.000
+200 |     0.125 |     1.000 |     1.000
+500 |     0.025 |     1.000 |     1.000
+
+--- n_roles=6, K=1, N=128 (BLK=128) ---
+T |  original |      pure |      pinv
+25 |     0.050 |     1.000 |     1.000
+50 |     0.083 |     1.000 |     1.000
+100 |     0.117 |     1.000 |     1.000
+200 |     0.050 |     1.000 |     1.000
+500 |     0.083 |     1.000 |     1.000
+
+LECTURA: original plano ~1/16 => no es convergencia lenta, es Minv basura.
+pure/pinv altos ya con T=25 => no hay techo de capacidad en n<=6.
+Si ORIGINAL da >=0.85 en n=2, la auditoria esta equivocada (falsacion).
+
+==============================================================================
+H2: gram vs gradient vs pure vs pinv  +  grid de rho
+==============================================================================
+--- n=4 K=1 N=128 | BLK=128 | b0:64/128=0.50 ---
+decoder |    T=25 |   T=100
+gram |   0.075 |   0.075
+gradient |   0.350 |   0.450
+pure |   1.000 |   1.000
+pinv |   1.000 |   1.000
+
+--- n=6 K=1 N=128 | BLK=128 | b0:96/128=0.75 ---
+decoder |    T=25 |   T=100
+gram |   0.033 |   0.050
+gradient |   0.417 |   0.517
+pure |   1.000 |   1.000
+pinv |   1.000 |   1.000
+
+--- n=6 K=2 N=128 | BLK=64 | b0:48/64=0.75  b1:48/64=0.75 ---
+decoder |    T=25 |   T=100
+gram |   0.150 |   0.183
+gradient |   0.367 |   0.183
+pure |   1.000 |   1.000
+pinv |   1.000 |   1.000
+
+--- n=6 K=3 N=120 | BLK=40 | b0:32/40=0.80  b1:32/40=0.80  b2:32/40=0.80 ---
+decoder |    T=25 |   T=100
+gram |   0.567 |   0.583
+gradient |   0.300 |   0.367
+pure |   1.000 |   1.000
+pinv |   1.000 |   1.000
+
+--- n=6 K=3 N=96 (CUADRADO, replica Prueba B) | BLK=32 | b0:32/32=1.00  b1:32/32=1.00  b2:32/32=1.00 ---
+decoder |    T=25 |   T=100
+gram |   0.783 |   0.800
+gradient |   0.167 |   0.133
+pure |   1.000 |   1.000
+pinv |   0.683 |   0.767
+
+--- n=6 K=3 N=72 | BLK=24 | b0:32/24=1.33  b1:32/24=1.33  b2:32/24=1.33 ---
+decoder |    T=25 |   T=100
+gram |   0.933 |   0.967
+gradient |   0.150 |   0.117
+pure |   1.000 |   1.000
+pinv |   0.967 |   0.933
+
+--- n=6 K=2 N=64 | BLK=32 | b0:48/32=1.50  b1:48/32=1.50 ---
+decoder |    T=25 |   T=100
+gram |   0.983 |   0.950
+gradient |   0.183 |   0.283
+pure |   1.000 |   1.000
+pinv |   0.967 |   1.000
+
+--- n=3 K=3 N=126 (control) | BLK=42 | b0:1rol  b1:1rol  b2:1rol ---
+decoder |    T=25 |   T=100
+gram |   1.000 |   1.000
+gradient |   1.000 |   1.000
+pure |   1.000 |   1.000
+pinv |   1.000 |   1.000
+
+Predicho: gram colapsa para rho<=1 (basura si rho<1, dual degenerado
+si rho=1); pure/gradient funcionan en todo el grid; pinv arregla rho<1
+pero NO el caso cuadrado. Esa doble disociacion es el resultado clave.
+
+caso                                   |  BLK |  rank |         cond |   lambda_min | rcond_pinv=1e-10 trunca?
+n=6 K=1 N=128 (rho=0.75)               |  128 |    96 |    3.148e+17 |   -1.326e-13 | SI (elimina modos)
+n=6 K=3 N=120 (rho=0.80)               |   40 |    32 |    1.252e+17 |   -3.542e-14 | SI (elimina modos)
+n=6 K=3 N=96  (rho=1.00, CUADRADO)     |   32 |    32 |    1.253e+03 |    9.043e-02 | NO (usa el modo chico -> amplifica ruido)
+n=6 K=3 N=72  (rho=1.33)               |   24 |    24 |    6.631e+01 |    1.357e+00 | NO (usa el modo chico -> amplifica ruido)
+n=6 K=2 N=64  (rho=1.50)               |   32 |    32 |    4.927e+01 |    2.889e+00 | NO (usa el modo chico -> amplifica ruido)

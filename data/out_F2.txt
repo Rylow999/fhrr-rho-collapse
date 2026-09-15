@@ -1,0 +1,47 @@
+==============================================================================
+F2: variar T, tres modos de decode (original/pure/pinv), K=1
+==============================================================================
+
+DIAGNOSTICO bloque 0 (K=1 => un bloque con todos los roles):
+ n | vec_dist |  BLK |   rho |  rank |      cond
+ 2 |       32 |  128 |  0.25 |    32 |  2.14e+18
+ 3 |       48 |  128 |  0.38 |    48 |  1.43e+18
+ 4 |       64 |  128 |  0.50 |    64 |  4.47e+17
+ 6 |       96 |  128 |  0.75 |    96 |  2.42e+17
+Teoria: rank = vec_dist < BLK => M EXACTAMENTE singular (Minv = basura).
+
+--- n_roles=2, K=1, N=128 (BLK=128) ---
+    T |  original |      pure |      pinv
+   25 |     0.000 |     1.000 |     1.000
+   50 |     0.050 |     1.000 |     1.000
+  100 |     0.000 |     1.000 |     1.000
+  200 |     0.050 |     1.000 |     1.000
+  500 |     0.000 |     1.000 |     1.000
+
+--- n_roles=3, K=1, N=128 (BLK=128) ---
+    T |  original |      pure |      pinv
+   25 |     0.067 |     1.000 |     1.000
+   50 |     0.067 |     1.000 |     1.000
+  100 |     0.100 |     1.000 |     1.000
+  200 |     0.067 |     1.000 |     1.000
+  500 |     0.100 |     1.000 |     1.000
+
+--- n_roles=4, K=1, N=128 (BLK=128) ---
+    T |  original |      pure |      pinv
+   25 |     0.100 |     1.000 |     1.000
+   50 |     0.050 |     1.000 |     1.000
+  100 |     0.100 |     1.000 |     1.000
+  200 |     0.000 |     1.000 |     1.000
+  500 |     0.150 |     1.000 |     1.000
+
+--- n_roles=6, K=1, N=128 (BLK=128) ---
+    T |  original |      pure |      pinv
+   25 |     0.100 |     1.000 |     1.000
+   50 |     0.083 |     1.000 |     1.000
+  100 |     0.133 |     1.000 |     1.000
+  200 |     0.033 |     1.000 |     1.000
+  500 |     0.083 |     1.000 |     1.000
+
+LECTURA: original plano ~1/16 => no es convergencia lenta, es Minv basura.
+pure/pinv altos ya con T=25 => no hay techo de capacidad en n<=6.
+Si ORIGINAL da >=0.85 en n=2, la auditoria esta equivocada (falsacion).
