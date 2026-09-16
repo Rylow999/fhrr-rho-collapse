@@ -1,0 +1,46 @@
+==============================================================================
+EXP 8 v3 COMPLETO
+
+--- n=6 K=1 N=128 (rho=0.75) ---
+      gram T=100 argmax: acc=1.000 ±0.000
+      pure T=100 argmax: acc=1.000 ±0.000
+      pinv T=100 argmax: acc=1.000 ±0.000
+  gradient T=100 argmax: acc=0.333 ±0.149
+
+--- n=6 K=2 N=128 (rho=0.75) ---
+      gram T=100 argmax: acc=0.983 ±0.050
+      pure T=100 argmax: acc=1.000 ±0.000
+      pinv T=100 argmax: acc=1.000 ±0.000
+  gradient T=100 argmax: acc=0.117 ±0.167
+
+--- n=6 K=3 N=120 (rho=0.80) ---
+      gram T=100 argmax: acc=1.000 ±0.000
+      pure T=100 argmax: acc=1.000 ±0.000
+      pinv T=100 argmax: acc=0.983 ±0.050
+  gradient T=100 argmax: acc=0.117 ±0.076
+
+--- n=6 K=3 N=96  (rho=1.00, CUADRADO) ---
+      gram T=100 argmax: acc=0.050 ±0.107
+      pure T=100 argmax: acc=0.983 ±0.050
+      pinv T=100 argmax: acc=0.133 ±0.125
+  gradient T=100 argmax: acc=0.167 ±0.149
+
+--- n=6 K=3 N=72  (rho=1.33) ---
+      gram T=100 argmax: acc=0.983 ±0.050
+      pure T=100 argmax: acc=0.983 ±0.050
+      pinv T=100 argmax: acc=0.933 ±0.111
+  gradient T=100 argmax: acc=0.133 ±0.100
+
+--- n=6 K=2 N=64  (rho=1.50) ---
+      gram T=100 argmax: acc=0.950 ±0.107
+      pure T=100 argmax: acc=0.950 ±0.107
+      pinv T=100 argmax: acc=0.933 ±0.111
+  gradient T=100 argmax: acc=0.167 ±0.149
+
+--- n=3 K=3 N=126 (control) ---
+      gram T=100 argmax: acc=1.000 ±0.000
+      pure T=100 argmax: acc=1.000 ±0.000
+      pinv T=100 argmax: acc=1.000 ±0.000
+  gradient T=100 argmax: acc=0.217 ±0.167
+
+Tiempo total: 206.3s
