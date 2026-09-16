@@ -163,6 +163,7 @@ def main():
         print(f"  entrenando MLP...")
         role_accs, joint = train_mlp(X_train, Y_train, X_test, Y_test,
                                      N=N, n_roles=len(bundle.role_names),
+                                     vocab_size=16,
                                      epochs=80)
         role_acc_mean = float(role_accs.mean())
         print(f"  MLP: acc_por_rol={role_acc_mean:.3f} | joint_acc={joint:.3f}")
