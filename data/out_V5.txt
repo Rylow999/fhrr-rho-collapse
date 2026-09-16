@@ -1,0 +1,50 @@
+==============================================================================
+V5: M_max vs D en HRR real — resonator puro (test escalamiento √D)
+==============================================================================
+
+--- D=64 ---
+  R=  1: acc=1.000
+  R=  2: acc=1.000
+  R=  4: acc=1.000
+  R=  8: acc=0.850
+  R= 16: acc=0.325
+
+--- D=128 ---
+  R=  1: acc=1.000
+  R=  2: acc=1.000
+  R=  4: acc=1.000
+  R=  8: acc=1.000
+  R= 16: acc=0.894
+  R= 32: acc=0.241
+
+--- D=256 ---
+  R=  4: acc=1.000
+  R=  8: acc=1.000
+  R= 16: acc=1.000
+  R= 32: acc=0.972
+  R= 64: acc=0.194
+
+--- D=512 ---
+  R=  8: acc=1.000
+  R= 16: acc=1.000
+  R= 32: acc=1.000
+  R= 64: acc=0.925
+  R=128: acc=0.212
+
+--- M_max(D) (acc>=0.95) ---
+  D=   64: M_max=4
+  D=  128: M_max=8
+  D=  256: M_max=32
+  D=  512: M_max=32
+
+Datos para ajuste (log-log):
+  D=64, M_max=4, logD=4.159, logM=1.386
+  D=128, M_max=8, logD=4.852, logM=2.079
+  D=256, M_max=32, logD=5.545, logM=3.466
+  D=512, M_max=32, logD=6.238, logM=3.466
+
+Ajuste: log M = 1.100 log D + -3.119
+  → M_max ∝ D^1.100  (√D sería 0.500)
+
+Figura: figures/fig_V5_scaling.png
+Tiempo total: 1556.9s
