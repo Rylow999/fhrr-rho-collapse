@@ -461,7 +461,6 @@ La convolución circular en HRR real puede causar cancelación destructiva cuand
 **GitHub:** [Rylow999](https://github.com/Rylow999)
 
 **Colaboradores:**
-- Lautaro Emanuel Luconi (algoritmo FATE para DDSD)
 - Nexus (asistencia en auditoría de código y diseño experimental)
 
 **Licencia:** MIT

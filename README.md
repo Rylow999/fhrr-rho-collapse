@@ -116,7 +116,6 @@ Full paper in `paper/main.tex` (compiled: `paper/main.pdf`, 9 pages). Covers pha
 
 ## Acknowledgments
 
-- Lautaro Emanuel Luconi (FATE algorithm)
 - Nexus (agent assistance with audit and experimental design)
 
 ---
