@@ -10,3 +10,10 @@ venv/
 *~
 .DS_Store
 Thumbs.db
+*.aux
+*.log
+*.out
+*.fdb_latexmk
+*.synctex.gz
+paper/*.bbl
+paper/*.blg

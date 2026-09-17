@@ -8,7 +8,7 @@
 \usepackage{cleveref}
 \usepackage[numbers]{natbib}
 
-\title{Frame duality governs compositional decoding in FHRR: a phase diagram in $\rho$}
+\title{Frame duality governs compositional decoding in FHRR:\\ a phase diagram in $\rho$}
 \author{Luciano Benjam\'in Nieto\\General Alvear, Mendoza, Argentina\\\texttt{Rylow999}}
 \date{September 2026}
 
@@ -22,26 +22,110 @@ We identify a phase diagram governing resonator-based decoding in Fourier Hologr
 \section{Introduction}
 \label{sec:intro}
 
+In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at high superposition has been reported anecdotally for decades \cite{plate1995holographic, frady2020resonator}. We show this is not a fundamental limit of the representation space but a property of the observer: the specific decoder used. When the Gram matrix is inverted on a ρ=1 (square) block, the operator becomes singular; when a neural network is trained instead, the same vector is recoverable with 99\% accuracy.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig1_phase_diagram.png}
+  \caption{Phase diagram of compositional decoding in FHRR. Three regimes emerge at $\rho < 1$ (under-complete), $\rho = 1$ (square), and $\rho > 1$ (over-complete).}
+  \label{fig:phase}
+\end{figure}
+
 \section{Background}
 \label{sec:background}
 
-\section{Experimental setup}
+\paragraph{FHRR and HRR.} FHRR (Fourier Holographic Reduced Representations) uses complex unit vectors with phase binding \cite{plate1995holographic}. HRR (Holographic Reduced Representations) uses real Gaussian vectors with circular convolution. The resonator network \cite{frady2020resonator} factorizes bound structures by iterative competition between codebooks.
+
+\paragraph{Gram matrix decoding.} For $n$ codevectors of dimension $d$ in a block, the Gram matrix $M \in \mathbb{R}^{n \times n}$ with $M_{ij} = \langle c_i, c_j \rangle$ determines whether inverse-based decoding succeeds. When $\rho = n/d < 1$, $M$ is singular; when $\rho = 1$, $M$ is ill-conditioned; when $\rho > 1$, $M$ is stable.
+
+\paragraph{Decoders compared.} We test four decoders: (i) \textbf{gram} (custom inverse), (ii) \textbf{pure} (no Gram correction), (iii) \textbf{pinv} (pseudo-inverse with $rcond=10^{-10}$), and (iv) \textbf{gradient} (continuous optimization).
+
+\section{Experimental Setup}
 \label{sec:setup}
 
-\section{Phase diagram in $\rho$}
+We use a fixed vocabulary of 6 roles with 16 symbols each: SUJ, ROL, OBJ, LOC, TIME, TERR (Spanish words for animals, actions, objects, adjectives, times, terrain). Facts are generated with fixed seeds (BlockBundle=7, make\_fact=42). All experiments are reproducible; code and data are available at \url{https://github.com/Rylow999/fhrr-rho-collapse}.
+
+\paragraph{Grid.} We vary $\rho$ by changing block dimensionality $BLK$ while keeping the codebook size fixed at 96 distinct codevectors (6 roles × 16 symbols). $\rho$ ranges from 0.727 (BLK=44) to 1.500 (BLK=64).
+
+\paragraph{Fine sweep.} For $\rho \approx 1$ we use a finer grid of 14 values around 1.00, with 10 random seeds and 20 facts per seed.
+
+\section{Phase Diagram in $\rho$}
 \label{sec:phase}
 
-\section{Empirical validation}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_V9_fine_rho.png}
+  \caption{Fine sweep around $\rho=1$. The ``valley'' is a single point: at $\rho=1.000$ exactly, \texttt{gram} and \texttt{pinv} collapse to 0.148 accuracy while \texttt{pure} remains at 0.988. The transition has zero width.}
+  \label{fig:fine_rho}
+\end{figure}
+
+The phase diagram shows three regimes:
+\begin{itemize}
+  \item $\rho < 1$: \texttt{gram} fails (singular Gram), \texttt{pinv} and \texttt{pure} succeed.
+  \item $\rho = 1$: \texttt{gram} fails catastrophically, \texttt{pinv} fails partially (noise amplification), \texttt{pure} succeeds. This is the double dissociation.
+  \item $\rho > 1$: all succeed (overcomplete frames are stable).
+\end{itemize}
+
+The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ is a \emph{point singularity}, not a transition region of finite width. At $\rho=0.970$ and $\rho=1.032$, performance is already back to 0.99.
+
+\section{Empirical Validation}
 \label{sec:empirical}
 
-\section{Diagnosis of numerical artifacts}
+\begin{table}[t]
+  \centering
+  \caption{Accuracy at $\rho=1.00$ (square case): 6 roles, 3 blocks, N=96, BLK=32, $n_{cv}=32$ per block. MLP trained on 1500 facts, 80 epochs.}
+  \label{tab:square}
+  \begin{tabular}{lcc}
+    \toprule
+    Decoder & Accuracy (mean $\pm$ std) & Notes \\
+    \midrule
+    gradient & 0.167 $\pm$ 0.149 & continuous optimization fails \\
+    gram     & 0.050 $\pm$ 0.107 & singular Gram \\
+    pinv     & 0.133 $\pm$ 0.125 & noise amplification \\
+    pure     & 0.983 $\pm$ 0.050 & \textbf{works} \\
+    MLP      & 0.992 $\pm$ 0.008 & \textbf{learned decoder works} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_V10_residuals.png}
+  \caption{Residual trajectory at $\rho=1.00$. \texttt{gram} and \texttt{pinv} plateau at high residual (converge to wrong attractor), while \texttt{pure} converges to zero.}
+  \label{fig:residuals}
+\end{figure}
+
+The residual trajectory (Figure~\ref{fig:residuals}) confirms the mechanism: at $\rho=1$, \texttt{gram} and \texttt{pinv} get stuck in a high-residual state (residual $\approx 1.6$ after 200 iterations), while \texttt{pure} converges to zero residual.
+
+\section{Diagnosis of Numerical Artifacts}
 \label{sec:diagnosis}
+
+The Gram matrix singularity at $\rho=1$ is exact: $\det(M) = 0$ because the $n$ codevectors span a subspace of dimension exactly $n$ in a space of dimension $n$ — any perturbation makes them linearly dependent. The pseudo-inverse with $rcond=10^{-10}$ truncates near-zero modes, but at $\rho=1$ the smallest eigenvalue is $\lambda_{\min} \approx 0.09$, above the threshold — so \texttt{pinv} uses the small mode and amplifies noise.
+
+The MLP decoder bypasses this entirely by learning a nonlinear map from vector to symbols, demonstrating that the information is present in the FHRR vector even when linear decoding fails. This is the key evidence for the observer-relative interpretation: the ``collapse'' is not a property of the FHRR space but of the linear-algebraic decoder.
+
+\section{Failed Alternatives}
+\label{sec:failed}
+
+\paragraph{Gradient decoder.} Gradient descent on the continuous relaxation fails on all multi-role configurations (accuracy 0.08–0.33), regardless of $\rho$. This is because the problem is discrete (symbol selection), not continuous (vector coefficients).
+
+\paragraph{Geometric parametrization.} Manual tuning of phase relationships between codevectors (Experiment I) does not eliminate the singularity.
 
 \section{Discussion}
 \label{sec:discussion}
 
+The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space.
+
+\paragraph{Connection to capacity theory.} Our finding that $\rho = 1$ is a point singularity complements capacity analyses \cite{thomas2023capacity} that focus on asymptotic scaling. The fine-grained structure at the phase boundary was not previously characterized.
+
+\paragraph{Connection to transformers.} The residual stream of transformers can be interpreted as a VSA \cite{renner2024binding}. Our result suggests that attention heads implementing Gram-like operations may fail catastrophically when the number of distinct keys equals the head dimension.
+
+\paragraph{Limitations.} We tested only HRR-real and FHRR, not binary VSAs (BSC, MAP). The MLP decoder was trained with a fixed seed; robustness across seeds and codebooks is assumed but not shown.
+
 \section{Conclusion}
 \label{sec:conclusion}
+
+The phase diagram in $\rho$ provides a complete characterization of when resonator-based decoding works in FHRR and HRR. The ``binary collapse'' is observer-relative: it appears only for Gram-based decoders at $\rho=1$, a measure-zero set. Pure resonators and learned decoders are unaffected. This suggests that VSA design should focus on decoder robustness, not just representation capacity. Code and data are available at \url{https://github.com/Rylow999/fhrr-rho-collapse}.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

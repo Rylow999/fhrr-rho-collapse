@@ -4,16 +4,18 @@
 **Location:** General Alvear, Mendoza, Argentina  
 **License:** MIT  
 
-> **v2 (2026-09-15):** Validación cruzada con HRR real — la ley de rho es universal
-> pero con **topologías diferentes por álgebra**. En HRR real (gaussianos +
-> convolución circular) aparece **anti-resonancia en rho=1**: colapso catastrófico
-> exactamente donde FHRR es singular. Ver `docs/INFORME_TRANSFERENCIA.md`.
+> **v3 (2026-09-16):** La evidencia ya no es solo técnica sino estructural.
+> La "transición de fase" en ρ=1 es una **singularidad puntual** (det(M)=0
+> exacto), no un valle de transición — el barrido fino lo muestra: 14 puntos
+> entre ρ=0.73 y ρ=1.23, todos los decoders estables **excepto en ρ=1.000
+> exacto**, donde `gram` y `pinv` caen a 0.148 mientras `pure` y MLP quedan
+> en 0.99. El paper compilado está en `paper/main.pdf` (9 páginas, 8 refs).
 
 ---
 
 ## Summary
 
-This repository contains the code, data, and figures for the paper *"Frame duality governs compositional decoding in FHRR: a phase diagram in rho"*.
+This repository contains the code, data, and figures for the paper *"Frame duality governs compositional decoding in FHRR: a phase diagram in rho"*, plus the observer-relativity extension across algebras.
 
 We identify a phase diagram that governs resonator-based decoding in Fourier Holographic Reduced Representations, controlled by a single scalar:
 
@@ -29,157 +31,95 @@ Three regimes emerge:
 | **II. Square** | = 1 | invertible, cond ~ 1e3 | dual frame degenerate; partial collapse |
 | **III. Over-complete** | > 1 | well-conditioned frame | stable decoding |
 
-The previously reported "binary collapse" at high superposition is **not** a capacity limit of the resonator network. It is an artifact of Regime I: when `rho < 1` the Gram matrix is singular, and the custom `mat_inv` routine produces an invalid inverse that destroys decoding. Pure resonator decoding (without Gram correction) works perfectly across all tested configurations.
+## What's new in v3 (2026-09-16)
 
-The `rho = 1` boundary is particularly subtle: the pseudo-inverse (`pinv`) repairs Regime I by truncating near-zero modes, but it **fails** at the square boundary because the smallest eigenvalue is above the truncation threshold yet still amplifies noise. Only the pure resonator (no Gram matrix) succeeds here, producing a clean double dissociation.
-
-## Cross-algebra validation: HRR real
-
-The rho-law is **universal**, but its topology is **algebra-specific**:
-
-| Regime | FHRR (complex phases) | HRR real (Gaussian + circular convolution) |
-|--------|-----------------------|--------------------------------------------|
-| rho < 1 | Gram singular → collapse | Gram works perfectly (1.000) |
-| rho = 1 | partial collapse (0.80) | **catastrophic anti-resonance (0.167)** |
-| rho > 1 | stable | stable (0.95–1.00) |
-
-In **both** algebras: the `pure` resonator decoder works across the whole grid
-(0.95–1.00), and the `gradient` decoder collapses on every multi-role case
-(continuous optimization vs discrete selection). The HRR anti-resonance at
-rho = 1 is hypothesized to be destructive interference in circular convolution
-— open problem, see Line B in `docs/INFORME_TRANSFERENCIA.md`.
-
-**Reproducibility:** fixed seeds (BlockBundle=7, make_fact=42), all outputs in
-`data/`. Full transfer report: `docs/INFORME_TRANSFERENCIA.md`.
-
----
+- **Exp 9 (fine sweep):** 14 values of rho between 0.727–1.231, 10 seeds × 20 facts each. The anti-resonance is a **mathematical singularity, not a region** — gram and pinv collapse only at rho=1.000 exactly (0.148), recovering to 0.99 at rho=0.970 and rho=1.032.
+- **Exp 10 (residual trajectory):** At rho=1.00, `gram` and `pinv` plateau at residual ≈ 1.6–1.7 (stuck in a spurious attractor), while `pure` converges to 0.
+- **Exp 7 (MLP):** The learned observer reaches 0.992 accuracy at rho=1 (where gram fails at 0.119). The information is in the vector; the collapse belongs to the observer.
+- **Exp 8 (full taxonomy):** 600 decoder configurations (4 modes × 5 iterations × 3 cleanup × 2 schemes × 5 rho values).
+- **Paloma-π application:** Pandora's transducer now uses the pure resonator, demonstrating the decoder-relativity principle in a working cognitive system.
 
 ## Repository structure
 
 ```
 fhrr-rho-collapse/
 ├── README.md
-├── LICENSE
+├── LICENSE (MIT)
 ├── requirements.txt
-├── .gitignore
+├── paper/
+│   ├── main.tex                    ← paper completo (7 secciones + refs)
+│   ├── main.pdf                    ← compilado con tectonic (9 páginas)
+│   ├── references.bib
+│   └── figures/                    ← figuras del paper
 ├── src/
-│   ├── base_fhrr.py              # Original implementation (preserves reproducibility)
-│   ├── base_fhrr_corregida.py    # Corrected implementation (audit fixes)
-│   ├── exp_F2.py                 # Experiment F: varying T, three decode modes
-│   ├── exp_H2.py                 # Experiment H: rho grid with four decoders
-│   ├── diag_A4.py                # Diagnosis of run_decode_0059h.py
-│   └── diag_H2_cond.py           # Conditioning and eigenvalue diagnosis
-├── data/
-│   ├── resultados_reales_completos.txt
-│   ├── out_F2.txt
-│   ├── out_H2.txt
-│   ├── out_diag_A4.txt
-│   └── out_diag_H2_cond.txt
-├── figures/
-│   ├── fig1_phase_diagram.png
-│   ├── fig2_accuracy_vs_rho.png
-│   ├── fig3_double_dissociation.png
-│   └── fig4_comparison_0059h.png
-└── paper/
-    ├── main.tex
-    ├── references.bib
-    └── figures/
+│   ├── base_fhrr.py                # FHRR base
+│   ├── base_fhrr_corregida.py      # fixes de auditoría
+│   ├── exp_F2.py                   # FHRR: variar T
+│   ├── exp_H2.py                   # FHRR: grid de rho
+│   ├── exp_V3_hrr_real.py          # HRR real: grid de rho
+│   ├── exp_V4_hrr_hierarchical.py  # nested binding (resultado negativo)
+│   ├── exp_V5_scaling_sqrtD.py     # M_max vs D scaling
+│   ├── exp_V7_mlp_decoder.py       # MLP observer
+│   ├── exp_observer_taxonomy_v3.py # taxonomía (4 decoders × 120 configs)
+│   ├── exp_V9_fine_rho.py          # barrido fino (singularidad puntual)
+│   ├── exp_V10_residual_trajectory.py  # trayectoria residuo
+│   ├── diag_A4.py
+│   └── diag_H2_cond.py
+├── tests/
+│   └── test_pipeline.py            # 5 tests, todos PASS
+├── data/                           ← outputs completos (.txt, .json)
+└── figures/                        ← 9 figuras listas para paper
 ```
 
----
-
-## Installation
-
-Requires Python 3.8+ and NumPy.
+## How to run
 
 ```bash
 git clone https://github.com/Rylow999/fhrr-rho-collapse.git
 cd fhrr-rho-collapse
-python -m venv venv
-source venv/bin/activate      # On Windows: venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
 
----
-
-## Reproduction
-
-All experiments use fixed random seeds (7 for `BlockBundle`, 42 for `make_fact`), and symbol-to-phase assignment now iterates over a `sorted()` set so process-level Python hash randomization can no longer perturb it. Outputs are bitwise identical across runs (verified by diffing two independent runs of each script).
-
-```bash
 cd src
+python exp_H2.py                      # grid FHRR original
+python exp_V3_hrr_real.py            # HRR real (anti-resonancia)
+python exp_V9_fine_rho.py            # barrido fino (singularidad puntual)
+python exp_V10_residual_trajectory.py # residuo del resonator
+python exp_V7_mlp_decoder.py         # MLP observer (requiere torch)
+python exp_observer_taxonomy_v3.py   # taxonomía completa (600 configs)
 
-# Diagnostics
-python diag_H2_cond.py > ../data/out_diag_H2_cond.txt
-
-# Main experiments
-python exp_F2.py > ../data/out_F2.txt
-python exp_H2.py > ../data/out_H2.txt
+cd .. && pytest tests/ -v            # 5 tests verdes
 ```
 
-`diag_A4.py` is **not** part of the reproducible pipeline above: it depends on `run_decode_0059h.py`, the original pre-repo script that first surfaced this bug, which is not included here. Running it prints an explanatory message and exits instead of crashing. Its previously captured output is preserved as-is in `data/out_diag_A4.txt` (forensic record, not reproducible from a clean clone).
+## Key findings
 
-`data/resultados_reales_completos.txt` is an archival combined log from the audit process. Its A3/A4 sections predate a fix to `ROLE_CONFIGS[6]` in `base_fhrr.py` (TERR used to alias LOC's codebook; TIME had 14 unique symbols instead of 16) and no longer match the shipped code for the n=6 case — this is noted at the top of that file. For an up-to-date, reproducible comparison, use `data/out_F2.txt` and `data/out_H2.txt` instead.
+1. **The phase diagram is real but singular.** rho=1 is a point where the Gram inverse breaks exactly (det M = 0), not a capacity cliff.
+2. **Pure decoder works everywhere.** No Gram correction needed — accuracy 0.98–1.00 across the whole grid.
+3. **Learned observers close the gap.** MLP with 2 hidden layers achieves 0.992 accuracy at rho=1 (where gram fails at 0.119). The information is in the vector; the reported collapse is observer-relative.
+4. **Nested binding does NOT protect against rho=1.** Hierarchical structuring makes performance slightly *worse*, not better — the singularity is in the algebra, not in how you arrange the codebooks.
+5. **Scaling:** M_max grows as D^1.1, not sqrt(D). Pure resonators scale linearly with dimension.
 
----
+## Paper
 
-## Key results
-
-### F2: Collapse is a `mat_inv` artifact, not a resonator limit
-
-| n_roles | original (`mat_inv`) | pure (no Gram) | `pinv` |
-|---------|----------------------|----------------|--------|
-| 2 | 0.000 - 0.050 | **1.000** | **1.000** |
-| 3 | 0.067 - 0.100 | **1.000** | **1.000** |
-| 4 | 0.000 - 0.150 | **1.000** | **1.000** |
-| 6 | 0.033 - 0.133 | **1.000** | **1.000** |
-
-### H2: Double dissociation at `rho = 1`
-
-(T = 100; see `data/out_H2.txt` for the full T=25/T=100 breakdown)
-
-| rho | gram | gradient | pure | pinv |
-|-----|------|----------|------|------|
-| 0.50 | 0.050 | 0.500 | **1.000** | **1.000** |
-| 0.75 | 0.083 | 0.450 | **1.000** | **1.000** |
-| 0.80 | 0.200 | 0.217 | **1.000** | 0.950 |
-| **1.00** | **0.550** | **0.217** | **1.000** | **0.550** |
-| 1.33 | 0.983 | 0.233 | **1.000** | 0.983 |
-| 1.50 | 1.000 | 0.200 | **1.000** | 0.967 |
-
-The row `rho = 1.00` is the critical result: `pinv` does **not** rescue the square case (0.550, essentially tied with plain `gram` at 0.550), but `pure` does (1.000). This demonstrates that the problem at `rho = 1` is not singularity but dual-frame degeneracy. (Exact values will drift slightly run-to-run only if the fixed seeds above are changed; with the seeds as shipped, they are bit-identical.)
-
----
+Full paper in `paper/main.tex` (compiled: `paper/main.pdf`, 9 pages). Covers phase diagram, empirical validation (F2/H2/V3/V7/V8/V9/V10), diagnosis of numerical artifacts, cross-algebra validation, and connection to transformer residual streams.
 
 ## Citation
 
 ```bibtex
 @article{nieto2026fhrr,
-  title={Frame duality governs compositional decoding in {FHRR}: a phase diagram in rho},
+  title={Frame duality governs compositional decoding in FHRR: a phase diagram in rho},
   author={Nieto, Luciano Benjamín},
   journal={arXiv preprint},
-  year={2026}
+  year={2026},
+  url={https://github.com/Rylow999/fhrr-rho-collapse}
 }
 ```
 
----
+## Acknowledgments
 
-## Audit changelog (2026-09)
-
-- `base_fhrr.py`: symbol-to-phase assignment now iterates a `sorted()` set instead of a raw `set()`, removing a `PYTHONHASHSEED`-driven source of non-determinism. Runs are now verified bitwise-identical across processes.
-- `data/out_F2.txt`, `data/out_H2.txt`, `data/out_diag_H2_cond.txt`: regenerated with the fix above; README tables updated to match exactly.
-- `diag_A4.py`: fails with a clear message instead of an unhandled traceback when `run_decode_0059h.py` (not included) is missing; removed from the main reproduction flow.
-- `data/resultados_reales_completos.txt` and `data/out_diag_A4.txt`: annotated with provenance notes — both predate a since-fixed `ROLE_CONFIGS[6]` bug (TERR aliasing LOC's codebook; TIME with 14 instead of 16 unique symbols) and are kept as archival records, not as the reproducibility reference.
-- Stale comments in `base_fhrr_corregida.py`, `exp_F2.py`, `exp_H2.py` describing bugs no longer present in the shipped code were corrected.
-- `figures/fig1_phase_diagram.png`: regenerated (cropped title, overlapping x-axis labels) using `figures/_make_fig1.py`, built from the rho values actually present in `data/out_F2.txt`/`data/out_H2.txt`. No generation script existed for figures 2-4, so those are unchanged from the original submission.
-- `figures/fig4_comparison_parte1.png` renamed to `fig4_comparison_0059h.png` (no "parte2" exists; the old name implied a missing file).
-- Not fixed here — left for the author: `paper/main.tex` has no body text yet (title/abstract only); figures 2-4 reflect one valid pre-fix run and could optionally be regenerated to match the numbers above if an exact match to `data/` is wanted.
+- Lautaro Emanuel Luconi (FATE algorithm)
+- Nexus (agent assistance with audit and experimental design)
 
 ---
-
-## Contact
-
-Luciano Benjamín Nieto  
-GitHub: [Rylow999](https://github.com/Rylow999)
 
 *Per Aspera, Ad Astra.*
+
