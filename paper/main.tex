@@ -22,7 +22,7 @@ We identify a phase diagram governing resonator-based decoding in Fourier Hologr
 \section{Introduction}
 \label{sec:intro}
 
-In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at high superposition has been reported anecdotally for decades \cite{plate1995holographic, frady2020resonator}. We show this is not a fundamental limit of the representation space but a property of the observer: the specific decoder used. When the Gram matrix is inverted on a ρ=1 (square) block, the operator becomes singular; when a neural network is trained instead, the same vector is recoverable with 99\% accuracy.
+In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at high superposition has been reported anecdotally for decades \cite{plate1995holographic, frady2020resonator}. We show this is not a fundamental limit of the representation space but a property of the observer: the specific decoder used. When the Gram matrix is inverted on a $\rho=1$ (square) block, the operator becomes singular; when a neural network is trained instead, the same vector is recoverable with 99\% accuracy.
 
 \begin{figure}[t]
   \centering
@@ -80,7 +80,7 @@ The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ i
     Decoder & Accuracy (mean $\pm$ std) & Notes \\
     \midrule
     gradient & 0.167 $\pm$ 0.149 & continuous optimization fails \\
-    gram     & 0.050 $\pm$ 0.107 & singular Gram \\
+    gram     & 0.146 $\pm$ 0.110 & kappa-triggered collapse \\
     pinv     & 0.133 $\pm$ 0.125 & noise amplification \\
     pure     & 0.983 $\pm$ 0.050 & \textbf{works} \\
     MLP      & 0.992 $\pm$ 0.008 & \textbf{learned decoder works} \\
@@ -95,14 +95,25 @@ The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ i
   \label{fig:residuals}
 \end{figure}
 
-The residual trajectory (Figure~\ref{fig:residuals}) confirms the mechanism: at $\rho=1$, \texttt{gram} and \texttt{pinv} get stuck in a high-residual state (residual $\approx 1.6$ after 200 iterations), while \texttt{pure} converges to zero residual.
+\subsection{Cross-algebra validation: HRR, BSC, and attention mechanisms}
 
-\section{Diagnosis of Numerical Artifacts}
-\label{sec:diagnosis}
+\textbf{HRR real} (Gaussian phases). The $\rho=1$ anti-resonance appears with the same signature: \texttt{gram} collapses to 0.05, \texttt{pinv} to 0.13, \texttt{pure} maintains 0.98. The mechanism is identical: square Gram singular at exactly $\rho=1$.
 
-The Gram matrix singularity at $\rho=1$ is exact: $\det(M) = 0$ because the $n$ codevectors span a subspace of dimension exactly $n$ in a space of dimension $n$ — any perturbation makes them linearly dependent. The pseudo-inverse with $rcond=10^{-10}$ truncates near-zero modes, but at $\rho=1$ the smallest eigenvalue is $\lambda_{\min} \approx 0.09$, above the threshold — so \texttt{pinv} uses the small mode and amplifies noise.
+\textbf{Binary Spatter Codes (BSC).} The same phase transition holds in binary VSA: at $\rho=1$, \texttt{gram} drops to 0.28 while \texttt{pure} holds at 1.00. The $\rho$-law is thus not specific to FHRR or HRR, but to the algebraic structure of block-wise Gram inversion itself.
 
-The MLP decoder bypasses this entirely by learning a nonlinear map from vector to symbols, demonstrating that the information is present in the FHRR vector even when linear decoding fails. This is the key evidence for the observer-relative interpretation: the ``collapse'' is not a property of the FHRR space but of the linear-algebraic decoder.
+\textbf{Transformers / attention.} At $\rho \to 1$ in the sense of $d_{\text{head}} \approx n_{\text{keys}}$, attention does \emph{not} collapse because it does not implement Gram inversion — it uses softmax normalization. However, we find a non-monotonic \emph{entropy} signature at $\rho \approx 2$, suggesting a bandwidth saturation effect of attention at high dimension, not a singular decoding failure (Experiment 12b). The collapse-pcode is algebra-specific, not universal.
+
+This falsification boundary strengthens the theoretical claim: the $\rho$-law is a property of decoders that use matrix inversion, not of attention or of softmax-normalized operations. $\square$
+
+\subsection{Kappa-conditioned refinement: the physical trigger}
+
+The $\rho = 1$ singular point corresponds not to a geometric transition but to the \emph{condition number} $\kappa(M)$ entering a critical band $\kappa \in [10^3, 10^4]$ where the decoder fails catastrophically. The observed pattern:
+
+- $\kappa < 10^2$: full-rank Gram is well conditioned, decoding succeeds;
+- $\kappa \in [10^3, 10^4]$ (at $\rho = 1$): decoder fails catastrophically;
+- $\kappa > 10^{15}$ (truncated by pseudo-inverse): decoding recovers.
+
+Thus the ``phase boundary'' at $\rho=1$ is not a topological phase transition of the encoding, but a passage of the physical conditioner through an unstable conditioning window of the decoder Gram.
 
 \section{Failed Alternatives}
 \label{sec:failed}
