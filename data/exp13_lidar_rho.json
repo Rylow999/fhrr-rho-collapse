@@ -1,0 +1,58 @@
+[
+  {
+    "vol_eff": 10.0,
+    "voxel_size": 1.0,
+    "rho_clusters_per_voxel": 0.032,
+    "acc_gram": 0.997,
+    "acc_pure": 1.0
+  },
+  {
+    "vol_eff": 10.0,
+    "voxel_size": 2.0,
+    "rho_clusters_per_voxel": 0.256,
+    "acc_gram": 0.88,
+    "acc_pure": 0.997
+  },
+  {
+    "vol_eff": 6.0,
+    "voxel_size": 1.0,
+    "rho_clusters_per_voxel": 0.148,
+    "acc_gram": 0.988,
+    "acc_pure": 1.0
+  },
+  {
+    "vol_eff": 6.0,
+    "voxel_size": 2.0,
+    "rho_clusters_per_voxel": 1.185,
+    "acc_gram": 0.583,
+    "acc_pure": 0.997
+  },
+  {
+    "vol_eff": 4.0,
+    "voxel_size": 1.0,
+    "rho_clusters_per_voxel": 0.5,
+    "acc_gram": 0.927,
+    "acc_pure": 1.0
+  },
+  {
+    "vol_eff": 4.0,
+    "voxel_size": 2.0,
+    "rho_clusters_per_voxel": 4.0,
+    "acc_gram": 0.325,
+    "acc_pure": 0.998
+  },
+  {
+    "vol_eff": 2.5,
+    "voxel_size": 1.0,
+    "rho_clusters_per_voxel": 2.133,
+    "acc_gram": 0.9,
+    "acc_pure": 1.0
+  },
+  {
+    "vol_eff": 2.5,
+    "voxel_size": 2.0,
+    "rho_clusters_per_voxel": 32.0,
+    "acc_gram": 0.366,
+    "acc_pure": 0.998
+  }
+]

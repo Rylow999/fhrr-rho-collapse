@@ -1,0 +1,57 @@
+{
+  "model": "gpt2",
+  "n_head": 12,
+  "d_model": 768,
+  "d_head": 64,
+  "results": [
+    {
+      "n_dist": 0,
+      "total_tokens": 42,
+      "rho_proxy": 0.65625,
+      "attn_entropy": 2.383090019226074,
+      "top1_in_base": 1.0
+    },
+    {
+      "n_dist": 16,
+      "total_tokens": 58,
+      "rho_proxy": 0.90625,
+      "attn_entropy": 1.056327223777771,
+      "top1_in_base": 1.0
+    },
+    {
+      "n_dist": 32,
+      "total_tokens": 74,
+      "rho_proxy": 1.15625,
+      "attn_entropy": 0.8368494510650635,
+      "top1_in_base": 1.0
+    },
+    {
+      "n_dist": 48,
+      "total_tokens": 90,
+      "rho_proxy": 1.40625,
+      "attn_entropy": 1.2126611471176147,
+      "top1_in_base": 1.0
+    },
+    {
+      "n_dist": 64,
+      "total_tokens": 106,
+      "rho_proxy": 1.65625,
+      "attn_entropy": 0.7855828404426575,
+      "top1_in_base": 1.0
+    },
+    {
+      "n_dist": 96,
+      "total_tokens": 138,
+      "rho_proxy": 2.15625,
+      "attn_entropy": 0.6289624571800232,
+      "top1_in_base": 1.0
+    },
+    {
+      "n_dist": 128,
+      "total_tokens": 170,
+      "rho_proxy": 2.65625,
+      "attn_entropy": 0.671238899230957,
+      "top1_in_base": 1.0
+    }
+  ]
+}
