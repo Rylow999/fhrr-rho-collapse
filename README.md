@@ -93,14 +93,25 @@ cd .. && pytest tests/ -v            # 5 tests verdes
 ## Key findings
 
 1. **The phase diagram is real but singular.** rho=1 is a point where the Gram inverse breaks exactly (det M = 0), not a capacity cliff.
-2. **Pure decoder works everywhere.** No Gram correction needed — accuracy 0.98–1.00 across the whole grid.
-3. **Learned observers close the gap.** MLP with 2 hidden layers achieves 0.992 accuracy at rho=1 (where gram fails at 0.119). The information is in the vector; the reported collapse is observer-relative.
-4. **Nested binding does NOT protect against rho=1.** Hierarchical structuring makes performance slightly *worse*, not better — the singularity is in the algebra, not in how you arrange the codebooks.
-5. **Scaling:** M_max grows as D^1.1, not sqrt(D). Pure resonators scale linearly with dimension.
+2. **The physical trigger is kappa, not rho.** The decoder fails when kappa(M) enters the critical band [10³, 10⁴]; the exact threshold is **κ* = 5.81×10³** (log₁₀ = 3.76), derived from noise amplification vs codebook margin (Exp 14). Outside that band (singular κ>10¹⁵ or well-conditioned κ<10²), decoding succeeds.
+3. **Pure decoder works everywhere.** No Gram correction needed — accuracy 0.98–1.00 across the whole grid.
+4. **Learned observers close the gap.** MLP with 2 hidden layers achieves 0.992 accuracy at rho=1 (where gram fails at 0.146). The information is in the vector; the reported collapse is observer-relative.
+5. **Universality across algebras.** The same ρ=1 transition holds in HRR real (anti-resonance), BSC binary (gram=0.28 vs pure=1.00), and LiDAR voxelization (gram 1.0→0.33). The law is a property of Gram-inverse decoders, not of any specific algebra.
+6. **Transformers do not collapse** (they use softmax, not Gram inverse) — but attention entropy shows a non-monotonic valley at ρ≈2 (Exp 12b), a bandwidth saturation signature.
+7. **Cross-adaptive routing** (Exp 15): a kappa-based router works outside the critical band but needs threshold calibration — the adaptive decoder inherits the same kappa law.
+8. **Scaling:** M_max grows as D^1.1, not sqrt(D). Pure resonators scale linearly with dimension.
+9. **Multi-observer invariance** (RHO_LAW): on SDDF turbulence spectra, window ratios are invariant across models (CV≈0.24) while G_total varies (CV≈0.7) — the algebra separates observer artifacts from structural invariants.
+10. **Collatz analogue:** the divergence threshold f_P* = 0.7075 (derived, conditional on LEH) plays the same role as κ*: an admissible-ratio interval that closes at the critical parameter (a=4, drift=0) — the same structure as Proposition 4.2 of the NS blowup audit (Zenodo 22820521).
 
 ## Paper
 
-Full paper in `paper/main.tex` (compiled: `paper/main.pdf`, 9 pages). Covers phase diagram, empirical validation (F2/H2/V3/V7/V8/V9/V10), diagnosis of numerical artifacts, cross-algebra validation, and connection to transformer residual streams.
+Full paper in `paper/main.tex` (compiled: `paper/main.pdf`, 9 pages). Covers phase diagram, empirical validation (F2/H2/V3/V7/V8/V9/V10), diagnosis of numerical artifacts, kappa-conditioned refinement with exact threshold κ*, cross-algebra validation (HRR, BSC, transformers), failed alternatives, and discussion.
+
+## Related repositories
+
+- **Rylow999/paloma-pi-v2** — the applied demonstration: real bioacoustic data (Columba livia, 83 clips), pure resonator recovery 100%, structural significance p=0.002.
+- **Rylow999/sddf** — Navier-Stokes spectral curvature G[u]: exact closed-form law, post-audit fixes, Migdal periodogram with calibrated null model.
+- **Rylow999/rho-law** — the unifying framework: three-layer structure (substrate/observer/instrument), four domains, the irreducible point.
 
 ## Citation
 
