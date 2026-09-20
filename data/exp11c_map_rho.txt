@@ -1,0 +1,38 @@
+EXP 11c: MAP — grid rho x decoder
+n_seeds=8, n_facts=25, T=100
+
+--- rho=0.75 K=1 N=128 (BLK=128) ---
+  kappa mediana: 188.65896768985553
+       gram: 1.0000 ± 0.0000
+       pure: 1.0000 ± 0.0000
+       pinv: 1.0000 ± 0.0000
+   gradient: 0.0683 ± 0.0989
+
+--- rho=0.80 K=3 N=120 (BLK=40) ---
+  kappa mediana: 118.12464692516825
+       gram: 1.0000 ± 0.0000
+       pure: 0.9983 ± 0.0166
+       pinv: 1.0000 ± 0.0000
+   gradient: 0.0600 ± 0.1001
+
+--- rho=1.00 K=3 N=96 CUADRADO (BLK=32) ---
+  kappa mediana: 10626.671200993998
+       gram: 1.0000 ± 0.0000
+       pure: 0.9950 ± 0.0284
+       pinv: 1.0000 ± 0.0000
+   gradient: 0.0725 ± 0.0980
+
+--- rho=1.33 K=3 N=72 (BLK=24) ---
+  kappa mediana: 7586194642340394.0
+       gram: 0.2392 ± 0.2378
+       pure: 0.9792 ± 0.0599
+       pinv: 1.0000 ± 0.0000
+   gradient: 0.0725 ± 0.1008
+
+--- rho=1.50 K=2 N=64 (BLK=32) ---
+  kappa mediana: 4011824657376508.0
+       gram: 0.0708 ± 0.1111
+       pure: 0.9717 ± 0.0835
+       pinv: 0.9975 ± 0.0203
+   gradient: 0.0700 ± 0.1072
+
