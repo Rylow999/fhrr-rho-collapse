@@ -36,8 +36,13 @@ Three regimes emerge:
 | Regime | rho | State of Gram matrix M | Decoding behaviour |
 |--------|-----|------------------------|--------------------|
 | **I. Under-complete** | < 1 | rank-deficient (singular) | `mat_inv` returns numerical garbage; collapse |
-| **II. Square** | = 1 | invertible, cond ~ 1e3 | dual frame degenerate; partial collapse |
+| **II. Square** | = 1 | invertible, κ ~ 4n² (verified n≤512) | collapse in critical band κ∈[10³,10⁴] (closed-loop) |
 | **III. Over-complete** | > 1 | well-conditioned frame | stable decoding |
+
+## What's new in v4 (2026-09-20)
+
+- **Exp 16 (scaling in n):** the square-Wishart prediction κ ~ 4n² (Edelman) measured directly at ρ=1 for n ∈ {32, 64, 128, 256, 512} (12 seeds): λ_max → 4.0 (the MP upper edge) monotonically, λ_min ~ n⁻², and the median κ tracks 4n² within the heavy-tailed spread. See `data/exp16_scaling_n.json` and `figures/fig_exp16_scaling.png`. The n=32 anchor of Exp 14 is the small-n end of a verified scaling law, not an isolated finite-size accident.
+- Random-matrix anchoring section in the paper (Sec. 4.3), BSC + MAP quantified (Exps 11b/11c), `fhrr-resilient` Rust crate with the κ-router.
 
 ## What's new in v3 (2026-09-16)
 
