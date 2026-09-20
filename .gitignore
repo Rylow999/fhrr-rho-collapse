@@ -17,3 +17,4 @@ Thumbs.db
 *.synctex.gz
 paper/*.bbl
 paper/*.blg
+fhrr-resilient/target/
