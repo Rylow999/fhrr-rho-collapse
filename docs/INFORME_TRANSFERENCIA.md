@@ -327,24 +327,24 @@ python exp_I_geometrica.py > ../data/out_I.txt
 
 ## 5. Líneas de Investigación Abiertas
 
-### 5.1 Línea A: VSA Binarias (Prioridad Alta)
+### 5.1 Línea A: VSA Binarias — **CERRADA (Exp 11b, 2026-09-20)**
 
-**Objetivo:** Testear si la ley de ρ aplica a BSC (Binary Spatter Codes) y MAP (Multiply-Add-Permute).
+**Estado:** La pregunta quedó respondida con data persistida.
 
-**Contexto:** Tests preliminares (V2) dieron resultados ambiguos. BSC funcionó mal en todos los casos, pero el test era simplificado (sin resonator, sin Gram).
+**Resultado (data/exp11_bsc_rho.json, 8 seeds × 25 facts por celda):**
 
-**Tareas concretas:**
-1. Implementar `BSCBundle` con resonator completo (análogo a `HRRRealBundle`)
-2. Implementar `MAPBundle` con resonator completo
-3. Correr el grid de ρ completo (mismo que H2) con 4 decoders (gram/pure/pinv/gradient)
-4. Comparar con FHRR y HRR real
+| Caso | κ mediano | gram | pinv | pure |
+|------|-----------|------|------|------|
+| ρ=0.80 (K=3, BLK=40) | 1.3e2 | 0.999 | 0.998 | 0.998 |
+| **ρ=1.00 (K=3, BLK=32)** | **4.7e3** | **0.214** | **0.244** | **0.988** |
+| ρ=1.33 (K=3, BLK=24) | ~1e15 (singular) | 0.979 | 0.969 | 0.982 |
 
-**Criterio de éxito:**
-- Si BSC/MAP muestran transición en ρ=1 → ley universal para todas las VSA
-- Si BSC/MAP no muestran transición → ley específica de VSA continuas
-- Si muestran comportamiento diferente → mapear el espacio completo de topologías
+Conclusiones:
+1. **La transición ρ=1 existe en BSC** con la firma exacta: gram y pinv colapsan solo en el punto cuadrado, pure sobrevive.
+2. **El κ mediano en ese punto (4.7×10³) cae DENTRO de la banda crítica [1e3, 1e4] de FHRR** — el parámetro físico transfiere, no solo el locus ρ. Esto refuerza el anclaje RMT del paper (Gram de Rademacher obedece MP hasta el 4to cumulante).
+3. Los "tests ambiguos" de V2 eran un artefacto del test simplificado (sin resonator completo), como se sospechaba.
 
-**Estimación:** 1 semana de trabajo
+**Queda abierto:** MAP (Multiply-Add-Permute con permutación) — no testeado.
 
 ---
 
