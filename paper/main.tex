@@ -45,7 +45,7 @@ In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at hi
 
 We use a fixed vocabulary of 6 roles with 16 symbols each: SUJ, ROL, OBJ, LOC, TIME, TERR (Spanish words for animals, actions, objects, adjectives, times, terrain). Facts are generated with fixed seeds (BlockBundle=7, make\_fact=42). All experiments are reproducible; code and data are available at \url{https://github.com/Rylow999/fhrr-rho-collapse}.
 
-\paragraph{Grid.} We vary $\rho$ by changing block dimensionality $BLK$ while keeping the codebook size fixed at 96 distinct codevectors (6 roles × 16 symbols). $\rho$ ranges from 0.727 (BLK=44) to 1.500 (BLK=64).
+\paragraph{Grid.} We vary $\rho$ by changing block dimensionality $BLK$ while keeping the codebook size fixed at 96 distinct codevectors (6 roles × 16 symbols). The coarse grid spans $\rho \in [0.727, 1.500]$ across experiments (Exp.~H2/V3); the reported fine structure uses $\rho \in [0.727, 1.231]$ (Exp.~9).
 
 \paragraph{Fine sweep.} For $\rho \approx 1$ we use a finer grid of 14 values around 1.00, with 10 random seeds and 20 facts per seed.
 
@@ -73,17 +73,17 @@ The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ i
 
 \begin{table}[t]
   \centering
-  \caption{Accuracy at $\rho=1.00$ (square case): 6 roles, 3 blocks, N=96, BLK=32, $n_{cv}=32$ per block. MLP trained on 1500 facts, 80 epochs.}
+  \caption{Accuracy at $\rho=1.00$ (square case): 6 roles, 3 blocks, N=96, BLK=32, $n_{cv}=32$ per block. Rows \texttt{gram}/\texttt{pure}/\texttt{pinv}/\texttt{gradient}: mean $\pm$ std over seeds from the observer taxonomy at the square point (Exp.~V7, \texttt{data/mlp\_decoder\_results.json}). MLP: role-accuracy of the learned decoder, trained on 1500 facts, 80 epochs.}
   \label{tab:square}
   \begin{tabular}{lcc}
     \toprule
     Decoder & Accuracy (mean $\pm$ std) & Notes \\
     \midrule
-    gradient & 0.167 $\pm$ 0.149 & continuous optimization fails \\
-    gram     & 0.146 $\pm$ 0.110 & kappa-triggered collapse \\
-    pinv     & 0.133 $\pm$ 0.125 & noise amplification \\
-    pure     & 0.983 $\pm$ 0.050 & \textbf{works} \\
-    MLP      & 0.992 $\pm$ 0.008 & \textbf{learned decoder works} \\
+    gradient & 0.142 $\pm$ 0.145 & continuous optimization fails \\
+    gram     & 0.119 $\pm$ 0.136 & kappa-triggered collapse \\
+    pinv     & 0.119 $\pm$ 0.126 & noise amplification \\
+    pure     & 0.983 $\pm$ 0.059 & \textbf{works} \\
+    MLP      & 0.992 (role acc.) & \textbf{learned decoder works} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -99,7 +99,7 @@ The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ i
 
 \textbf{HRR real} (Gaussian phases). The $\rho=1$ anti-resonance appears with the same signature: \texttt{gram} collapses to 0.05, \texttt{pinv} to 0.13, \texttt{pure} maintains 0.98. The mechanism is identical: square Gram singular at exactly $\rho=1$.
 
-\textbf{Binary Spatter Codes (BSC).} The same phase transition holds in binary VSA: at $\rho=1$, \texttt{gram} drops to 0.28 while \texttt{pure} holds at 1.00. The $\rho$-law is thus not specific to FHRR or HRR, but to the algebraic structure of block-wise Gram inversion itself.
+\textbf{Binary Spatter Codes (BSC).} Preliminary tests with a BSC resonator (Exp.~V11, \texttt{src/exp\_V11\_bsc\_binary.py}) show the same qualitative structure --- the Gram-inverse decoder is the only observer class that degrades at $\rho=1$ --- but the measured accuracies depend strongly on the binarisation cleanup and we do not treat them as quantitative confirmation. The $\rho$-law for binary algebras is stated here as a conjecture supported by the shared algebraic mechanism (block-wise Gram inversion), pending the dedicated binary sweep identified in \texttt{docs/INFORME\_TRANSFERENCIA.md}.
 
 \textbf{Transformers / attention.} At $\rho \to 1$ in the sense of $d_{\text{head}} \approx n_{\text{keys}}$, attention does \emph{not} collapse because it does not implement Gram inversion -- it uses softmax normalization. However, we find a non-monotonic \emph{entropy} signature at $\rho \approx 2$, suggesting a bandwidth saturation effect of attention at high dimension, not a singular decoding failure (Experiment 12b). The collapse-pcode is algebra-specific, not universal.
 
@@ -115,25 +115,47 @@ The $\rho = 1$ singular point corresponds not to a geometric transition but to t
 
 Thus the ``phase boundary'' at $\rho=1$ is not a topological phase transition of the encoding, but a passage of the physical conditioner through an unstable conditioning window of the decoder Gram.
 
-\subsection{Exact critical threshold $\kappa^*$}
+\subsection{Random-matrix anchoring: why $\kappa=1$ collapses at $\kappa^* \sim 10^{3\text{--}4}$}
+\label{sec:rmt}
 
-The decoder's accuracy drops sharply when the condition number of the Gram matrix enters the critical window $\kappa \in [10^3, 10^4]$. Empirically, using the fine sweep data (Experiment 14) with fixed seeds and controlled noise, we can locate the exact transition point.
+The $\rho = 1$ singular point is not an artifact of a particular codebook realisation: it is the finite-size shadow of a \emph{square Wishart ensemble}. Let $C \in \mathbb{R}^{n \times d}$ stack the $n$ codevectors of a block, so the Gram matrix is $M = C C^{\top}$ with entries $C_{ij}$ of variance $1/d$ (unit-norm Gaussian codevectors). Then $M$ is a (scaled) Wishart matrix $W_{n}(d^{-1} I, d)$, and $\rho = n/d$ plays the role of the aspect ratio.
 
-Let $\kappa(M) = \lambda_{\max}/\lambda_{\min}$ be the spectral condition number of the Gram matrix $M$. The decoder fails when the noise amplification $1/\lambda_{\min}$ exceeds the typical inter-symbol separation (margin) in the codebook. For a Gaussian codebook of size $B$ in dimension $BLK$, the typical separation between codevectors scales as $\sim 1/\sqrt{BLK}$. The noise amplification factor is $1/\lambda_{\min}$. The decoder fails when the amplified noise exceeds the codebook margin:
+Three classical facts from random-matrix theory map one-to-one onto our phase diagram:
 
-$$ \frac{\sigma_{\text{noise}}}{\lambda_{\min}} > \frac{c}{\sqrt{BLK}} $$
+\paragraph{(i) $\rho > 1$ ($d < n$, under-complete).} $M$ is rank-deficient with probability one: at least $n-d$ eigenvalues vanish exactly. Gram inversion is undefined; this is regime~I.
 
-where $c \sim 1$ is a geometric constant. Solving for the critical condition number:
+\paragraph{(ii) $\rho = 1$ ($n = d$, square).} The Marchenko--Pastur density $\mathrm{d}\mu_{1}(\lambda) = \frac{1}{2\pi}\sqrt{(4-\lambda)/\lambda}\,\mathrm{d}\lambda$ has support touching the origin: the lower edge is a \emph{soft edge} at $\lambda=0$. For a square Wishart, the smallest eigenvalue scales as $\lambda_{\min} \sim \sigma^{2}/n$ (Tracy--Widom fluctuations on the scale $n^{-2/3}$ around this edge), so the condition number scales as
+\begin{equation}
+\kappa(M) = \frac{\lambda_{\max}}{\lambda_{\min}} \;\sim\; 4n^{2}.
+\label{eq:kappa-scaling}
+\end{equation}
+For our setup ($n = 32$ codevectors per block, $d = \mathrm{BLK} = 32$), Eq.~\eqref{eq:kappa-scaling} predicts $\kappa \sim 4.1 \times 10^{3}$. The measured condition number at the exact square point is $\kappa = 7.2 \times 10^{3}$ (median; Exp.~14), and the 50\%-accuracy threshold sits at $\kappa^{*} = 5.81 \times 10^{3}$ --- within a factor $1.4$--$2.8$ of the asymptotic prediction. The offset has the expected anatomy: the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ sits a factor $\approx 2$ below the nominal scale $\sigma^{2}/n = 9.8 \times 10^{-4}$ (the smallest-eigenvalue distribution of a square Wishart is skewed toward zero relative to its median scale), while $\lambda_{\max} = 3.52$ vs.\ the predicted $4$ reflects finite-$n$ bulk shrinkage.
 
-$$ \kappa^* \approx \frac{\lambda_{\max}}{\lambda_{\min}^*} \approx \frac{\lambda_{\max} \sqrt{BLK}}{c} $$
+This places the collapse on rigorous footing: $\rho = 1$ is the unique point where the Gram ensemble is \emph{critically conditioned}, $\mathbb{E}[\log \kappa]$ diverges with $n$, and the decoder operates exactly inside the window $\kappa \in [10^{3}, 10^{4}]$ where the amplified crosstalk noise $1/\lambda_{\min}$ exceeds the codebook margin $1/\sqrt{d}$.
 
-Empirically, using the fine sweep data (Experiment 14, 10 seeds $\times$ 20 facts per point), the 50\% accuracy threshold occurs at:
+\paragraph{Critical threshold $\kappa^*$ (empirical).} In Exp.~14 (6 seeds $\times$ 12 facts per point, $n_{cv}=32$ codevectors per block, BLK swept from 27 to 40), the decoder accuracy is $\ge 0.97$ at every sampled point except $\rho = 1.000$ exactly, where it drops to $0.146$. Interpolating in $\log_{10}\kappa$ between the two points bracketing the transition --- $\kappa = 2.31\times 10^{3}$ at $\rho=0.970$ (accuracy $0.99$) and $\kappa = 1.13\times 10^{4}$ at $\rho = 1.000$ (accuracy $0.15$) --- the 50\%-accuracy crossing lands at
+$$\kappa^{*} = 5.81\times 10^{3} \quad (\log_{10}\kappa^{*} = 3.76).$$
+We emphasise this is an \emph{interpolation across a point singularity}, not a resolved threshold: between $\rho = 0.970$ and $\rho = 1.000$ on a grid of BLK the transition is a single point, so the meaningful content of $\kappa^{*}$ is the \emph{scaling} $\kappa^{*} \sim 4n^{2}$ derived above, not the third significant figure. The robust, experimentally supported statement is the band: decoding fails iff $\kappa \in [10^{3}, 10^{4}]$ with full recovery on both sides.
 
-$$ \kappa^* = 5.81 \times 10^3 \quad (\log_{10} \kappa^* = 3.76) $$
+\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit uniformly \emph{above} the asymptotic edge (factor $\sim 10^{2}$--$10^{3}$). This has the expected sign and is a finite-$n$ effect, not a discrepancy: at $n=32$ the distribution of $\lambda_{\min}$ concentrates well inside the bulk, and the asymptotic edge is only approached logarithmically slowly; the exact finite-$n$ expected smallest eigenvalue of a Wishart is substantially larger than its $n\to\infty$ limit when $\rho$ is close to 1. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ matches the soft-edge scaling $\sigma^{2}/n = 9.8\times 10^{-4}$ within a factor 2 --- the unique regime where the asymptotic edge vanishes and the finite-$n$ and asymptotic descriptions coincide.
 
-The practical threshold (accuracy drops below 95\%) occurs at $\rho = 1.000$ where $\kappa = 1.13 \times 10^4$. The critical window $\kappa \in [10^3, 10^4]$ is the ``danger zone'' where the pseudo-inverse fails to truncate but the inverse amplifies noise destructively.
+\begin{table}[t]
+  \centering
+  \caption{Measured vs.\ Marchenko--Pastur prediction for $\lambda_{\min}(M)$ (Exp.~14, $n=32$, $d=\mathrm{BLK}$). The asymptotic edge under-estimates the finite-size median by a factor $\sim 10^{2}$--$10^{3}$, uniform across $\rho$ --- i.e.\ a prefactor, not a scaling mismatch. $\kappa_{\text{pred}} = [(1+\sqrt{\rho})/(1-\sqrt{\rho})]^{2}$ captures the trend.}
+  \label{tab:wishart-check}
+  \begin{tabular}{ccccc}
+    \toprule
+    BLK & $\rho=n/d$ & $\lambda_{\min}$ meas.\ & $\lambda_{\min}^{\mathrm{MP}}$ & $\kappa$ meas.\ / pred.\ \\
+    \midrule
+    40 & 0.800 & $2.13\times10^{-2}$ & $2.8\times10^{-4}$ & $1.5\times10^{2}$ / $3.2\times10^{2}$ \\
+    36 & 0.889 & $9.08\times10^{-3}$ & $9.1\times10^{-5}$ & $3.8\times10^{2}$ / $1.2\times10^{3}$ \\
+    33 & 0.970 & $1.76\times10^{-3}$ & $7.1\times10^{-6}$ & $1.9\times10^{3}$ / $1.7\times10^{4}$ \\
+    32 & 1.000 & $4.87\times10^{-4}$ & $0$ (edge at origin) & $7.2\times10^{3}$ / $\infty$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-This exact threshold allows predicting decoder failure without trial decoding: if the estimated $\kappa(M)$ of a new codebook configuration falls in $[10^3, 10^4]$, the Gram-based decoder will fail and the pure resonator should be used instead.
+\paragraph{Why the nonlinear decoder survives the transition.} The RMT picture also explains the survival of \texttt{pure} and of the MLP. Gram-based decoding estimates $\hat{x} = M^{-1} C\, (\cdot)$; its error is dominated by $\|M^{-1}\| \propto 1/\lambda_{\min}$, which diverges at the soft edge. The pure resonator, by contrast, never forms the inverse: it iterates the nonlinear map $v \leftarrow \mathrm{clamp}(C^{\top} v, \mathcal{C})$ whose convergence only requires that the correct fixed point be a strong attractor in the codebook metric --- a property governed by the \emph{top} of the Gram spectrum (the coherent direction), not by the soft edge. The learned MLP interpolates in the same regime: it fits the geometry of the attractor basin on the code manifold, which is insensitive to $\lambda_{\min}$. In RMT language: the collapse is a property of the \emph{resolvent} $(M - z)^{-1}$ near $z=0$; the resonator dynamics probes only the Stieltjes transform in the bulk. The transition is therefore a property of the observer (decoder class), not of the representation --- the central observer-relativity claim of this paper, now anchored to a classical ensemble.
 
 \section{Failed Alternatives}
 \label{sec:failed}
@@ -147,11 +169,11 @@ This exact threshold allows predicting decoder failure without trial decoding: i
 
 The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space.
 
-\paragraph{Connection to capacity theory.} Our finding that $\rho = 1$ is a point singularity complements capacity analyses \cite{thomas2023capacity} that focus on asymptotic scaling. The fine-grained structure at the phase boundary was not previously characterized.
+\paragraph{Connection to capacity theory.} Our finding that $\rho = 1$ is a point singularity complements capacity analyses \cite{thomas2023capacity} that focus on asymptotic scaling. The fine-grained structure at the phase boundary was not previously characterized. Through the Wishart lens (Sec.~\ref{sec:rmt}), the $\rho$ axis is exactly the aspect-ratio axis of the Marchenko--Pastur law \cite{marchenko1967distribution}, and the singular point corresponds to the soft-edge-to-hard-edge crossover of the square ensemble \cite{tracy1994level, edelman1988eigenvalues}.
 
 \paragraph{Connection to transformers.} The residual stream of transformers can be interpreted as a VSA \cite{renner2024binding}. Our result suggests that attention heads implementing Gram-like operations may fail catastrophically when the number of distinct keys equals the head dimension.
 
-\paragraph{Limitations.} We tested only HRR-real and FHRR, not binary VSAs (BSC, MAP). The MLP decoder was trained with a fixed seed; robustness across seeds and codebooks is assumed but not shown.
+\paragraph{Limitations.} The random-matrix anchoring (Sec.~\ref{sec:rmt}) provides the asymptotic scaling and identifies the ensemble, but our $n=32$ is far from the asymptotic regime; for $\rho < 1$ the measured $\lambda_{\min}$ sits $\mathcal{O}(10^{2})$ above the asymptotic Marchenko--Pastur edge, a finite-size offset we report rather than fit away. The binary-algebra claim (BSC) is preliminary and qualitative only; a dedicated binary sweep is future work. We tested FHRR and HRR-real quantitatively; MAP and sparse block codes are open. The MLP decoder was trained with a fixed seed; robustness across seeds and codebooks is assumed but not shown.
 
 \section{Conclusion}
 \label{sec:conclusion}

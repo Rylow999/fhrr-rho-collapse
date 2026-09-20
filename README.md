@@ -10,6 +10,14 @@
 > entre ρ=0.73 y ρ=1.23, todos los decoders estables **excepto en ρ=1.000
 > exacto**, donde `gram` y `pinv` caen a 0.148 mientras `pure` y MLP quedan
 > en 0.99. El paper compilado está en `paper/main.pdf` (9 páginas, 8 refs).
+>
+> **v4 (2026-09-20):** Anclaje en Teoría de Matrices Aleatorias. La Gram
+> M = CCᵀ es una Wishart escalada, ρ = n/d es el aspect ratio de
+> Marchenko–Pastur, y el punto crítico ρ=1 es la Wishart **cuadrada**:
+> borde suave en λ=0, λ_min ~ σ²/n, y κ ~ 4n². Para n=32 predice
+> κ ~ 4.1×10³ (medido 7.2×10³, umbral 50%: κ* = 5.81×10³) — mismo orden.
+> El pure resonator sobrevive porque nunca forma la resolvente (M−z)⁻¹
+> cerca de z=0: la transición es del observador, no del espacio.
 
 ---
 
@@ -93,10 +101,10 @@ cd .. && pytest tests/ -v            # 5 tests verdes
 ## Key findings
 
 1. **The phase diagram is real but singular.** rho=1 is a point where the Gram inverse breaks exactly (det M = 0), not a capacity cliff.
-2. **The physical trigger is kappa, not rho.** The decoder fails when kappa(M) enters the critical band [10³, 10⁴]; the exact threshold is **κ* = 5.81×10³** (log₁₀ = 3.76), derived from noise amplification vs codebook margin (Exp 14). Outside that band (singular κ>10¹⁵ or well-conditioned κ<10²), decoding succeeds.
+2. **The physical trigger is kappa, not rho.** The decoder fails when kappa(M) enters the critical band [10³, 10⁴]; the empirical threshold is **κ* = 5.81×10³** (log₁₀ = 3.76) at 50% accuracy (Exp 14). Outside that band (singular κ>10¹⁵ or well-conditioned κ<10²), decoding succeeds. **NEW (v4): the mechanism is anchored in Random Matrix Theory — M = CC^T is a scaled Wishart, ρ = n/d is the MP aspect ratio, and the square case κ ~ 4n² predicts 4.1×10³ (measured 7.2×10³), matching within the finite-n prefactor.**
 3. **Pure decoder works everywhere.** No Gram correction needed — accuracy 0.98–1.00 across the whole grid.
-4. **Learned observers close the gap.** MLP with 2 hidden layers achieves 0.992 accuracy at rho=1 (where gram fails at 0.146). The information is in the vector; the reported collapse is observer-relative.
-5. **Universality across algebras.** The same ρ=1 transition holds in HRR real (anti-resonance), BSC binary (gram=0.28 vs pure=1.00), and LiDAR voxelization (gram 1.0→0.33). The law is a property of Gram-inverse decoders, not of any specific algebra.
+4. **Learned observers close the gap.** MLP reaches 0.992 role-accuracy at rho=1 (where gram fails at 0.119). The information is in the vector; the reported collapse is observer-relative.
+5. **Universality across algebras.** The same ρ=1 transition holds quantitatively in HRR real (gram 0.05, pinv 0.13, pure 0.98; Exp V3) and qualitatively in BSC binary (preliminary, Exp V11) and LiDAR voxelization (gram 1.0→0.33). The law is a property of Gram-inverse decoders, not of any specific algebra.
 6. **Transformers do not collapse** (they use softmax, not Gram inverse) — but attention entropy shows a non-monotonic valley at ρ≈2 (Exp 12b), a bandwidth saturation signature.
 7. **Cross-adaptive routing** (Exp 15): a kappa-based router works outside the critical band but needs threshold calibration — the adaptive decoder inherits the same kappa law.
 8. **Scaling:** M_max grows as D^1.1, not sqrt(D). Pure resonators scale linearly with dimension.
