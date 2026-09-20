@@ -101,7 +101,7 @@ The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ i
 
 \textbf{Binary Spatter Codes (BSC).} The same phase transition holds in binary VSA: at $\rho=1$, \texttt{gram} drops to 0.28 while \texttt{pure} holds at 1.00. The $\rho$-law is thus not specific to FHRR or HRR, but to the algebraic structure of block-wise Gram inversion itself.
 
-\textbf{Transformers / attention.} At $\rho \to 1$ in the sense of $d_{\text{head}} \approx n_{\text{keys}}$, attention does \emph{not} collapse because it does not implement Gram inversion — it uses softmax normalization. However, we find a non-monotonic \emph{entropy} signature at $\rho \approx 2$, suggesting a bandwidth saturation effect of attention at high dimension, not a singular decoding failure (Experiment 12b). The collapse-pcode is algebra-specific, not universal.
+\textbf{Transformers / attention.} At $\rho \to 1$ in the sense of $d_{\text{head}} \approx n_{\text{keys}}$, attention does \emph{not} collapse because it does not implement Gram inversion -- it uses softmax normalization. However, we find a non-monotonic \emph{entropy} signature at $\rho \approx 2$, suggesting a bandwidth saturation effect of attention at high dimension, not a singular decoding failure (Experiment 12b). The collapse-pcode is algebra-specific, not universal.
 
 This falsification boundary strengthens the theoretical claim: the $\rho$-law is a property of decoders that use matrix inversion, not of attention or of softmax-normalized operations. $\square$
 
@@ -138,7 +138,7 @@ This exact threshold allows predicting decoder failure without trial decoding: i
 \section{Failed Alternatives}
 \label{sec:failed}
 
-\paragraph{Gradient decoder.} Gradient descent on the continuous relaxation fails on all multi-role configurations (accuracy 0.08–0.33), regardless of $\rho$. This is because the problem is discrete (symbol selection), not continuous (vector coefficients).
+\paragraph{Gradient decoder.} Gradient descent on the continuous relaxation fails on all multi-role configurations (accuracy 0.08--0.33), regardless of $\rho$. This is because the problem is discrete (symbol selection), not continuous (vector coefficients).
 
 \paragraph{Geometric parametrization.} Manual tuning of phase relationships between codevectors (Experiment I) does not eliminate the singularity.
 
