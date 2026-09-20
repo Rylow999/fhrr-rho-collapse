@@ -49,7 +49,16 @@ esta cerca de singular).
 
     Una decodificacion Gram basada en resonator falla cuando
 
-        kappa(M)  ∈  [1e3, 1e5]
+        kappa(M)  ∈  [1e3, 1e4]      (ventana critica; ver paper Sec. RMT)
+
+    Nota de alineacion (2026-09-20): una version anterior de este documento
+    decia [1e3, 1e5]. El valor correcto, consistente con el paper v4 y con
+    los datos de Exp 14 (kappa=1.13e4 en rho=1 colapsa; la recuperacion en
+    rho>1 viene de kappa~1e15 por truncamiento), es [1e3, 1e4]. Por encima
+    de 1e4 sin llegar a singular numerico hay zona extendida de riesgo; la
+    banda critica estricta donde se midio el colapso es [1e3, 1e4].
+    Anclaje RMT: para la Wishart cuadrada (rho=1), kappa ~ 4 n^2
+    (Edelman 1988): con n=32 predice 4.1e3, medido 7.2e3.
 
     con singularidad completa (colapso de ~85% de accuracy) en el punto
     donde el espectro cruza la singularidad sin disparar el truncamiento

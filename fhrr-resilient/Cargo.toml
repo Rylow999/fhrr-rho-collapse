@@ -1,0 +1,9 @@
+[package]
+name = "fhrr-resilient"
+version = "0.1.0"
+edition = "2021"
+description = "Resilient VSA/FHRR decoder with kappa-conditioned dynamic observer router (Gram-inverse <-> pure resonator failover)"
+license = "MIT"
+authors = ["Luciano Benjamin Nieto"]
+
+[dependencies]

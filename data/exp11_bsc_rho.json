@@ -1,0 +1,119 @@
+[
+ {
+  "label": "rho=0.75 K=1 N=128",
+  "K": 1,
+  "N": 128,
+  "BLK": 128,
+  "n_cv_per_block": 32,
+  "rho": 0.25,
+  "n_seeds": 8,
+  "n_facts": 25,
+  "acc_gram": 1.0,
+  "acc_gram_std": 0.0,
+  "acc_pure": 1.0,
+  "acc_pure_std": 0.0,
+  "acc_pinv": 1.0,
+  "acc_pinv_std": 0.0,
+  "acc_gradient": 0.3067,
+  "acc_gradient_std": 0.194,
+  "kappa_med": 157.4009093090612,
+  "kappa_all": [
+   157.4
+  ]
+ },
+ {
+  "label": "rho=0.80 K=3 N=120",
+  "K": 3,
+  "N": 120,
+  "BLK": 40,
+  "n_cv_per_block": 32,
+  "rho": 0.8,
+  "n_seeds": 8,
+  "n_facts": 25,
+  "acc_gram": 0.9992,
+  "acc_gram_std": 0.0118,
+  "acc_pure": 0.9983,
+  "acc_pure_std": 0.0166,
+  "acc_pinv": 0.9983,
+  "acc_pinv_std": 0.0166,
+  "acc_gradient": 0.165,
+  "acc_gradient_std": 0.1434,
+  "kappa_med": 127.89027726461033,
+  "kappa_all": [
+   232.2,
+   127.9,
+   113.6
+  ]
+ },
+ {
+  "label": "rho=1.00 K=3 N=96 CUADRADO",
+  "K": 3,
+  "N": 96,
+  "BLK": 32,
+  "n_cv_per_block": 32,
+  "rho": 1.0,
+  "n_seeds": 8,
+  "n_facts": 25,
+  "acc_gram": 0.2142,
+  "acc_gram_std": 0.2078,
+  "acc_pure": 0.9875,
+  "acc_pure_std": 0.0498,
+  "acc_pinv": 0.2442,
+  "acc_pinv_std": 0.1936,
+  "acc_gradient": 0.1517,
+  "acc_gradient_std": 0.1396,
+  "kappa_med": 4677.884582201018,
+  "kappa_all": [
+   1131.3,
+   4677.9,
+   9767.0
+  ]
+ },
+ {
+  "label": "rho=1.33 K=3 N=72",
+  "K": 3,
+  "N": 72,
+  "BLK": 24,
+  "n_cv_per_block": 32,
+  "rho": 1.3333,
+  "n_seeds": 8,
+  "n_facts": 25,
+  "acc_gram": 0.9792,
+  "acc_gram_std": 0.0622,
+  "acc_pure": 0.9817,
+  "acc_pure_std": 0.0619,
+  "acc_pinv": 0.9692,
+  "acc_pinv_std": 0.0728,
+  "acc_gradient": 0.1417,
+  "acc_gradient_std": 0.1331,
+  "kappa_med": 5800195900381809.0,
+  "kappa_all": [
+   5800195900381809.0,
+   8282763304883299.0,
+   5207766589601038.0
+  ]
+ },
+ {
+  "label": "rho=1.50 K=2 N=64",
+  "K": 2,
+  "N": 64,
+  "BLK": 32,
+  "n_cv_per_block": 32,
+  "rho": 1.0,
+  "n_seeds": 8,
+  "n_facts": 25,
+  "acc_gram": 0.9658,
+  "acc_gram_std": 0.0887,
+  "acc_pure": 0.9725,
+  "acc_pure_std": 0.0846,
+  "acc_pinv": 0.9742,
+  "acc_pinv_std": 0.0747,
+  "acc_gradient": 0.1525,
+  "acc_gradient_std": 0.1432,
+  "kappa_med": 3678268066821361.0,
+  "kappa_all": [
+   4186350021773293.0,
+   3170186111869428.5
+  ]
+ }
+]

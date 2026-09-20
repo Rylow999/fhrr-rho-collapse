@@ -1,0 +1,5 @@
+rho |  d  | median kappa (10 seeds) | route
+0.800 |  40 |      1.975e2          | gram (guarded)
+0.889 |  36 |      6.472e2          | gram (guarded)
+0.970 |  33 |      6.084e3          | PURE RESONATOR (banda critica)
+1.000 |  32 |      2.579e4          | PURE RESONATOR (banda critica)
