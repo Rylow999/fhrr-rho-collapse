@@ -39,6 +39,10 @@ Three regimes emerge:
 | **II. Square** | = 1 | numerically singular (κ ~ 4n², verified n≤512) | closed-loop Gram collapses (asymmetric M⁻¹ per iteration); MAP's single-shot Gram does not |
 | **III. Over-complete** | > 1 | well-conditioned frame | stable decoding |
 
+## What's new in v5 (2026-09-21)
+
+- **Exp 18 (causal test):** the Frame-Duality Law. Same $C$, $M$, $M^{-1}$, states, facts, $T$ — only the wiring changes: $M^{-1}f$ (ambient) gives 0.161 accuracy at $\rho=1$ while $C^\top M^{-1}Cf$ (dual, same resolvent) gives 0.986; operator norms $1/\lambda_{\min} \sim 10^3$ vs $1.000$. Paired difference $+0.824$, positive in 100% of 200k fact-decodings. The collapse is in the observer's wiring, not the representation.
+
 ## What's new in v4 (2026-09-20)
 
 - **Exp 16 (scaling in n):** the square-Wishart prediction κ ~ 4n² (Edelman) measured directly at ρ=1 for n ∈ {32, 64, 128, 256, 512} (12 seeds): λ_max → 4.0 (the MP upper edge) monotonically, λ_min ~ n⁻², and the median κ tracks 4n² within the heavy-tailed spread. See `data/exp16_scaling_n.json` and `figures/fig_exp16_scaling.png`. The n=32 anchor of Exp 14 is the small-n end of a verified scaling law, not an isolated finite-size accident.

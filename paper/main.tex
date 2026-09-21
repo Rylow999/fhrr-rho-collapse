@@ -19,7 +19,7 @@
 \maketitle
 
 \begin{abstract}
-We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho < 1$, rank-deficient Gram matrices yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, square Gram matrices produce degenerate duals that resist pseudo-inverse correction; (III)~$\rho > 1$, overcomplete frames yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. Empirically, the collapse requires two factors: the soft edge at $\rho=1$ (so that $\lambda_{\min} \sim n^{-2}$ is tiny) \emph{and} a closed-loop observer that applies $M^{-1}$ asymmetrically at every iteration, re-amplifying the error by $1/\lambda_{\min}$ each time; single-shot inversion at the same $\kappa$ (MAP) does not collapse. The law transfers across algebras (HRR, BSC, MAP) in a refined two-factor form: failure requires the critical \emph{band} in $\kappa$ \emph{and} a closed-loop observer to amplify the projected noise. Pure resonators and learned decoders are unaffected in all regimes --- the collapse belongs to the observer, not the representation.
+We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho < 1$, rank-deficient Gram matrices yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, square Gram matrices produce degenerate duals that resist pseudo-inverse correction; (III)~$\rho > 1$, overcomplete frames yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. Empirically, the collapse requires two factors: the soft edge at $\rho=1$ (so that $\lambda_{\min} \sim n^{-2}$ is tiny) \emph{and} a closed-loop observer that applies $M^{-1}$ asymmetrically at every iteration, re-amplifying the error by $1/\lambda_{\min}$ each time; single-shot inversion at the same $\kappa$ (MAP) does not collapse. The mechanism is established causally (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min} \sim 10^{3}$ to exactly $1$. The collapse belongs to the observer's wiring, not to the representation --- we state this as the provisional Frame-Duality Law (Prop.~\ref{prop:fdl}).
 \end{abstract}
 
 \section{Introduction}
@@ -218,6 +218,56 @@ replicating study to test.
 \end{table}
 
 \paragraph{Why the nonlinear decoder survives the transition.} The RMT picture also explains the survival of \texttt{pure} and of the MLP. Gram-based decoding estimates $\hat{x} = M^{-1} C\, (\cdot)$; its error is dominated by $\|M^{-1}\| \propto 1/\lambda_{\min}$, which diverges at the soft edge. The pure resonator, by contrast, never forms the inverse: it iterates the nonlinear map $v \leftarrow \mathrm{clamp}(C^{\top} v, \mathcal{C})$ whose convergence only requires that the correct fixed point be a strong attractor in the codebook metric --- a property governed by the \emph{top} of the Gram spectrum (the coherent direction), not by the soft edge. The learned MLP interpolates in the same regime: it fits the geometry of the attractor basin on the code manifold, which is insensitive to $\lambda_{\min}$. In RMT language: the collapse is a property of the \emph{resolvent} $(M - z)^{-1}$ near $z=0$; the resonator dynamics probes only the Stieltjes transform in the bulk. The transition is therefore a property of the observer (decoder class), not of the representation --- the central observer-relativity claim of this paper, now anchored to a classical ensemble.
+
+\section{Causal Test: Relocating the Resolvent}
+\label{sec:exp18}
+
+The preceding sections establish that Gram decoders fail at $\rho=1$ and that the failure mechanism is a soft-edge amplification in a closed loop. What remains is the causal question: is the resolvent $M^{-1}$ itself the problem, or is it \emph{where} it is applied?
+
+Experiment 18 answers this with a minimal intervention: same codebook $C$, same Gram $M = CC^{\top}$, same resolvent $M^{-1}$, same initial resonator state, same facts, same iteration count --- the only change is the operator wiring. Five observers are compared at the square point $\rho=1$ ($n=3$ blocks, BLK$=32$, $n_{cv}=32$, 200 seeds $\times$ 10 facts, $T=50$):
+
+\begin{itemize}
+  \item \textbf{pure}: $f \leftarrow f$ (no inverse). Control.
+  \item \textbf{gram}: $f \leftarrow M^{-1} f$ (ambient, asymmetric).
+  \item \textbf{pinv}: $f \leftarrow M^{+} f$ (ambient, pseudo-inverse).
+  \item \textbf{dual}: $f \leftarrow C^{\top} M^{+} C f$ (coefficient-space, pseudo-inverse).
+  \item \textbf{dual-same}: $f \leftarrow C^{\top} M^{-1} C f$ (coefficient-space, \emph{same} resolvent).
+\end{itemize}
+
+\begin{table}[h]
+  \centering
+  \caption{Exp.~18: accuracy at $\rho=1$ under minimal intervention. The only difference between \texttt{gram} and \texttt{dual-same} is the placement of the same $M^{-1}$. Paired difference (dual-same $-$ gram) is $+0.824$ per fact, positive in $100\%$ of the 2000{,}000 paired samples.}
+  \label{tab:exp18}
+  \begin{tabular}{lcc}
+    \toprule
+    Observer & Accuracy (mean $\pm$ IC95) & $\|\cdot\|_2$ of the operator (median) \\
+    \midrule
+    pure      & $0.986 \pm 0.002$ & $1.00$ (identity) \\
+    gram      & $0.161 \pm 0.007$ & $1.7\times 10^{3}$ \\
+    pinv      & $0.162 \pm 0.007$ & $3.5\times 10^{3}$ ($+\epsilon$-truncation) \\
+    dual      & $0.986 \pm 0.002$ & $1.000$ \\
+    dual-same & $0.986 \pm 0.002$ & $1.000$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The algebraic identity behind this is verified per seed: $\|C^{\top} M^{-1} C - I\|_{F}$ has median $6\times 10^{-13}$ across all 600 blocks --- the dual operator is numerically the identity, while $\|M^{-1}\|_2$ sits at $10^{3}$ (Fig.~\ref{fig:exp18}a). The spectral attribution is direct (Fig.~\ref{fig:exp18}a, right): $\|M^{-1} u_{\min}\| = 1/\lambda_{\min} \sim 3.5\times 10^{3}$ versus $\|C^{\top} M^{-1} C\, u_{\min}\| = 1.000$: the same inverse acting on the same soft-edge eigenvector either amplifies by four orders of magnitude or does nothing, depending solely on whether it is applied to the ambient state or to the coefficient representation.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_exp18_frame_duality.png}
+  \caption{Exp.~18: operator norms vs.\ $\kappa(M)$ (left) and decoding accuracy at $\rho=1$ (right). The collapse belongs to the wiring: the dual operator built from the same $M^{-1}$ (dark blue) has norm $1$ and decodes at $0.986$, while the ambient application of $M^{-1}$ (red) has norm $10^{3}$ and decodes at $0.161$. In the rank-deficient regime $\rho = 1.333$ (rank failure), \texttt{dual-same} with the un-truncated inverse drops to $0.212$ while \texttt{dual} (pseudo-inverse) holds at $0.961$: the dual law transfers, with the pseudo-inverse needed exactly where the Gram matrix is numerically singular.}
+  \label{fig:exp18}
+\end{figure}
+
+The control on feedback (Exp.~18, Section~12 of the protocol) separates loop dynamics from operator instability: at $T=1$ the pure resonator is already imperfect ($0.911$, it needs iterations to converge) while gram is already collapsed ($0.165$) --- the gram failure is present after a single application of $M^{-1}$, before any feedback. The loop is not what breaks gram; the operator placement is.
+
+\begin{proposition}[Frame-Duality Law, provisional]
+\label{prop:fdl}
+For a codebook $C \in \mathbb{R}^{n\times d}$ with Gram $M = CC^{\top}$, the decoding failure at the critical point is a property of the decoder's wiring, not of the representation: the ambient operator $M^{-1}$ on the state has $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, which diverges as $n\to\infty$ at $\rho=1$; the dual operator $C^{\top} M^{-1} C$ equals the identity on the column span whenever $C$ has full column rank, and its pseudo-inverse version $C^{\top} M^{+} C$ has norm $1$ in general. The singular behaviour observed through the ambient decoder is therefore a property of the observer's operator placement, not of the frame.
+\end{proposition}
+
+We keep the ``law'' label provisional pending independent replication --- other codebooks, other algebras, a second implementation. The Definition~\ref{def:closure} (closed-loop soft-edge condition) and Proposition~\ref{prop:fdl} together are what we ask future work to test.
 
 \section{Failed Alternatives}
 \label{sec:failed}
