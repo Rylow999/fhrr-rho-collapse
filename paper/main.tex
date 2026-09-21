@@ -236,7 +236,7 @@ Experiment 18 answers this with a minimal intervention: same codebook $C$, same 
 
 \begin{table}[h]
   \centering
-  \caption{Exp.~18: accuracy at $\rho=1$ under minimal intervention. The only difference between \texttt{gram} and \texttt{dual-same} is the placement of the same $M^{-1}$. Paired difference (dual-same $-$ gram) is $+0.824$ per fact, positive in $100\%$ of the 2000{,}000 paired samples.}
+  \caption{Exp.~18: accuracy at $\rho=1$ under minimal intervention. The only difference between \texttt{gram} and \texttt{dual-same} is the placement of the same $M^{-1}$. Paired difference (dual-same $-$ gram) is $+0.824$ per fact, positive in $100\%$ of the $2000$ paired fact-decodings (200 seeds $\times$ 10 facts).}
   \label{tab:exp18}
   \begin{tabular}{lcc}
     \toprule
@@ -244,7 +244,7 @@ Experiment 18 answers this with a minimal intervention: same codebook $C$, same 
     \midrule
     pure      & $0.986 \pm 0.002$ & $1.00$ (identity) \\
     gram      & $0.161 \pm 0.007$ & $1.7\times 10^{3}$ \\
-    pinv      & $0.162 \pm 0.007$ & $3.5\times 10^{3}$ ($+\epsilon$-truncation) \\
+    pinv      & $0.162 \pm 0.007$ & (ambient $M^{+}$; Gram truncated) \\
     dual      & $0.986 \pm 0.002$ & $1.000$ \\
     dual-same & $0.986 \pm 0.002$ & $1.000$ \\
     \bottomrule
@@ -267,7 +267,7 @@ The control on feedback (Exp.~18, Section~12 of the protocol) separates loop dyn
 For a codebook $C \in \mathbb{R}^{n\times d}$ with Gram $M = CC^{\top}$, the decoding failure at the critical point is a property of the decoder's wiring, not of the representation: the ambient operator $M^{-1}$ on the state has $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, which diverges as $n\to\infty$ at $\rho=1$; the dual operator $C^{\top} M^{-1} C$ equals the identity on the column span whenever $C$ has full column rank, and its pseudo-inverse version $C^{\top} M^{+} C$ has norm $1$ in general. The singular behaviour observed through the ambient decoder is therefore a property of the observer's operator placement, not of the frame.
 \end{proposition}
 
-We keep the ``law'' label provisional pending independent replication --- other codebooks, other algebras, a second implementation. The Definition~\ref{def:closure} (closed-loop soft-edge condition) and Proposition~\ref{prop:fdl} together are what we ask future work to test.
+\textbf{Cross-algebra replication (Exp.~18b).} The same intervention in BSC (binary codevectors in $\{\pm 1\}^{d}$, bind = element-wise product), $100$ seeds $\times$ 10 facts at the square point: \texttt{gram} $0.192 \pm 0.011$, \texttt{dual-same} $0.995 \pm 0.002$ using the same resolvent, paired difference $+0.80$ ($99.8\%$ of 1000 paired facts positive). The Frame-Duality Law transfers across algebras with the same sign and magnitude; we nonetheless retain the ``provisional'' label pending a second, independent implementation of the pipeline, since Exp.~18 and Exp.~18b share the harness.
 
 \section{Failed Alternatives}
 \label{sec:failed}
