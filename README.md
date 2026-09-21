@@ -6,9 +6,9 @@
 
 > The "binary collapse" of resonator decoding at high superposition is not a
 > limit of the representation — it is a property of the decoder's wiring.
-> At ρ = n/d = 1 the Gram matrix is a square Wishart whose soft edge gives
-> λ_min ~ n⁻²; applying M⁻¹ directly to the state multiplies the error by
-> 1/λ_min per iteration. The same resolvent, applied in coefficient space
+> At ρ = n/d = 1 the Gram matrix enters the square-Wishart *hard edge*:
+> λ_min ~ n⁻², and applying M⁻¹ directly to the state blows up by 1/λ_min.
+> The same resolvent, applied in coefficient space
 > (CᵀM⁻¹C), is a projector of norm 1 and decodes perfectly.
 > The collapse belongs to the observer. Exp. 18 demonstrates this with a
 > controlled causal intervention: same codebook, same resolvent, only the
@@ -45,8 +45,7 @@ implementation, so gram ≡ pure there; the meaningful cross-decoder comparison
 is the square point.)
 
 ### 2. Random-matrix anchoring: M = C Cᵀ is a scaled square Wishart
-At ρ=1, λ_min ~ n⁻² (soft edge at 0), λ_max → 4 (MP upper edge), and
-κ ~ 4n² (Edelman). Verified by direct measurement across n ∈ {32, 64, 128,
+At ρ=1 the lower edge of the Marchenko–Pastur support touches zero: the square Wishart is at its *hard edge*, λ_min ~ n⁻², λ_max → 4 (MP upper edge), and κ ~ 4n² (Edelman). Verified by direct measurement across n ∈ {32, 64, 128,
 256, 512} (Exp 16, 12 seeds each, `data/exp16_scaling_n.json`). Scope: Exp 16 validates the *spectral* scaling of the square Gram; its decoder component is a simplified resonator and is not used as evidence about the observer-level collapse.
 
 ### 3. The trigger is NOT a critical κ band
@@ -82,6 +81,18 @@ Attention uses softmax, not Gram inversion. A non-monotonic entropy valley appea
 
 ### 7. Rust crate: frame-aware decoder (fhrr-resilient)
 The crate routes decoder selection by **operator wiring** (ambient M⁻¹ in a closed loop → fail over to dual form or pure resonator; rank-deficient Gram at ρ>1 → pseudo-inverse). The legacy κ-band thresholds remain only as conservative fallbacks when the loop structure is not inspectable. 4 Rust tests green. See `fhrr-resilient/src/lib.rs`.
+
+## What's next (falsification roadmap)
+
+The Frame-Duality Law is provisional. The experiments that would confirm or kill it, in order, live in `docs/ROADMAP.md`:
+
+0. **Independent reimplementation** of Exp 18 without this harness (blocking).
+1. Ensemble sweep (Rademacher, sphere, correlated, tight frames, Hadamard).
+2. Continuous ρ ∈ [0.25, 4] sweep to identify the true predictor variable.
+3. Perturbation amplification ‖Δy‖/‖ε‖ as direct stability measure.
+4. De-VSA-ified linear pipeline (Cx → A → Cᵀ, no resonator).
+5. Operator zoo (ridge, truncated SVD, Krylov) × placement.
+6. Iteration dynamics e_t growth-rate fit.
 
 ## Repository structure
 
