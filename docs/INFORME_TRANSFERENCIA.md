@@ -327,24 +327,22 @@ python exp_I_geometrica.py > ../data/out_I.txt
 
 ## 5. Líneas de Investigación Abiertas
 
-### 5.1 Línea A: VSA Binarias — **CERRADA (Exp 11b, 2026-09-20)**
+### 5.1 Línea A: VSA Binarias — **CERRADA (Exp 11b/18b, 2026-09-20/21)**
 
-**Estado:** La pregunta quedó respondida con data persistida.
+**Estado:** Cerrada con data persistida y replicación causal.
 
-**Resultado (data/exp11_bsc_rho.json, 8 seeds × 25 facts por celda):**
+**Resultado:**
 
-| Caso | κ mediano | gram | pinv | pure |
-|------|-----------|------|------|------|
-| ρ=0.80 (K=3, BLK=40) | 1.3e2 | 0.999 | 0.998 | 0.998 |
-| **ρ=1.00 (K=3, BLK=32)** | **4.7e3** | **0.214** | **0.244** | **0.988** |
-| ρ=1.33 (K=3, BLK=24) | ~1e15 (singular) | 0.979 | 0.969 | 0.982 |
+| Caso BSC | κ mediano | gram | dual_same |
+|---|---|---|---|
+| ρ=0.80 (K=3) | 1.3e2 | 0.999 | 0.999 |
+| **ρ=1.00 (K=3)** | **4.7e3** | **0.214** | **0.995** |
+| ρ=1.33 (K=3) | ~1e15 | 0.979 | 0.982 |
+| ρ=1.50 (K=2, n_cv=48) | ~4e15 | 0.966 | 0.973 |
 
-Conclusiones:
-1. **La transición ρ=1 existe en BSC** con la firma exacta: gram y pinv colapsan solo en el punto cuadrado, pure sobrevive.
-2. **El κ mediano en ese punto (4.7×10³) cae DENTRO de la banda crítica [1e3, 1e4] de FHRR** — el parámetro físico transfiere, no solo el locus ρ. Esto refuerza el anclaje RMT del paper (Gram de Rademacher obedece MP hasta el 4to cumulante).
-3. Los "tests ambiguos" de V2 eran un artefacto del test simplificado (sin resonator completo), como se sospechaba.
+**Además (Exp 18b, causa):** la intervención dual con el mismo M⁻¹ rescata BSC en ρ=1 (gram 0.192 → dual_same 0.995, +0.80 pareado). La Frame-Duality Law transfiere de álgebra.
 
-**Queda abierto:** MAP (Multiply-Add-Permute con permutación) — no testeado.
+**Queda abierto:** MAP ya tiene su control (single-shot), BSC quedó con réplica. Lo pendiente es una **implementación independiente** del harness para sacar el "provisional".
 
 ---
 
