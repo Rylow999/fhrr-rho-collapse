@@ -340,7 +340,7 @@ python exp_I_geometrica.py > ../data/out_I.txt
 | ρ=1.33 (K=3) | ~1e15 | 0.979 | 0.982 |
 | ρ=1.50 (K=2, n_cv=48) | ~4e15 | 0.966 | 0.973 |
 
-**Además (Exp 18b, causa):** la intervención dual con el mismo M⁻¹ rescata BSC en ρ=1 (gram 0.192 → dual_same 0.995, +0.80 pareado). La Frame-Duality Law transfiere de álgebra.
+**Además (Exp 18b, causa):** la intervención dual con el mismo M⁻¹ rescata BSC en ρ=1 (gram 0.192 → dual_same 0.995, +0.80 pareado). La Frame-Dual Stability Principle transfiere de álgebra.
 
 **Queda abierto:** MAP ya tiene su control (single-shot), BSC quedó con réplica. Lo pendiente es una **implementación independiente** del harness para sacar el "provisional".
 

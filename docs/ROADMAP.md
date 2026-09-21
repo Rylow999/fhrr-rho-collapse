@@ -1,10 +1,10 @@
-# Roadmap — camino a "Frame-Duality Law" (quitar el provisional)
+# Roadmap — camino a "Frame-Dual Stability Principle" (quitar el provisional)
 
 Doc de planificación. Estado: 2026-09-21. Viven en `docs/`, repo fhrr-rho-collapse.
 
 ## Estado actual
 
-La Frame-Duality Law (Prop. 1 del paper) está en estado **provisional**.
+La Frame-Dual Stability Principle (Prop. 1 del paper) está en estado **provisional**.
 Para quitar el "provisional" se requiere, en orden de criticidad:
 
 1. **Réplica independiente de Exp 18** (no compartir harness BundleV3).
@@ -17,7 +17,7 @@ Para quitar el "provisional" se requiere, en orden de criticidad:
 8. **Análisis en iteraciones** (dinámica del error, a>1 vs a<=1).
 
 ### Bloqueante actual (audit 2026-09-21)
-- [ ] **FHRR-causal**: Exp 18 es HRR-real + BSC. La Frame-Duality Law necesita
+- [ ] **FHRR-causal**: Exp 18 es HRR-real + BSC. La Frame-Dual Stability Principle necesita
   Exp 18 en FHRR (fase compleja) para que el título del paper pueda volver
   a mencionar FHRR, o confirmar que el título actual (sin FHRR) es el correcto.
 
@@ -91,7 +91,7 @@ Para quitar el "provisional" se requiere, en orden de criticidad:
 - Generalidad más allá de codebooks iid.
 - Universalidad cross-algebra completa (falta FHRR causal + cómputo en
   álgebra no-VSA).
-- Frame-Duality Law sin etiqueta "provisional".
+- Frame-Dual Stability Principle sin etiqueta "provisional".
 
 ## Notas de estilo
 

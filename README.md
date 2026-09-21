@@ -55,23 +55,41 @@ every seed collapses regardless of band membership (two seeds with
 Uniform failure at the square point — the trigger is the soft edge plus the
 asymmetric loop application, not a scalar condition-number window.
 
-### 4. Causal proof: the Frame-Duality Law (Exp 18)
+### 4. Causal proof: the Frame-Dual Stability Principle (Exp 18, replicated Exp 19)
 Same C, M, M⁻¹, initial states, facts, iteration count; only the operator
 wiring changes:
 
 | Observer | Operator | Accuracy at ρ=1 |
 |----------|----------|-----------------|
-| pure | f | 0.986 |
-| gram | M⁻¹f | 0.161 |
-| pinv | M⁺f | 0.162 |
-| dual | CᵀM⁺Cf | 0.986 |
-| **dual-same** | **CᵀM⁻¹Cf** (same resolvent) | **0.986** |
+| pure | f | 0.985 [0.982, 0.987] |
+| gram | M⁻¹f | 0.160 [0.152, 0.169] |
+| pinv | M⁺f | 0.161 [0.152, 0.169] |
+| dual | CᵀM⁺Cf | 0.985 [0.982, 0.987] |
+| **dual-same** | **CᵀM⁻¹Cf** (same resolvent) | **0.985 [0.982, 0.987]** |
 
-Operator norms: ‖M⁻¹‖₂ ~ 1.7×10³ (median) vs ‖CᵀM⁻¹C‖₂ = 1.000.
-The identity CᵀM⁻¹C = I is verified numerically per block
-(‖·‖_F median 6×10⁻¹³). Paired difference dual−same − gram = +0.824,
-positive in 100% of the 2000 fact-decodings. Replicated in BSC
-(Exp 18b): gram 0.192 → dual-same 0.995, paired +0.80.
+Statistics per seed (N=200 codebooks, bootstrap 95% CI). Paired per-seed
+difference dual-same − gram = +0.824, positive in 200/200 seeds
+(p ≤ 2⁻²⁰⁰, exact sign test). ‖M⁻¹‖₂ exact = 1/λ_min (median 3.5×10³),
+‖CᵀM⁻¹C‖₂ = 1.000, ‖CᵀM⁻¹C − I‖_F median 6×10⁻¹³.
+
+**Independent replication (Exp 19, no shared code):** pure 0.982, gram
+0.159, dual-same 0.982, paired +0.823, 100% of seeds.
+
+**Ensembles (Exp 20A):** Gaussian 0.160→0.979, Rademacher 0.128→0.986,
+Sphere 0.164→0.983, Toeplitz 0.175→0.947, DFT-tight does not collapse,
+near-duplicate pathological (mis-specified frame breaks everything).
+
+**ρ sweep (Exp 20B):** ambient collapse localized at hard edge ρ≈1;
+benign below 0.95, rank-deficient above 1.
+
+**De-VSA-ified (Exp 21):** in a purely linear pipeline (no resonator),
+ambient gain = 3.6×10² median, dual gain = 1.000 — VSA was the vehicle,
+not the cause.
+
+**Iteration dynamics (Exp 22):** the ambient error saturates at the FIRST
+application (e₀ ~ 7×10³); the loop doesn't cause it.
+
+**BSC (Exp 18b):** 0.192 → 0.995, paired +0.80.
 
 ### 5. Universality across algebras
 HRR real (V3), BSC binary (Exp 11b + causal replication Exp 18b), MAP (Exp 11c — the single-shot control: the same κ at ρ=1 does NOT collapse MAP because it is not closed-loop), and LiDAR voxelization (Exp 13). After Exp 18 the operative design rule is **operator placement**, not a κ-threshold.
@@ -84,15 +102,11 @@ The crate routes decoder selection by **operator wiring** (ambient M⁻¹ in a c
 
 ## What's next (falsification roadmap)
 
-The Frame-Duality Law is provisional. The experiments that would confirm or kill it, in order, live in `docs/ROADMAP.md`:
-
-0. **Independent reimplementation** of Exp 18 without this harness (blocking).
-1. Ensemble sweep (Rademacher, sphere, correlated, tight frames, Hadamard).
-2. Continuous ρ ∈ [0.25, 4] sweep to identify the true predictor variable.
-3. Perturbation amplification ‖Δy‖/‖ε‖ as direct stability measure.
-4. De-VSA-ified linear pipeline (Cx → A → Cᵀ, no resonator).
-5. Operator zoo (ridge, truncated SVD, Krylov) × placement.
-6. Iteration dynamics e_t growth-rate fit.
+The Frame-Dual Stability Principle survives the falsification agenda of `docs/ROADMAP.md`:
+independent reimplementation (Exp 19), six codebook ensembles (Exp 20),
+continuous ρ sweep (Exp 20B), perturbation amplification (Exp 21),
+de-VSA-ified (Exp 21), iteration dynamics (Exp 22). Open: operator zoo
+(ridge, truncated SVD, Krylov) and FHRR-complex causal test.
 
 ## Repository structure
 
@@ -140,7 +154,7 @@ cd src
 python exp_V9_fine_rho.py          # the point singularity
 python exp_V16_scaling_n.py        # κ ~ 4n² verification
 python exp_V17_kappa_vs_acc.py     # per-seed audit (band refutation)
-python exp_V18_frame_duality.py    # causal test (the Frame-Duality Law)
+python exp_V18_frame_duality.py    # causal test (the Frame-Dual Stability Principle)
 python exp_V18b_bsc_duality.py     # BSC replication
 
 cd .. && pytest tests/ -v          # 5 unit tests
@@ -154,7 +168,7 @@ cd fhrr-resilient && cargo test    # 4 Rust tests (router)
 | Point failure at ρ=1 | `data/out_V9_fine_rho.json` |
 | κ ~ 4n² scaling | `data/exp16_scaling_n.json` |
 | Band refutation | `data/exp17_kappa_vs_acc.json` |
-| Frame-Duality Law | `data/exp18_summary.json` |
+| Frame-Dual Stability Principle | `data/exp18_summary.json` |
 | BSC replication | `data/exp18_bsc_summary.json` |
 | BSC/MAP phase data | `data/exp11_bsc_rho.json`, `data/exp11c_map_rho.json` |
 | MLP survival at ρ=1 | `data/mlp_decoder_results.json` |
@@ -170,7 +184,7 @@ Two named, citable objects:
 - **Definition 1** (closed-loop soft-edge condition) — a decoder satisfies
   it iff the Gram ensemble has a soft edge at 0 (ρ=1) AND the decoder
   re-applies M⁻¹ on every iteration. Checkable a priori.
-- **Proposition 1** (Frame-Duality Law, provisional) — the collapse is a
+- **Proposition 1** (Frame-Dual Stability Principle, provisional) — the collapse is a
   property of the observer's wiring, not of the frame; the dual operator
   using the same resolvent recovers decoding.
 

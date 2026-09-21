@@ -1,0 +1,101 @@
+{
+ "identity": {
+  "n": 32,
+  "d": 32,
+  "alpha": 1.0,
+  "beta": 1.0,
+  "kappa": 1.0,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0,
+  "gain_amb": 0.9999999999997883,
+  "gain_dual": 0.9999999999997883
+ },
+ "quasi_colinear_eps=1.0": {
+  "n": 32,
+  "d": 32,
+  "alpha": 0.2928932188134524,
+  "beta": 1.7071067811865475,
+  "kappa": 5.828427124746191,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0,
+  "gain_amb": 1.084213511765134,
+  "gain_dual": 0.9999999999997883
+ },
+ "quasi_colinear_eps=0.1": {
+  "n": 32,
+  "d": 32,
+  "alpha": 0.0049628097900107915,
+  "beta": 1.9950371902099893,
+  "kappa": 401.9975124224237,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0,
+  "gain_amb": 27.650333682202938,
+  "gain_dual": 0.9999999999997883
+ },
+ "quasi_colinear_eps=0.001": {
+  "n": 32,
+  "d": 32,
+  "alpha": 4.999996250365513e-07,
+  "beta": 1.999999500000375,
+  "kappa": 4000001.9997098395,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0,
+  "gain_amb": 274281.42186839075,
+  "gain_dual": 0.9999999999987046
+ },
+ "quasi_colinear_eps=1e-06": {
+  "n": 32,
+  "d": 32,
+  "alpha": 4.99933427988708e-13,
+  "beta": 1.9999999999995,
+  "kappa": 4000532647008.101,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0000221222085028,
+  "gain_amb": 274287283878.0453,
+  "gain_dual": 1.0000004243542464
+ },
+ "tall_n40_d32": {
+  "n": 40,
+  "d": 32,
+  "alpha": -9.167996439513653e-16,
+  "beta": 4.021699099449438,
+  "kappa": -4386671751001228.0,
+  "ambiente_aplicable": false,
+  "norm_dual": 1.000000000000002,
+  "gain_amb": null,
+  "gain_dual": 0.9999999999997883
+ },
+ "wide_n24_d48": {
+  "n": 24,
+  "d": 48,
+  "alpha": 0.12424873137401217,
+  "beta": 2.5495363797148767,
+  "kappa": 20.519616993434646,
+  "ambiente_aplicable": false,
+  "norm_dual": 1.0000000000000004,
+  "gain_amb": null,
+  "gain_dual": 0.7041169052886729
+ },
+ "ill_scaled": {
+  "n": 32,
+  "d": 32,
+  "alpha": 1.0,
+  "beta": 1.0,
+  "kappa": 1.0,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0,
+  "gain_amb": 0.9999999999997883,
+  "gain_dual": 0.9999999999997883
+ },
+ "block_diag": {
+  "n": 32,
+  "d": 32,
+  "alpha": 1.0,
+  "beta": 1.0,
+  "kappa": 1.0,
+  "ambiente_aplicable": true,
+  "norm_dual": 1.0,
+  "gain_amb": 0.9999999999997883,
+  "gain_dual": 0.9999999999997883
+ }
+}
