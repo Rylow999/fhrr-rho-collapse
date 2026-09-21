@@ -1,4 +1,4 @@
-# FHRR rho-Collapse: Frame Duality Governs Compositional Decoding
+# Observer-Induced Collapse in Resonator Decoding: A Frame-Duality Mechanism
 
 **Author:** Luciano Benjamín Nieto
 **Location:** General Alvear, Mendoza, Argentina
@@ -9,15 +9,19 @@
 > At ρ = n/d = 1 the Gram matrix is a square Wishart whose soft edge gives
 > λ_min ~ n⁻²; applying M⁻¹ directly to the state multiplies the error by
 > 1/λ_min per iteration. The same resolvent, applied in coefficient space
-> (CᵀM⁻¹C), is numerically the identity and decodes perfectly.
-> The collapse belongs to the observer. Exp. 18 proves it causally.
+> (CᵀM⁻¹C), is a projector of norm 1 and decodes perfectly.
+> The collapse belongs to the observer. Exp. 18 demonstrates this with a
+> controlled causal intervention: same codebook, same resolvent, only the
+> placement changes.
 
 ---
 
 ## Summary
 
 Code, data, and figures for the paper
-*"Frame duality governs compositional decoding in FHRR: a phase diagram in ρ"*.
+*"Observer-induced collapse in resonator decoding: a frame-duality mechanism"*
+(the causal core uses HRR-real and BSC; the FHRR phase-diagram experiments are
+the original vantage point).
 
 We identify a phase diagram controlled by a single scalar:
 
@@ -27,9 +31,9 @@ rho = (distinct codevectors per block) / (block dimensionality)
 
 | Regime | rho | Gram matrix M | Decoding behaviour |
 |--------|-----|---------------|--------------------|
-| **I. Under-complete** | < 1 | rank-deficient | Gram-inverse fails (singular) |
-| **II. Square** | = 1 | numerically singular (κ ~ 4n², verified n ≤ 512) | ambient Gram collapses; dual Gram does not |
-| **III. Over-complete** | > 1 | well-conditioned frame | stable |
+| **I. Over-complete** | > 1 ($n > d$) | rank-deficient (singular) | Gram-inverse fails; pinv/pure stable |
+| **II. Square** | = 1 ($n = d$) | critically conditioned Wishart (κ ~ 4n², verified n ≤ 512) | ambient Gram collapses; dual Gram does not |
+| **III. Under-complete** | < 1 ($n < d$) | full-rank, well-conditioned frame | stable |
 
 ## Key results
 
@@ -43,7 +47,7 @@ is the square point.)
 ### 2. Random-matrix anchoring: M = C Cᵀ is a scaled square Wishart
 At ρ=1, λ_min ~ n⁻² (soft edge at 0), λ_max → 4 (MP upper edge), and
 κ ~ 4n² (Edelman). Verified by direct measurement across n ∈ {32, 64, 128,
-256, 512} (Exp 16, 12 seeds each, `data/exp16_scaling_n.json`).
+256, 512} (Exp 16, 12 seeds each, `data/exp16_scaling_n.json`). Scope: Exp 16 validates the *spectral* scaling of the square Gram; its decoder component is a simplified resonator and is not used as evidence about the observer-level collapse.
 
 ### 3. The trigger is NOT a critical κ band
 Per-seed audit (Exp 17, 40 seeds at ρ=1): per-block κ spans [2.3e2, 1.9e5],
@@ -71,13 +75,13 @@ positive in 100% of the 2000 fact-decodings. Replicated in BSC
 (Exp 18b): gram 0.192 → dual-same 0.995, paired +0.80.
 
 ### 5. Universality across algebras
-HRR real (V3), BSC binary (Exp 11b), MAP (Exp 11c — the single-shot control:
-the same κ at ρ=1 does NOT collapse MAP because it is not closed-loop),
-and LiDAR voxelization (Exp 13).
+HRR real (V3), BSC binary (Exp 11b + causal replication Exp 18b), MAP (Exp 11c — the single-shot control: the same κ at ρ=1 does NOT collapse MAP because it is not closed-loop), and LiDAR voxelization (Exp 13). After Exp 18 the operative design rule is **operator placement**, not a κ-threshold.
 
 ### 6. Transformers do not collapse (Exp 12b)
-Attention uses softmax, not Gram inversion. A non-monotonic entropy valley
-appears at ρ≈2 instead — bandwidth saturation, not singular decoding failure.
+Attention uses softmax, not Gram inversion. A non-monotonic entropy valley appears at ρ≈2 instead — bandwidth saturation, not singular decoding failure.
+
+### 7. Rust crate: frame-aware decoder (fhrr-resilient)
+The crate routes decoder selection by **operator wiring** (ambient M⁻¹ in a closed loop → fail over to dual form or pure resonator; rank-deficient Gram at ρ>1 → pseudo-inverse). The legacy κ-band thresholds remain only as conservative fallbacks when the loop structure is not inspectable. 4 Rust tests green. See `fhrr-resilient/src/lib.rs`.
 
 ## Repository structure
 
@@ -169,8 +173,8 @@ Two named, citable objects:
 ## Citation
 
 ```bibtex
-@article{nieto2026fhrr,
-  title={Frame duality governs compositional decoding in FHRR: a phase diagram in rho},
+@article{nieto2026observer,
+  title={Observer-induced collapse in resonator decoding: a frame-duality mechanism},
   author={Nieto, Luciano Benjamín},
   journal={arXiv preprint},
   year={2026},

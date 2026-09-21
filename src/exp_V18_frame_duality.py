@@ -131,21 +131,16 @@ def main():
             P = amb["dual_same"]
             errF = float(np.linalg.norm(P - np.eye(b.BLK), "fro"))
             out["identity"].append(errF)
-            # operadores
-            rngq = np.random.RandomState(7)
-            Q = rngq.randn(Q_VEC, b.BLK)
-            Q /= np.linalg.norm(Q, axis=1, keepdims=True)
-            def g(A):
-                if A is None or A.shape[0] != b.BLK:
-                    return None
-                v = np.linalg.norm(Q @ A.T, axis=1)
-                return float(np.median(v)), float(np.max(v))
+            # norma espectral EXACTA: para M SPD, ||M^-1||_2 = 1/lambda_min.
+            # Para el dual (proyector) la norma es 1 o el mayor autovalor.
             w = np.linalg.eigvalsh(b.np_M[blk])
             out["opnorms"].append({
                 "seed": s, "blk": blk,
                 "kappa": float(w[-1] / w[0]),
-                "gram_med": g(Minv)[0], "gram_max": g(Minv)[1],
-                "dual_same_med": g(amb["dual_same"])[0], "dual_same_max": g(amb["dual_same"])[1],
+                "lambda_min": float(w[0]),
+                "norm_Minv_exact": float(1.0 / w[0]),
+                "norm_dual_same_exact": float(np.linalg.norm(amb["dual_same"], 2)),
+                "norm_dual_exact": float(np.linalg.norm(amb["dual"], 2)),
             })
             _, U = np.linalg.eigh(b.np_M[blk])
             u_min, u_max = U[:, 0], U[:, -1]
@@ -159,45 +154,53 @@ def main():
 
     ident = np.array(out["identity"])
     print(f"  ||C^T M^-1 C - I||_F: mediana {np.median(ident):.2e}, max {ident.max():.2e}")
-    gm = np.array([r["gram_max"] for r in out["opnorms"]])
-    dm = np.array([r["dual_same_max"] for r in out["opnorms"]])
-    print(f"  ||M^-1||_2 (max gain): mediana {np.median(gm):.3e}")
-    print(f"  ||C^T M^-1 C||_2 (max gain): mediana {np.median(dm):.3f}")
+    gm = np.array([r["norm_Minv_exact"] for r in out["opnorms"]])
+    dm = np.array([r["norm_dual_same_exact"] for r in out["opnorms"]])
     su = np.array([r["gram_umin"] for r in out["softedge"]])
     sd = np.array([r["same_umin"] for r in out["softedge"]])
-    print(f"  ||M^-1 u_min||: mediana {np.median(su):.3e} (1/lambda_min)")
+    print(f"  ||M^-1||_2 = 1/lambda_min: mediana {np.median(gm):.3e}")
+    print(f"  ||C^T M^-1 C||_2 (proyector): mediana {np.median(dm):.3f}")
+    print(f"  ||M^-1 u_min||: mediana {np.median(su):.3e}")
     print(f"  ||C^T M^-1 C u_min||: mediana {np.median(sd):.3f}")
 
-    # ---- [1b] decoding rho=1
+    # ---- [1b] decoding rho=1: stats por SEED (unidad experimental)
     print(f"\n[1b] Decoding rho=1 (N={N_SEEDS_SQ} seeds x {N_FACTS} facts)")
-    acc = {m: [] for m in MODES}
+    per_seed = {m: [] for m in MODES}     # lista de listas por seed
     accT1 = {m: [] for m in MODES}
     for s in range(N_SEEDS_SQ):
         b = DualBundle(1000 + s, 3, 96)
-        init = initial_estimates(b, 777)
+        init = initial_estimates(b, 1000 + s)   # init por seed (independiente)
+        seed_acc = {m: [] for m in MODES}
         for _ in range(N_FACTS):
             f = make_fact(rng)
             c = b.encode_fact(f)
             for m in MODES:
-                acc[m].append(accuracy(b.decode_observer(c, T_LONG, m, init), f))
+                a = accuracy(b.decode_observer(c, T_LONG, m, init), f)
+                seed_acc[m].append(a)
                 if s < 50:
                     accT1[m].append(accuracy(b.decode_observer(c, T_SHORT, m, init), f))
+        for m in MODES:
+            per_seed[m].append(float(np.mean(seed_acc[m])))
         if (s + 1) % 100 == 0:
             print(f"  ... {s+1}/{N_SEEDS_SQ}: " +
-                  " ".join(f"{m}={np.mean(acc[m]):.3f}" for m in MODES))
+                  " ".join(f"{m}={np.mean(per_seed[m]):.3f}" for m in MODES))
 
-    print("\nRESUMEN rho=1 (media ± IC95 [T1]):")
+    print("\nRESUMEN rho=1 (por seed, N=200):")
     for m in MODES:
-        a = np.array(acc[m])
-        ic = 1.96 * a.std() / np.sqrt(len(a))
+        a = np.array(per_seed[m])
+        # Bootstrap CI sobre la media de seeds
+        rngb = np.random.RandomState(0)
+        boots = [np.mean(rngb.choice(a, size=len(a), replace=True)) for _ in range(2000)]
+        lo, hi = np.percentile(boots, [2.5, 97.5])
         t1m = float(np.mean(accT1[m])) if accT1[m] else None
         out["square"].append({"mode": m, "mean": float(a.mean()),
                               "median": float(np.median(a)), "std": float(a.std()),
-                              "ic95": float(ic), "T1_mean": t1m})
-        print(f"  {m:9s}: {a.mean():.3f} ± {ic:.3f}   [T=1: {t1m:.3f}]")
+                              "ic95_boot": [float(lo), float(hi)], "T1_mean": t1m})
+        print(f"  {m:9s}: mean {a.mean():.3f}  median {np.median(a):.3f}  "
+              f"boot95 [{lo:.3f},{hi:.3f}]   [T=1: {t1m if t1m else float('nan'):.3f}]")
 
-    dg = np.array(acc["dual_same"]) - np.array(acc["gram"])
-    dp = np.array(acc["dual"]) - np.array(acc["pinv"])
+    dg = np.array(per_seed["dual_same"]) - np.array(per_seed["gram"])
+    dp = np.array(per_seed["dual"]) - np.array(per_seed["pinv"])
     out["paired"] = {
         "dual_same_minus_gram": {"mean": float(dg.mean()),
                                  "median": float(np.median(dg)),
@@ -205,8 +208,8 @@ def main():
         "dual_minus_pinv": {"mean": float(dp.mean()),
                             "median": float(np.median(dp))},
     }
-    print(f"\nPareado dual_same - gram: {dg.mean():+.3f} (mediana "
-          f"{np.median(dg):+.3f}, {100*(dg>0.01).mean():.0f}% positivo)")
+    print(f"\nPareado por seed dual_same - gram: media {dg.mean():+.3f}, "
+          f"mediana {np.median(dg):+.3f}, fraccion >0: {100*(dg>0.01).mean():.0f}%")
 
     # ---- [2] grid rho
     print("\n[2] Grid rho")
@@ -214,7 +217,7 @@ def main():
         accm = {m: [] for m in MODES}
         for s in range(N_SEEDS_GRID):
             b = DualBundle(1000 + s, K, N)
-            init = initial_estimates(b, 555)
+            init = initial_estimates(b, 5000 + s)
             for _ in range(N_FACTS):
                 f = make_fact(rng); c = b.encode_fact(f)
                 for m in MODES:

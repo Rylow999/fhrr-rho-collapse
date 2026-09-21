@@ -6,25 +6,25 @@ EXP 18 v2 (HRR correcto): relocacion del resolvente
 
 [1a] Identidad + normas de operador (N=200 seeds, BLK=32)
   ... 100/200 (1s)
-  ... 200/200 (3s)
+  ... 200/200 (2s)
   ||C^T M^-1 C - I||_F: mediana 6.29e-13, max 5.06e-06
-  ||M^-1||_2 (max gain): mediana 1.699e+03
-  ||C^T M^-1 C||_2 (max gain): mediana 1.000
-  ||M^-1 u_min||: mediana 3.473e+03 (1/lambda_min)
+  ||M^-1||_2 = 1/lambda_min: mediana 3.473e+03
+  ||C^T M^-1 C||_2 (proyector): mediana 1.000
+  ||M^-1 u_min||: mediana 3.473e+03
   ||C^T M^-1 C u_min||: mediana 1.000
 
 [1b] Decoding rho=1 (N=200 seeds x 10 facts)
-  ... 100/200: pure=0.985 gram=0.168 pinv=0.168 dual=0.985 dual_same=0.985
-  ... 200/200: pure=0.986 gram=0.161 pinv=0.162 dual=0.986 dual_same=0.986
+  ... 100/200: pure=0.984 gram=0.167 pinv=0.167 dual=0.984 dual_same=0.984
+  ... 200/200: pure=0.985 gram=0.160 pinv=0.161 dual=0.985 dual_same=0.985
 
-RESUMEN rho=1 (media ± IC95 [T1]):
-  pure     : 0.986 ± 0.002   [T=1: 0.911]
-  gram     : 0.161 ± 0.007   [T=1: 0.165]
-  pinv     : 0.162 ± 0.007   [T=1: 0.165]
-  dual     : 0.986 ± 0.002   [T=1: 0.911]
-  dual_same: 0.986 ± 0.002   [T=1: 0.911]
+RESUMEN rho=1 (por seed, N=200):
+  pure     : mean 0.985  median 0.983  boot95 [0.982,0.987]   [T=1: 0.910]
+  gram     : mean 0.160  median 0.167  boot95 [0.152,0.169]   [T=1: 0.163]
+  pinv     : mean 0.161  median 0.167  boot95 [0.152,0.169]   [T=1: 0.163]
+  dual     : mean 0.985  median 0.983  boot95 [0.982,0.987]   [T=1: 0.910]
+  dual_same: mean 0.985  median 0.983  boot95 [0.982,0.987]   [T=1: 0.910]
 
-Pareado dual_same - gram: +0.824 (mediana +0.833, 100% positivo)
+Pareado por seed dual_same - gram: media +0.824, mediana +0.833, fraccion >0: 100%
 
 [2] Grid rho
   rho=0.800: pure=0.994 gram=0.994 pinv=0.994 dual=0.994 dual_same=0.994
@@ -32,4 +32,4 @@ Pareado dual_same - gram: +0.824 (mediana +0.833, 100% positivo)
   rho=1.333: pure=0.961 gram=0.961 pinv=0.961 dual=0.961 dual_same=0.212
   rho=0.750: pure=1.000 gram=1.000 pinv=1.000 dual=1.000 dual_same=1.000
 
-Guardado. (915s)
+Guardado. (953s)

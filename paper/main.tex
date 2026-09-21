@@ -11,7 +11,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{proposition}{Proposition}
 
-\title{Frame duality governs compositional decoding in FHRR:\\ a phase diagram in $\rho$}
+\title{Observer-induced collapse in resonator decoding:\\ a frame-duality mechanism revealed by a controlled operator intervention}
 \author{Luciano Benjam\'in Nieto\\General Alvear, Mendoza, Argentina\\ \texttt{github.com/Rylow999}}
 \date{September 2026}
 
@@ -19,7 +19,7 @@
 \maketitle
 
 \begin{abstract}
-We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho < 1$, rank-deficient Gram matrices yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, square Gram matrices produce degenerate duals that resist pseudo-inverse correction; (III)~$\rho > 1$, overcomplete frames yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. Empirically, the collapse requires two factors: the soft edge at $\rho=1$ (so that $\lambda_{\min} \sim n^{-2}$ is tiny) \emph{and} a closed-loop observer that applies $M^{-1}$ asymmetrically at every iteration, re-amplifying the error by $1/\lambda_{\min}$ each time; single-shot inversion at the same $\kappa$ (MAP) does not collapse. The mechanism is established causally (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min} \sim 10^{3}$ to exactly $1$. The collapse belongs to the observer's wiring, not to the representation --- we state this as the provisional Frame-Duality Law (Prop.~\ref{prop:fdl}).
+We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho > 1$, rank-deficient Gram matrices (more codevectors than dimensions) yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, the square point, where the Gram matrix is a critically conditioned Wishart and ambient Gram decoders collapse; (III)~$\rho < 1$, over-complete frames ($n < d$) yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. The mechanism is then established by a controlled causal intervention (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min}$ to exactly $1$. The collapse belongs to the observer's wiring, not to the representation --- we state this as the provisional Frame-Duality Law (Prop.~\ref{prop:fdl}).
 \end{abstract}
 
 \section{Introduction}
@@ -30,7 +30,7 @@ In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at hi
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig1_phase_diagram.png}
-  \caption{Phase diagram of compositional decoding in FHRR. Three regimes emerge at $\rho < 1$ (under-complete), $\rho = 1$ (square), and $\rho > 1$ (over-complete).}
+  \caption{Phase diagram of compositional decoding in FHRR. Three regimes emerge at $\rho > 1$ (over-complete, rank-deficient), $\rho = 1$ (square, critically conditioned), and $\rho < 1$ (under-complete, stable).}
   \label{fig:phase}
 \end{figure}
 
@@ -41,7 +41,7 @@ In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at hi
 
 \paragraph{FHRR and HRR.} FHRR (Fourier Holographic Reduced Representations) uses complex unit vectors with phase binding \cite{plate1995holographic}. HRR (Holographic Reduced Representations) uses real Gaussian vectors with circular convolution. The resonator network \cite{frady2020resonator} factorizes bound structures by iterative competition between codebooks.
 
-\paragraph{Gram matrix decoding.} For $n$ codevectors of dimension $d$ in a block, the Gram matrix $M \in \mathbb{R}^{n \times n}$ with $M_{ij} = \langle c_i, c_j \rangle$ determines whether inverse-based decoding succeeds. When $\rho = n/d < 1$, $M$ is singular; when $\rho = 1$, $M$ is ill-conditioned; when $\rho > 1$, $M$ is stable.
+\paragraph{Gram matrix decoding.} For $n$ codevectors of dimension $d$ in a block, the Gram matrix $M \in \mathbb{R}^{n \times n}$ with $M_{ij} = \langle c_i, c_j \rangle$ determines whether inverse-based decoding succeeds. When $\rho = n/d > 1$ (more codevectors than dimensions), $M$ is rank-deficient with probability one; when $\rho = 1$, $M$ is square invertible but critically conditioned (Sec.~\ref{sec:rmt}); when $\rho < 1$ ($n < d$), $M$ is generically full-rank and well conditioned.
 
 \paragraph{Decoders compared.} We test four decoders: (i) \textbf{gram} (resonator with the asymmetric correction $f_j \leftarrow M^{-1} f_j$ applied at each iteration, where $M$ is the Gram matrix of the block's codebook); (ii) \textbf{pure} (no Gram correction); (iii) \textbf{pinv} (same inverse through the pseudo-inverse with $rcond=10^{-10}$); and (iv) \textbf{gradient} (continuous optimization). An implementation note that matters for interpretation (Sec.~\ref{sec:kappa-mech}): the correction is dimensionally applicable only when the Gram and the block have the same side, which under the CFG6 configuration with $n_{cv}=32$ happens \emph{only} at $\mathrm{BLK}=32$ ($\rho=1$). At $\rho \neq 1$ the \texttt{gram} and \texttt{pinv} rows therefore coincide bit-for-bit with \texttt{pure}; the per-regime claims about Gram decoders in this paper refer to the square point. A well-posed coefficient-space Gram decoder ($\hat{x} = M^{-1} C s$, valid for all $\rho$) is analyzed separately in Exp.~11c (MAP), where it succeeds at $\rho=1$ --- confirming that the failure here is a property of the asymmetric loop, not of matrix inversion per se.
 
@@ -66,9 +66,9 @@ We use a fixed vocabulary of 6 roles with 16 symbols each: SUJ, ROL, OBJ, LOC, T
 
 The phase diagram shows three regimes:
 \begin{itemize}
-  \item $\rho < 1$: \texttt{gram} fails (singular Gram), \texttt{pinv} and \texttt{pure} succeed.
+  \item $\rho > 1$: $M$ rank-deficient; \texttt{gram} fails (undefined inverse), \texttt{pinv} and \texttt{pure} succeed.
   \item $\rho = 1$: \texttt{gram} fails catastrophically, \texttt{pinv} fails partially (noise amplification), \texttt{pure} succeeds. This is the double dissociation.
-  \item $\rho > 1$: all succeed (overcomplete frames are stable).
+  \item $\rho < 1$: all succeed ($M$ full-rank and well conditioned in this regime).
 \end{itemize}
 
 \paragraph{Fine sweep.} Figure~\ref{fig:fine_rho} shows that the Gram-based decoders fail exactly at $\rho=1.000$ while the pure resonator holds at $0.99$ at every sampled point. Note that the strictly-zero-width appearance is partly an implementation property: outside $\rho=1$ the Gram correction is not applied in our implementation (Methods), so the ``recovery'' at neighbouring $\rho$ is not by itself evidence about Gram decoders away from the square point --- that question is answered separately by the MAP coefficient-space decoder (Exp.~11c), which works everywhere except $\rho > 1$.
@@ -236,27 +236,27 @@ Experiment 18 answers this with a minimal intervention: same codebook $C$, same 
 
 \begin{table}[h]
   \centering
-  \caption{Exp.~18: accuracy at $\rho=1$ under minimal intervention. The only difference between \texttt{gram} and \texttt{dual-same} is the placement of the same $M^{-1}$. Paired difference (dual-same $-$ gram) is $+0.824$ per fact, positive in $100\%$ of the $2000$ paired fact-decodings (200 seeds $\times$ 10 facts).}
+  \caption{Exp.~18: accuracy at $\rho=1$ under minimal intervention (the only difference between \texttt{gram} and \texttt{dual-same} is the placement of the same $M^{-1}$). Statistics are per seed ($N=200$ independent codebooks, 10 facts each); brackets give bootstrap 95\% CIs over the per-seed means. Paired per-seed difference (dual-same $-$ gram) $= +0.824$, positive in $200/200$ seeds ($p \le 2^{-200} \approx 10^{-60}$, exact two-sided sign test).}
   \label{tab:exp18}
-  \begin{tabular}{lcc}
+  \begin{tabular}{lc}
     \toprule
-    Observer & Accuracy (mean $\pm$ IC95) & $\|\cdot\|_2$ of the operator (median) \\
+    Observer & Accuracy (mean [boot95]) \\
     \midrule
-    pure      & $0.986 \pm 0.002$ & $1.00$ (identity) \\
-    gram      & $0.161 \pm 0.007$ & $1.7\times 10^{3}$ \\
-    pinv      & $0.162 \pm 0.007$ & (ambient $M^{+}$; Gram truncated) \\
-    dual      & $0.986 \pm 0.002$ & $1.000$ \\
-    dual-same & $0.986 \pm 0.002$ & $1.000$ \\
+    pure      & $0.985\ [0.982, 0.987]$ \\
+    gram      & $0.160\ [0.152, 0.169]$ \\
+    pinv      & $0.161\ [0.152, 0.169]$ \\
+    dual      & $0.985\ [0.982, 0.987]$ \\
+    dual-same & $0.985\ [0.982, 0.987]$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-The algebraic identity behind this is verified per seed: $\|C^{\top} M^{-1} C - I\|_{F}$ has median $6\times 10^{-13}$ across all 600 blocks --- the dual operator is numerically the identity, while $\|M^{-1}\|_2$ sits at $10^{3}$ (Fig.~\ref{fig:exp18}a). The spectral attribution is direct (Fig.~\ref{fig:exp18}a, right): $\|M^{-1} u_{\min}\| = 1/\lambda_{\min} \sim 3.5\times 10^{3}$ versus $\|C^{\top} M^{-1} C\, u_{\min}\| = 1.000$: the same inverse acting on the same soft-edge eigenvector either amplifies by four orders of magnitude or does nothing, depending solely on whether it is applied to the ambient state or to the coefficient representation.
+The algebraic identity behind this is verified per block: $\|C^{\top} M^{-1} C - I\|_{F}$ has median $6\times 10^{-13}$ across all blocks --- the dual operator is numerically the identity, while the ambient operator has exact spectral norm $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, median $3.5\times 10^{3}$ at the square point (Fig.~\ref{fig:exp18}). The spectral attribution is direct: the same inverse acting on the soft-edge eigenvector amplifies by exactly $1/\lambda_{\min}$ when applied ambient, and by $1.000$ when placed dually. Statistics are reported per seed (200 independent codebooks, 10 facts each): bootstrap 95\% CIs on the per-seed mean, and paired per-seed differences --- the accuracy units are codebooks, not individual facts.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_exp18_frame_duality.png}
-  \caption{Exp.~18: operator norms vs.\ $\kappa(M)$ (left) and decoding accuracy at $\rho=1$ (right). The collapse belongs to the wiring: the dual operator built from the same $M^{-1}$ (dark blue) has norm $1$ and decodes at $0.986$, while the ambient application of $M^{-1}$ (red) has norm $10^{3}$ and decodes at $0.161$. In the rank-deficient regime $\rho = 1.333$ (rank failure), \texttt{dual-same} with the un-truncated inverse drops to $0.212$ while \texttt{dual} (pseudo-inverse) holds at $0.961$: the dual law transfers, with the pseudo-inverse needed exactly where the Gram matrix is numerically singular.}
+  \caption{Exp.~18: decoding accuracy at $\rho=1$ (right) and the exact operator norms (left): $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$ (red) vs $\|C^{\top} M^{-1} C\|_2 = 1$ (blue). The collapse belongs to the wiring. In the rank-deficient regime $\rho = 1.333$, \texttt{dual-same} with the un-truncated inverse drops (the operator is no longer a projector) while \texttt{dual} (pseudo-inverse) holds, as predicted by Prop.~\ref{prop:fdl}.}
   \label{fig:exp18}
 \end{figure}
 
@@ -264,7 +264,7 @@ The control on feedback (Exp.~18, Section~12 of the protocol) separates loop dyn
 
 \begin{proposition}[Frame-Duality Law, provisional]
 \label{prop:fdl}
-For a codebook $C \in \mathbb{R}^{n\times d}$ with Gram $M = CC^{\top}$, the decoding failure at the critical point is a property of the decoder's wiring, not of the representation: the ambient operator $M^{-1}$ on the state has $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, which diverges as $n\to\infty$ at $\rho=1$; the dual operator $C^{\top} M^{-1} C$ equals the identity on the column span whenever $C$ has full column rank, and its pseudo-inverse version $C^{\top} M^{+} C$ has norm $1$ in general. The singular behaviour observed through the ambient decoder is therefore a property of the observer's operator placement, not of the frame.
+For a codebook $C \in \mathbb{R}^{n\times d}$ with Gram $M = CC^{\top}$, the decoding failure at the critical point is a property of the decoder's wiring, not of the representation. The ambient operator $M^{-1}$ acting on the state has $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, which grows without bound as $n\to\infty$ at $\rho=1$. The dual operator $C^{\top} M^{-1} C$ is the orthogonal projector onto $\operatorname{row}(C)$ whenever $M^{-1}$ exists (i.e.\ full row rank, $n\le d$), reducing to the identity exactly at the square point $n=d$; its pseudo-inverse analogue $C^{\top} M^{+} C$ is an orthogonal projector in all cases and therefore has spectral norm at most $1$. The singular behaviour observed through the ambient decoder is therefore a property of the observer's operator placement, not of the frame.
 \end{proposition}
 
 \textbf{Cross-algebra replication (Exp.~18b).} The same intervention in BSC (binary codevectors in $\{\pm 1\}^{d}$, bind = element-wise product), $100$ seeds $\times$ 10 facts at the square point: \texttt{gram} $0.192 \pm 0.011$, \texttt{dual-same} $0.995 \pm 0.002$ using the same resolvent, paired difference $+0.80$ ($99.8\%$ of 1000 paired facts positive). The Frame-Duality Law transfers across algebras with the same sign and magnitude; we nonetheless retain the ``provisional'' label pending a second, independent implementation of the pipeline, since Exp.~18 and Exp.~18b share the harness.
