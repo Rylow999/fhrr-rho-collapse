@@ -25,6 +25,11 @@ CASES = [
 MODES = ["gram", "pure", "pinv", "gradient"]
 N_SEEDS = 8
 N_FACTS = 25
+# n_cv por bloque: K bloques reparten 6 roles; cada rol aporta 16 simbolos
+# compartidos (en CFG6 los codebooks comparten simbolos entre roles).
+# Medido en la corrida: K=3 -> 32 codevectors/bloque -> rho = 32/BLK.
+# K=2 -> 48/bloque (3 roles) -> rho = 48/BLK. K=1 -> 96 = 96/128 = 0.75.
+N_CV = {1: 96, 2: 48, 3: 32}
 
 def kappa_blocks(b):
     ks = []
@@ -52,9 +57,9 @@ def main():
     print("EXP 11b: BSC binaria — grid rho x decoder (PERSISTIDO)")
     print("=" * 74)
     for label, n, K, N in CASES:
-        rho = 32 / (N // K)  # n_cv=32 por bloque (6 roles x 16 simbolos / K bloques)
+        rho = N_CV[K] / (N // K)
         row = {"label": label, "K": K, "N": N, "BLK": N // K,
-               "n_cv_per_block": 32, "rho": round(rho, 4),
+               "n_cv_per_block": N_CV[K], "rho": round(rho, 4),
                "n_seeds": N_SEEDS, "n_facts": N_FACTS}
         kappas = []
         for mode in MODES:

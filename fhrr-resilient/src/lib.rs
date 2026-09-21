@@ -1,16 +1,23 @@
 //! fhrr-resilient — zero-dependency resilient VSA decoding.
 //!
 //! Core idea (paper: "Frame duality governs compositional decoding in FHRR",
-//! Sec. RMT): Gram-inverse decoding fails exactly when kappa(M) enters the
-//! critical band [1e3, 1e4]; outside it (well-conditioned kappa<1e2, or
-//! numerically singular kappa>1e15 handled by truncated pseudo-inverse),
-//! inversion is safe. This crate estimates kappa at runtime in O(n^2)
-//! (Lanczos-free: power iteration for lambda_max, inverse power iteration
-//! with Gaussian elimination for lambda_min) and routes the decoder:
+//! Sec. RMT + Sec. kappa-mech): Gram-inverse decoding in a CLOSED-LOOP
+//! resonator fails at the square point rho=1 because the asymmetric update
+//! f_j <- M^{-1} f_j re-amplifies the soft-edge error by 1/lambda_min per
+//! iteration. Outside the loop (single-shot, e.g. MAP) the same kappa is
+//! harmless. This crate estimates kappa at runtime in O(n^2) (power
+//! iteration + inverse power with Gaussian elimination) and routes:
 //!
 //!   kappa < KAPPA_SAFE   -> Gram inverse (fast, exact)
-//!   KAPPA_SAFE..KAPPA_CRIT -> FAILOVER to pure resonator (never inverses)
-//!   kappa > KAPPA_SING   -> truncated pseudo-inverse (Tikhonov-ish)
+//!   KAPPA_SAFE..KAPPA_SING -> FAILOVER to pure resonator (see CAVEAT below)
+//!   kappa > KAPPA_SING   -> truncated pseudo-inverse
+//!
+//! CAVEAT (Exp 17, 2026-09-20): the critical band [1e3, 1e4] is NOT a
+//! per-seed decision boundary. Per-block kappa at the square point spans
+//! [2e2, 2e5] and every seed collapses regardless. The meaningful router
+//! invariant is the LOOP structure: if your decoder re-applies M^{-1} on
+//! every iteration, take the failover as soon as kappa stops being << 1e2
+//! — the band edges are a coarse, conservative proxy, not a mechanism.
 //!
 //! No external crates: matrices are flat Vec<f64>, row-major.
 

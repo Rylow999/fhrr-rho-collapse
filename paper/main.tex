@@ -16,7 +16,7 @@
 \maketitle
 
 \begin{abstract}
-We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho < 1$, rank-deficient Gram matrices yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, square Gram matrices produce degenerate duals that resist pseudo-inverse correction; (III)~$\rho > 1$, overcomplete frames yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. Empirically, the collapse is governed by the physical condition number: decoders fail exactly when $\kappa(M)$ enters the critical band $[10^{3}, 10^{4}]$, with $\kappa^{*} = 5.81\times 10^{3}$ the interpolated 50\% point at $n=32$. The law transfers across algebras (HRR, BSC, MAP) in a refined two-factor form: failure requires the critical \emph{band} in $\kappa$ \emph{and} a closed-loop observer to amplify the projected noise. Pure resonators and learned decoders are unaffected in all regimes --- the collapse belongs to the observer, not the representation.
+We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho < 1$, rank-deficient Gram matrices yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, square Gram matrices produce degenerate duals that resist pseudo-inverse correction; (III)~$\rho > 1$, overcomplete frames yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. Empirically, the collapse requires two factors: the soft edge at $\rho=1$ (so that $\lambda_{\min} \sim n^{-2}$ is tiny) \emph{and} a closed-loop observer that applies $M^{-1}$ asymmetrically at every iteration, re-amplifying the error by $1/\lambda_{\min}$ each time; single-shot inversion at the same $\kappa$ (MAP) does not collapse. The law transfers across algebras (HRR, BSC, MAP) in a refined two-factor form: failure requires the critical \emph{band} in $\kappa$ \emph{and} a closed-loop observer to amplify the projected noise. Pure resonators and learned decoders are unaffected in all regimes --- the collapse belongs to the observer, not the representation.
 \end{abstract}
 
 \section{Introduction}
@@ -38,7 +38,7 @@ In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at hi
 
 \paragraph{Gram matrix decoding.} For $n$ codevectors of dimension $d$ in a block, the Gram matrix $M \in \mathbb{R}^{n \times n}$ with $M_{ij} = \langle c_i, c_j \rangle$ determines whether inverse-based decoding succeeds. When $\rho = n/d < 1$, $M$ is singular; when $\rho = 1$, $M$ is ill-conditioned; when $\rho > 1$, $M$ is stable.
 
-\paragraph{Decoders compared.} We test four decoders: (i) \textbf{gram} (custom inverse), (ii) \textbf{pure} (no Gram correction), (iii) \textbf{pinv} (pseudo-inverse with $rcond=10^{-10}$), and (iv) \textbf{gradient} (continuous optimization).
+\paragraph{Decoders compared.} We test four decoders: (i) \textbf{gram} (resonator with the asymmetric correction $f_j \leftarrow M^{-1} f_j$ applied at each iteration, where $M$ is the Gram matrix of the block's codebook); (ii) \textbf{pure} (no Gram correction); (iii) \textbf{pinv} (same inverse through the pseudo-inverse with $rcond=10^{-10}$); and (iv) \textbf{gradient} (continuous optimization). An implementation note that matters for interpretation (Sec.~\ref{sec:kappa-mech}): the correction is dimensionally applicable only when the Gram and the block have the same side, which under the CFG6 configuration with $n_{cv}=32$ happens \emph{only} at $\mathrm{BLK}=32$ ($\rho=1$). At $\rho \neq 1$ the \texttt{gram} and \texttt{pinv} rows therefore coincide bit-for-bit with \texttt{pure}; the per-regime claims about Gram decoders in this paper refer to the square point. A well-posed coefficient-space Gram decoder ($\hat{x} = M^{-1} C s$, valid for all $\rho$) is analyzed separately in Exp.~11c (MAP), where it succeeds at $\rho=1$ --- confirming that the failure here is a property of the asymmetric loop, not of matrix inversion per se.
 
 \section{Experimental Setup}
 \label{sec:setup}
@@ -55,7 +55,7 @@ We use a fixed vocabulary of 6 roles with 16 symbols each: SUJ, ROL, OBJ, LOC, T
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_V9_fine_rho.png}
-  \caption{Fine sweep around $\rho=1$. The ``valley'' is a single point: at $\rho=1.000$ exactly, \texttt{gram} and \texttt{pinv} collapse to 0.148 accuracy while \texttt{pure} remains at 0.988. The transition has zero width.}
+  \caption{Fine sweep around $\rho=1$. At $\rho=1.000$ exactly \texttt{gram} and \texttt{pinv} collapse to 0.148. At $\rho \neq 1$ the Gram correction is dimensionally inapplicable in our implementation (the Gram and the block are of different size, see Methods) and \texttt{gram}/\texttt{pinv} therefore coincide with \texttt{pure} by construction --- the recovery at $\rho=0.970$ and $\rho=1.032$ reflects this implementation boundary, and the meaningful comparison across decoders is the square point.}
   \label{fig:fine_rho}
 \end{figure}
 
@@ -66,7 +66,7 @@ The phase diagram shows three regimes:
   \item $\rho > 1$: all succeed (overcomplete frames are stable).
 \end{itemize}
 
-The fine sweep (Figure~\ref{fig:fine_rho}) shows that the collapse at $\rho=1$ is a \emph{point singularity}, not a transition region of finite width. At $\rho=0.970$ and $\rho=1.032$, performance is already back to 0.99.
+The fine sweep (Figure~\ref{fig:fine_rho}) localises the failure to the square point (Exp.~9). Note that the strictly-zero-width statement is partly an implementation property: outside $\rho=1$ the Gram correction is not applied (Methods), so the ``recovery'' at neighbouring $\rho$ is not evidence about Gram decoders away from the square point --- that question is answered separately by the MAP coefficient-space decoder (Exp.~11c), which works everywhere except $\rho > 1$.
 
 \section{Empirical Validation}
 \label{sec:empirical}
@@ -144,9 +144,36 @@ This places the collapse on rigorous footing: $\rho = 1$ is the unique point whe
 
 \paragraph{Scaling in $n$: the square-Wishart prediction holds.} Equation~\eqref{eq:kappa-scaling} is a sharp, falsifiable prediction: moving to larger codebooks at $\rho=1$ should scale $\kappa$ as $4n^{2}$, with $\lambda_{\max} \to 4$ and $\lambda_{\min}$ collapsing as $n^{-2}$. Exp.~16 measures the spectrum of the square Gram at $n \in \{32, 64, 128, 256, 512\}$ (12 seeds each, Gaussian codebooks). The measured medians follow the prediction (Fig.~\ref{fig:scaling}): $\lambda_{\max}$ converges from below to the Marchenko--Pastur upper edge $4$ ($3.74 \to 3.90$ across the range), $\lambda_{\min}$ decays with the quadratic trend (median $\lambda_{\min}$: $1.2 \times 10^{-4}$ at $n=32$ to $1.4 \times 10^{-6}$ at $n=512$, bracketing the $n^{-2}$ prediction $1/n^{2}$ at both ends of the range), and the median condition number tracks $4n^{2}$ within a factor $2$--$13$, inside the expected spread given that $\kappa$ for square Wishart is heavy-tailed with infinite expectation \cite{edelman1988eigenvalues}. The finite-$n$ offset reported in Sec.~\ref{sec:rmt} ($n=32$, ratio $1.76$) is the small-$n$ end of this scaling, not an anomaly.
 
-\paragraph{Critical threshold $\kappa^*$ (empirical).} In Exp.~14 (6 seeds $\times$ 12 facts per point, $n_{cv}=32$ codevectors per block, BLK swept from 27 to 40), the decoder accuracy is $\ge 0.97$ at every sampled point except $\rho = 1.000$ exactly, where it drops to $0.146$. Interpolating in $\log_{10}\kappa$ between the two points bracketing the transition --- $\kappa = 2.31\times 10^{3}$ at $\rho=0.970$ (accuracy $0.99$) and $\kappa = 1.13\times 10^{4}$ at $\rho = 1.000$ (accuracy $0.15$) --- with linear interpolation in accuracy, the 50\%-accuracy crossing lands at the $\log_{10}\kappa$ fraction $(0.99-0.50)/(0.99-0.146) = 0.58$, i.e.
-$$\kappa^{*} = 5.81\times 10^{3} \quad (\log_{10}\kappa^{*} = 3.76).$$
-We emphasise this is an \emph{interpolation across a point singularity}, not a resolved threshold: between $\rho = 0.970$ and $\rho = 1.000$ on a grid of BLK the transition is a single point, so the meaningful content of $\kappa^{*}$ is the \emph{scaling} $\kappa^{*} \sim 4n^{2}$ derived above, not the third significant figure. The robust, experimentally supported statement is the band: decoding fails iff $\kappa \in [10^{3}, 10^{4}]$ with full recovery on both sides.
+\paragraph{Kappa-conditioned refinement: mechanism, not magnitude.}
+\label{sec:kappa-mech}
+
+The naive reading ``$\kappa \in [10^{3},10^{4}]$ causes the collapse'' is
+\emph{not} supported at the per-seed level (Exp.~17, 40 seeds at $\rho=1$,
+\texttt{data/exp17\_kappa\_vs\_acc.json}): the per-seed minimum block $\kappa$
+spans $[2.3\times 10^{2}, 1.9\times 10^{5}]$ and the per-seed maximum reaches
+$8\times 10^{8}$, every seed collapses
+(\texttt{gram} accuracy $0.10$--$0.37$, median $0.17$) regardless of which
+side of the band its condition number falls on, and the
+$\log_{10}\kappa$--accuracy correlation is weak ($r = -0.38$). Two seeds
+with minimum block $\kappa = 2.3\times 10^{2}$ and $4.5\times 10^{2}$
+--- below the whole band --- collapse identically. The condition-number magnitude is therefore
+\emph{not} the trigger. Deterministically, $\det M$ at $\rho=1$ is never
+zero (median $1.4\times 10^{-14}$ over 90 blocks): the matrix is
+numerically singular, not exactly singular.
+
+What the RMT analysis picks out instead is the \emph{mechanism}: the
+resonator loop applies the asymmetric correction $f_j \leftarrow M^{-1} f_j$
+at every iteration, so the error along the soft-edge eigendirections is
+multiplied by $1/\lambda_{\min} \sim 10^{4}$ \emph{per iteration}. The
+collapse requires (i) the soft edge ($\rho = 1$) supplying the small
+eigenvalue, and (ii) a closed loop that keeps re-projecting onto it. This
+predicts the MAP control (Exp.~11c): a single-shot application of the same
+inverse at the same $\kappa$ does \emph{not} collapse, because there is no
+loop. It also predicts why \texttt{pure} survives everywhere: it never
+forms $M^{-1}$. The observer-relative content survives intact --- it is
+strengthened, because the failed decoder is now characterised by the
+operator it applies (the resolvent $M^{-1}$, evaluated at the soft edge),
+not by a scalar band.
 
 \paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit uniformly \emph{above} the asymptotic edge (factor $\sim 10^{2}$--$10^{3}$). This has the expected sign and is a finite-$n$ effect, not a discrepancy: at $n=32$ the distribution of $\lambda_{\min}$ concentrates well inside the bulk, and the asymptotic edge is only approached logarithmically slowly; the exact finite-$n$ expected smallest eigenvalue of a Wishart is substantially larger than its $n\to\infty$ limit when $\rho$ is close to 1. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ matches the soft-edge scaling $\sigma^{2}/n = 9.8\times 10^{-4}$ within a factor 2 --- the unique regime where the asymptotic edge vanishes and the finite-$n$ and asymptotic descriptions coincide.
 
