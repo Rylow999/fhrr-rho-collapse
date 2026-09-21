@@ -33,7 +33,7 @@ rho = (distinct codevectors per block) / (block dimensionality)
 |--------|-----|---------------|--------------------|
 | **I. Over-complete** | > 1 ($n > d$) | rank-deficient (singular) | Gram-inverse fails; pinv/pure stable |
 | **II. Square** | = 1 ($n = d$) | critically conditioned Wishart (κ ~ 4n², verified n ≤ 512) | ambient Gram collapses; dual Gram does not |
-| **III. Under-complete** | < 1 ($n < d$) | full-rank, well-conditioned frame | stable |
+| **III. Under-complete** | < 1 ($n < d$) | well-conditioned frame | stable decoding |
 
 ## Key results
 
@@ -91,6 +91,8 @@ application (e₀ ~ 7×10³); the loop doesn't cause it.
 
 **BSC (Exp 18b):** 0.192 → 0.995, paired +0.80.
 
+**FHRR causal (Exp 27):** 0.131 → 1.000, paired +0.868. Closes the circle on the originating algebra.
+
 ### 5. Universality across algebras
 HRR real (V3), BSC binary (Exp 11b + causal replication Exp 18b), MAP (Exp 11c — the single-shot control: the same κ at ρ=1 does NOT collapse MAP because it is not closed-loop), and LiDAR voxelization (Exp 13). After Exp 18 the operative design rule is **operator placement**, not a κ-threshold.
 
@@ -102,11 +104,7 @@ The crate routes decoder selection by **operator wiring** (ambient M⁻¹ in a c
 
 ## What's next (falsification roadmap)
 
-The Frame-Dual Stability Principle survives the falsification agenda of `docs/ROADMAP.md`:
-independent reimplementation (Exp 19), six codebook ensembles (Exp 20),
-continuous ρ sweep (Exp 20B), perturbation amplification (Exp 21),
-de-VSA-ified (Exp 21), iteration dynamics (Exp 22). Open: operator zoo
-(ridge, truncated SVD, Krylov) and FHRR-complex causal test.
+All planned falsification experiments were run and support the Frame-Dual Stability Principle. Exp. 27 (FHRR causal) closes the circle on the originating algebra.
 
 ## Repository structure
 

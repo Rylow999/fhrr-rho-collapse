@@ -61,15 +61,12 @@ def main():
     C = np.random.RandomState(1).randn(24, 48)
     C /= np.linalg.norm(C, axis=1, keepdims=True)
     out["wide_n24_d48"] = measure(C)
-    # 5. Escalas muy distintas
-    C = np.eye(32)
-    C[16:] *= 1e-3
-    C /= np.linalg.norm(C, axis=1, keepdims=True)
+    # 5. Escalas muy distintas: SIN normalizar filas
+    C = np.eye(32); C[16:] *= 1e-3
     out["ill_scaled"] = measure(C)
-    # 6. Bloque diagonal
+    # 6. Bloque diagonal (sin renorm)
     C = np.block([[np.eye(16), np.zeros((16, 16))],
                   [np.zeros((16, 16)), 1e-2 * np.eye(16)]])
-    C /= np.linalg.norm(C, axis=1, keepdims=True)
     out["block_diag"] = measure(C)
 
     print(f"  {'caso':28s} {'n xd':>10s} {'alpha':>10s} {'kappa':>10s} {'||dual||':>9s} {'gain_amb':>12s} {'gain_dual':>10s}")

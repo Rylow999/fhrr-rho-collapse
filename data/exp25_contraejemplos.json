@@ -79,23 +79,23 @@
  "ill_scaled": {
   "n": 32,
   "d": 32,
-  "alpha": 1.0,
+  "alpha": 1e-06,
   "beta": 1.0,
-  "kappa": 1.0,
+  "kappa": 1000000.0,
   "ambiente_aplicable": true,
   "norm_dual": 1.0,
-  "gain_amb": 0.9999999999997883,
+  "gain_amb": 706401.217661649,
   "gain_dual": 0.9999999999997883
  },
  "block_diag": {
   "n": 32,
   "d": 32,
-  "alpha": 1.0,
+  "alpha": 0.0001,
   "beta": 1.0,
-  "kappa": 1.0,
+  "kappa": 10000.0,
   "ambiente_aplicable": true,
   "norm_dual": 1.0,
-  "gain_amb": 0.9999999999997883,
+  "gain_amb": 7064.012212103755,
   "gain_dual": 0.9999999999997883
  }
 }
