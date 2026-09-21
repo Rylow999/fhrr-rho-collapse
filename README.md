@@ -128,16 +128,26 @@ fhrr-rho-collapse/
 │   ├── exp_V11b_bsc_persist.py       # BSC grid, persisted
 │   ├── exp_V11c_map_persist.py       # MAP grid, persisted
 │   ├── exp_V14_kappa_law.py          # kappa law measurement
-│   ├── exp_V16_scaling_n.py          # κ ~ 4n² verification (n up to 512)
-│   ├── exp_V17_kappa_vs_acc.py       # per-seed kappa vs accuracy audit
+│   ├── exp_V16_scaling_n.py          # κ ~ 4n² verification (n hasta 512)
+│   ├── exp_V17_kappa_vs_acc.py       # auditoria per-seed
 │   ├── exp_V18_frame_duality.py      # causal test (HRR)
-│   ├── exp_V18b_bsc_duality.py       # causal test (BSC replication)
-│   ├── fig_exp16_scaling.py          # scaling figure
-│   └── fig_exp18_frame_duality.py    # causal figure
-├── fhrr-resilient/                   # Rust crate: κ-router with dual failover
-├── tests/              # 5 tests, pytest
-├── data/               # all raw outputs (.json, .txt)
-└── figures/            # paper figures
+│   ├── exp_V18b_bsc_duality.py       # causal test (BSC)
+│   ├── exp_V19_independent_replica.py # from-scratch, sin compartir codigo
+│   ├── exp_V20_ensembles_rho.py      # ensembles + sweep rho
+│   ├── exp_V21_linear_amp.py         # amplificacion lineal (sin resonator)
+│   ├── exp_V22_iteration_dynamics.py
+│   ├── exp_V23_operator_zoo.py       # zoo de operadores
+│   ├── exp_V24_frame_bounds.py       # frame bounds exactos (C=QD)
+│   ├── exp_V25_contraejemplos.py     # contraejemplos construidos
+│   ├── exp_V26_cota_stability.py     # cota empirica correcta
+│   ├── exp_V27_fhrr_duality.py       # causal test (FHRR)
+│   └── fig_exp*.py                   # generadores de figuras
+├── fhrr-resilient/                   # Rust crate (legacy kappa router; ver lib.rs)
+├── tests/
+│   ├── test_pipeline.py
+│   └── README.md
+├── data/                             # todos los outputs JSON/txt
+└── figures/                          # figuras listas para incluir
 ```
 
 ## How to run
@@ -148,16 +158,22 @@ cd fhrr-rho-collapse
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-cd src
-python exp_V9_fine_rho.py          # the point singularity
-python exp_V16_scaling_n.py        # κ ~ 4n² verification
-python exp_V17_kappa_vs_acc.py     # per-seed audit (band refutation)
-python exp_V18_frame_duality.py    # causal test (the Frame-Dual Stability Principle)
-python exp_V18b_bsc_duality.py     # BSC replication
+# Verify the paper numbers against the persisted data:
+python verify.py                       # 31 checks against data/*.json
 
-cd .. && pytest tests/ -v          # 5 unit tests
-cd fhrr-resilient && cargo test    # 4 Rust tests (router)
+# Run the tests
+pytest tests/ -v                       # 5 Python tests
+cd fhrr-resilient && cargo test        # 4 Rust tests
+
+# Reproduce the causal experiments
+cd src
+python exp_V18_frame_duality.py        # causal test (HRR)
+python exp_V18b_bsc_duality.py         # causal test (BSC)
+python exp_V27_fhrr_duality.py         # causal test (FHRR)
+python exp_V16_scaling_n.py            # spectral scaling verification
 ```
+
+Para compilar el paper ver `paper/README.md`.
 
 ## Claims → evidence map
 

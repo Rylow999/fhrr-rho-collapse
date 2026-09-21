@@ -1,1 +1,11 @@
+# Core numerics
 numpy>=1.20.0
+
+# Figures and diagnostic output
+matplotlib>=3.5.0
+
+# Tests
+pytest>=7.0.0
+
+# Optional: Exp V7 (MLP observer) only
+# torch>=2.0.0
