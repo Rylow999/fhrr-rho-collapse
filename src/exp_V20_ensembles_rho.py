@@ -47,10 +47,12 @@ def make_C(family, n, d, seed):
             rows.append(np.roll(base, shift) + noise)
         C = np.array(rows)
         C /= np.linalg.norm(C, axis=1, keepdims=True)
-    elif family == "tight":
-        k = np.arange(n)[:, None]; j = np.arange(d)[None, :]
-        C = np.exp(-2j * np.pi * k * j / d).real
-        C /= np.linalg.norm(C, axis=1, keepdims=True)
+    elif family == "orthogonal":
+        # verdadera condicion-tight control: frame orthogonal n x n
+        # (un rotation de R^d embedded; para n=d cuadrada exactamente)
+        Q, _ = np.linalg.qr(rng.randn(n, d))
+        # Para n=d QR es ortogonal (tight). Si n!=d, normalizar filas.
+        C = Q.astype(float)
     elif family == "near_dup":
         Cbase = rng.randn(1, d) / np.sqrt(d)
         C = np.tile(Cbase, (n, 1)) + 0.02 * rng.randn(n, d) / np.sqrt(d)
@@ -139,7 +141,7 @@ def main():
     print("=" * 72)
     print("EXP 20A: ensembles de C en rho=1 (n=32, d=32)")
     print("=" * 72)
-    FAMS = ["gauss", "rademacher", "sphere", "toeplitz", "tight", "near_dup"]
+    FAMS = ["gauss", "rademacher", "sphere", "toeplitz", "orthogonal", "near_dup"]
     for fam in FAMS:
         try:
             C = make_C(fam, 32, 32, seed=777)
@@ -154,13 +156,15 @@ def main():
     print("\n" + "=" * 72)
     print("EXP 20B: barrido rho (gaussiano, n_cv=32, d variable)")
     print("=" * 72)
-    for rho in [0.5, 0.75, 0.9, 0.95, 0.99, 1.0, 1.05, 1.25, 1.5, 2.0]:
-        d = int(round(32 / rho))
-        C = make_C("gauss", 32, d, seed=99)
+    # barrido con dimensiones ENTERAS (un d distinto por punto; antes rho=0.99 y 1.00
+    # compartian d=32 y por tanto la misma geometria exacta).
+    for d_int in [64, 48, 43, 40, 36, 35, 34, 33, 32, 31, 30, 28, 26, 24, 16]:
+        rho = 32 / d_int
+        C = make_C("gauss", 32, d_int, seed=42)
         accs, meta = run_config(C, n_seeds=15, n_facts=5, n_init=2)
-        row = {"rho": rho, "d": d, **accs, **meta}
+        row = {"rho": round(rho, 4), "d": d_int, **accs, **meta}
         out["rho_sweep"].append(row)
-        print(f"  rho={rho:5.2f} d={d:3d} kappa={meta['kappa']:.2e} lmin={meta['lmin']:.2e} | "
+        print(f"  rho={rho:5.3f} d={d_int:3d} kappa={meta['kappa']:.2e} lmin={meta['lmin']:.2e} | "
               f"pure={accs['pure']:.3f} gram={accs['gram']:.3f} dual_same={accs['dual_same']:.3f}")
 
     jp = Path(__file__).parent.parent / "data" / "exp20_ensembles_rho.json"

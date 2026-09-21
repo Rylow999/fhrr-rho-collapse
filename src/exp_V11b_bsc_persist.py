@@ -16,11 +16,18 @@ sys.path.insert(0, str(Path(__file__).parent))
 from exp_V11_bsc_binary import BSCBundle, make_fact, accuracy
 
 CASES = [
-    ("rho=0.75 K=1 N=128", 6, 1, 128),
+    ("rho=0.50 K=1 N=64", 6, 1, 64),
+    ("rho=0.67 K=3 N=144", 6, 3, 144),
     ("rho=0.80 K=3 N=120", 6, 3, 120),
+    ("rho=0.89 K=3 N=108", 6, 3, 108),
+    ("rho=0.94 K=3 N=102", 6, 3, 102),
+    ("rho=0.97 K=3 N=99", 6, 3, 99),
+    ("rho=0.99 K=3 N=99", 6, 3, 99),
     ("rho=1.00 K=3 N=96 CUADRADO", 6, 3, 96),
-    ("rho=1.33 K=3 N=72", 6, 3, 72),
+    ("rho=1.05 K=3 N=90", 6, 3, 90),
+    ("rho=1.25 K=3 N=78", 6, 3, 78),
     ("rho=1.50 K=2 N=64", 6, 2, 64),
+    ("rho=2.00 K=2 N=48", 6, 2, 48),
 ]
 MODES = ["gram", "pure", "pinv", "gradient"]
 N_SEEDS = 8

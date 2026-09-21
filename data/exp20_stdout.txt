@@ -7,21 +7,26 @@ EXP 20A: ensembles de C en rho=1 (n=32, d=32)
   rademacher kappa=3.54e+04 lmin=9.84e-05 | pure=0.986 gram=0.128 dual_same=0.986
   sphere     kappa=3.36e+04 lmin=1.10e-04 | pure=0.983 gram=0.164 dual_same=0.983
   toeplitz   kappa=7.30e+04 lmin=6.52e-05 | pure=0.947 gram=0.175 dual_same=0.947
-  tight      kappa=inf lmin=-1.18e-15 | pure=0.922 gram=0.922 dual_same=0.922
+  orthogonal kappa=1.00e+00 lmin=1.00e+00 | pure=0.986 gram=0.986 dual_same=0.986
   near_dup   kappa=3.27e+07 lmin=9.80e-07 | pure=0.054 gram=0.092 dual_same=0.054
 
 ========================================================================
 EXP 20B: barrido rho (gaussiano, n_cv=32, d variable)
 ========================================================================
-  rho= 0.50 d= 64 kappa=3.10e+01 lmin=8.96e-02 | pure=1.000 gram=1.000 dual_same=1.000
-  rho= 0.75 d= 43 kappa=3.00e+02 lmin=1.10e-02 | pure=0.987 gram=0.987 dual_same=0.987
-  rho= 0.90 d= 36 kappa=4.41e+02 lmin=8.43e-03 | pure=0.997 gram=0.997 dual_same=0.997
-  rho= 0.95 d= 34 kappa=3.56e+02 lmin=1.00e-02 | pure=0.993 gram=0.993 dual_same=0.993
-  rho= 0.99 d= 32 kappa=4.85e+05 lmin=7.52e-06 | pure=0.937 gram=0.123 dual_same=0.937
-  rho= 1.00 d= 32 kappa=4.85e+05 lmin=7.52e-06 | pure=0.937 gram=0.123 dual_same=0.937
-  rho= 1.05 d= 30 kappa=inf lmin=-8.06e-17 | pure=0.970 gram=0.970 dual_same=0.970
-  rho= 1.25 d= 26 kappa=inf lmin=-3.79e-16 | pure=0.930 gram=0.930 dual_same=0.930
-  rho= 1.50 d= 21 kappa=inf lmin=-7.77e-16 | pure=0.883 gram=0.883 dual_same=0.883
-  rho= 2.00 d= 16 kappa=inf lmin=-6.27e-16 | pure=0.783 gram=0.783 dual_same=0.783
+  rho=0.500 d= 64 kappa=2.22e+01 lmin=1.06e-01 | pure=1.000 gram=1.000 dual_same=1.000
+  rho=0.667 d= 48 kappa=5.88e+01 lmin=4.54e-02 | pure=0.983 gram=0.983 dual_same=0.983
+  rho=0.744 d= 43 kappa=1.22e+02 lmin=2.51e-02 | pure=0.993 gram=0.993 dual_same=0.993
+  rho=0.800 d= 40 kappa=2.24e+02 lmin=1.24e-02 | pure=0.997 gram=0.997 dual_same=0.997
+  rho=0.889 d= 36 kappa=5.75e+02 lmin=6.28e-03 | pure=0.997 gram=0.997 dual_same=0.997
+  rho=0.914 d= 35 kappa=4.65e+02 lmin=6.99e-03 | pure=0.997 gram=0.997 dual_same=0.997
+  rho=0.941 d= 34 kappa=3.81e+02 lmin=8.33e-03 | pure=0.993 gram=0.993 dual_same=0.993
+  rho=0.970 d= 33 kappa=8.45e+02 lmin=4.34e-03 | pure=0.983 gram=0.983 dual_same=0.983
+  rho=1.000 d= 32 kappa=2.56e+03 lmin=1.31e-03 | pure=0.973 gram=0.197 dual_same=0.973
+  rho=1.032 d= 31 kappa=inf lmin=-5.47e-17 | pure=0.973 gram=0.973 dual_same=0.973
+  rho=1.067 d= 30 kappa=inf lmin=-2.45e-17 | pure=0.983 gram=0.983 dual_same=0.983
+  rho=1.143 d= 28 kappa=inf lmin=-6.96e-17 | pure=0.910 gram=0.910 dual_same=0.910
+  rho=1.231 d= 26 kappa=inf lmin=-3.92e-16 | pure=0.967 gram=0.967 dual_same=0.967
+  rho=1.333 d= 24 kappa=inf lmin=-9.37e-16 | pure=0.947 gram=0.947 dual_same=0.947
+  rho=2.000 d= 16 kappa=inf lmin=-7.38e-16 | pure=0.687 gram=0.687 dual_same=0.687
 
-Guardado: /home/delorien/vaults/vega-vault/NOUS/FHRR-HRO-COLLAPSE/data/exp20_ensembles_rho.json (149s)
+Guardado: /home/delorien/vaults/vega-vault/NOUS/FHRR-HRO-COLLAPSE/data/exp20_ensembles_rho.json (187s)

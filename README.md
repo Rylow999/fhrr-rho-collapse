@@ -52,8 +52,8 @@ At ρ=1 the lower edge of the Marchenko–Pastur support touches zero: the squar
 Per-seed audit (Exp 17, 40 seeds at ρ=1): per-block κ spans [2.3e2, 1.9e5],
 every seed collapses regardless of band membership (two seeds with
 κ_min = 234 and 445 collapse identically), corr(log κ, acc) = −0.38.
-Uniform failure at the square point — the trigger is the soft edge plus the
-asymmetric loop application, not a scalar condition-number window.
+Uniform failure at the square point — the trigger is the hard-edge conditioning of
+the square Gram, not a scalar condition-number window.
 
 ### 4. Causal proof: the Frame-Dual Stability Principle (Exp 18, replicated Exp 19)
 Same C, M, M⁻¹, initial states, facts, iteration count; only the operator
@@ -181,12 +181,10 @@ phase diagram → empirical validation → RMT anchoring → causal test
 
 Two named, citable objects:
 
-- **Definition 1** (closed-loop soft-edge condition) — a decoder satisfies
-  it iff the Gram ensemble has a soft edge at 0 (ρ=1) AND the decoder
-  re-applies M⁻¹ on every iteration. Checkable a priori.
-- **Proposition 1** (Frame-Dual Stability Principle, provisional) — the collapse is a
-  property of the observer's wiring, not of the frame; the dual operator
-  using the same resolvent recovers decoding.
+- **Definition 1** (closed-loop hard-edge condition) — a decoder satisfies
+  it iff the Gram ensemble has a hard edge at 0 (ρ=1) AND the decoder
+  applies M⁻¹ repeatedly to the running estimate. Checkable a priori.
+- **Proposition 1** (Frame-Dual Stability Principle) — the spectral form: for spectral T = g(M), Cᵀ T C = V Σ g(Σ²) Σ Vᵀ with singular values σ_i²g(σ_i²). Pinning down exactly which operators neutralize in dual placement (Exp 23) is the version of the principle that survives contact with the frame-multiplier literature.
 
 ## Related repositories
 

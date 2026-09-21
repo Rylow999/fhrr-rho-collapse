@@ -261,9 +261,18 @@ The algebraic identity behind this is verified per block: $\|C^{\top} M^{-1} C -
 
 The control on feedback (Exp.~18, Section~12 of the protocol) separates loop dynamics from operator instability: at $T=1$ the pure resonator is already imperfect ($0.911$, it needs iterations to converge) while gram is already collapsed ($0.165$) --- the gram failure is present after a single application of $M^{-1}$, before any feedback. The loop is not what breaks gram; the operator placement is.
 
-\begin{proposition}[Frame-Dual Stability Principle]
+\begin{proposition}[Frame-Dual Stability Principle, spectral form]
 \label{prop:fdl}
-Let $C \in \mathbb{R}^{n\times d}$ be a codebook with Gram $M = CC^{\top}$ and let $T$ be an operator acting on the coefficient space. Write $A = C$ (analysis), $S = C^{\top}$ (synthesis). The ambient operator $T$ acting on the state has $\|T\|_2$ possibly large; the dual operator $S T A = C^{\top} T C$ is the orthogonal projector onto $\operatorname{row}(C)$ whenever $T = M^{-1}$, and its pseudo-inverse analogue $C^{\top} M^{+} C$ is an orthogonal projector in all cases. In particular $\|C^{\top} M^{-1} C\|_2 \le 1$ with equality iff $C$ has full column rank $d$. The critical decoding failure at $\rho=1$ therefore is a property of the decoder's \emph{operator placement}, not of the frame itself.
+Let $C \in \mathbb{R}^{n\times d}$ ($n$ codevectors in dimension $d$), $M = CC^{\top}$, and write the singular value decomposition $C = U\Sigma V^{\top}$. For any spectral operator $T = g(M)$ acting on the coefficient space $\mathbb{R}^{n}$,
+\[
+  C^{\top} T C \;=\; V \,\Sigma\, g(\Sigma^{2})\, \Sigma\, V^{\top},
+\]
+so its singular values are $\sigma_i^{2} g(\sigma_i^{2})$ acting on the directions $V$. In particular:
+(a) for $T = M^{-1}$ with $M$ invertible (square, $n=d$, full rank), $\sigma_i^{2}g(\sigma_i^2) = 1$ so $C^{\top} M^{-1} C = I$;
+(b) for $T = M^{+}$, $\sigma_i^{2} g(\sigma_i^2) = 1$ on the spectrum and $0$ off --- a clean projector;
+(c) for Tikhonov $T = (M + \alpha I)^{-1}$, $\sigma_i^{2}g(\sigma_i^2) = \sigma_i^{2}/(\sigma_i^{2} + \alpha) < 1$;
+(d) for a truncated SVD, the same with $1$ on kept modes and $0$ on truncated.
+Under ambient placement $T$ acts directly on the ambient state with $\|T\|_2$ unbounded as $\lambda_{\min} \to 0$; the dual placement $C^{\top} T C$ is bounded by $\|T\|$-weighted frame geometry and, for the projective operators, is exactly $\|P_{\operatorname{row}(C)}\|_2 = 1$. The critical decoding failure at $\rho=1$ is a property of operator placement, not of the frame.
 \end{proposition}
 
 The principle is supported at four independent levels: (i) causal intervention with fixed codebook, Gram, resolvent, states, facts, and iterations (Exp.~18); (ii) a from-scratch reimplementation with no shared code (Exp.~19); (iii) transfer across six codebook ensembles, the BSC algebra, and a de-VSA-ified purely linear pipeline (Exps.~20, 18b, 21); And (iv) a perturbation analysis showing that the stabilization extends to $T = M^{+}$, Tikhonov, and truncated SVD (Exp.~23), with the dual gain equal to $1$ exactly for the projective operators ($M^{-1}$, $M^{+}$) and slightly below one for the regularized variants (Tikhonov, truncated SVD --- they shrink the weak eigendirection by design). A numerical bound on $\|C^{\top} T C\|_2$ relative to $\|T\|$ is $O(1)$ across controlled spectra (Exp.~26).
