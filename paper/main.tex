@@ -162,10 +162,7 @@ not by a scalar band. We distill this into a reusable principle:
 A compositional decoder exhibits the \emph{hard-edge ambient-resolvent failure} when (i) its Gram ensemble sits at the square hard edge ($\rho=1$, $\lambda_{\min} \sim n^{-2}$), and (ii) it applies $M^{-1}$ to the ambient state. Under these conditions a single application already amplifies the weak eigendirections by $1/\lambda_{\min}$ (Exp.~18, $T=1$ control: pure $=0.911$, gram $=0.165$). Iteration perpetuates the corrupted state but is not required to produce it.
 \end{definition}
 
-Definition~\ref{def:closure} is the statement of this paper that is
-independent of any particular experiment: it is what a practitioner
-designing a VSA decoder should check first, and it is what we would ask a
-replicating study to test.
+Definition~\ref{def:closure} is intended as an operational formulation of the mechanism identified by these experiments: it is what a practitioner designing a VSA decoder should check first, and it is what we would ask a replicating study to test.
 
 \paragraph{(iii) $\rho < 1$ ($n < d$, under-complete... under-determined).} The spectrum of a well-conditioned Wishart is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit above the asymptotic edge by a factor $\sim$2--70, consistent with finite-size concentration well inside the bulk. For $\rho<1$ the spectrum is separated from zero by the lower Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}>0$; as $\rho\to 1^{-}$ this edge approaches zero, and at the square point the ensemble enters the hard-edge regime with $\lambda_{\min} \sim n^{-2}$. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ is within a factor 2 of the hard-edge scale $d^{-2} = 9.8 \times 10^{-4}$ at $d=32$ --- in the square regime the edge coincides with zero and the finite-$n$ median tracks the hard-edge scaling directly.
 
@@ -248,7 +245,7 @@ The principle is supported at four independent levels: (i) causal intervention w
 
 \textbf{Independent replication (Exp.~19)}. A from-scratch reimplementation (60 seeds, 5 initializations per codebook, no shared code with the main harness) recovers the same effect: \texttt{pure} $0.982$, \texttt{gram} $0.159$, \texttt{dual-same} $0.982$, paired per-seed $+0.823$ with $100\%$ of seeds positive.
 
-\textbf{Ensemble generality (Exp.~20A)}. The same intervention across six codebook families at $\rho=1$: Gaussian ($0.160 \to 0.979$), Rademacher ($0.128 \to 0.986$), uniform-on-sphere ($0.164 \to 0.983$), and Toeplitz-correlated ($0.175 \to 0.947$) all replicate; an orthogonal frame (QR factor of a Gaussian matrix; tight at $n=d$) does not collapse (the ambient operator is undefined there rather than unstable); a deliberately pathological near-duplicate frame breaks all decoders, as expected.
+\textbf{Ensemble generality (Exp.~20A)}. The same intervention across six codebook families at $\rho=1$: Gaussian ($0.160 \to 0.979$), Rademacher ($0.128 \to 0.986$), uniform-on-sphere ($0.164 \to 0.983$), and Toeplitz-correlated ($0.175 \to 0.947$) all replicate; an orthogonal frame (QR factor of a Gaussian matrix; for $n=d$ it satisfies $C^{\top}C=I$, so $M=I$ and ambient inversion is well-defined and harmless) provides a control: $\rho=1$ alone does not force the collapse --- the hard-edge geometry of a *random* square Gram does; a trivially well-conditioned square Gram does not. a deliberately pathological near-duplicate frame breaks all decoders, as expected.
 
 \textbf{Aspect-ratio sweep (Exp.~20B)}. On the Gaussian ensemble, the collapse is localized to the hard-edge region: ambient decoding is benign at $\rho \le 0.95$, collapses at $\rho = 1$ ($\kappa \sim 2.5\times 10^{3}$), and at $\rho > 1$ the Gram ceases to exist (rank-deficient) so the correction cannot be applied.
 
@@ -285,8 +282,8 @@ The Frame-Dual Stability Principle was stated provisionally before this agenda; 
 
 \begin{enumerate}
 \item \textbf{Independent replication} (DONE). Exp.~19 implements the test from scratch with a different codepath: pure $0.982$, gram $0.159$, dual-same $0.982$.
-\item \textbf{Ensemble generalization} (DONE). Exp.~20A: Gaussian, Rademacher, uniform-sphere, Toeplitz all replicate; DFT-tight does not collapse (ambient is undefined); near-duplicate breaks all. Exp.~20B: $\rho$ sweep localizes to the hard edge.
-\item \textbf{Continuous $\rho$ sweep} (DONE, within the Gaussian ensemble).
+\item \textbf{Ensemble generalization} (DONE). Exp.~20A: Gaussian, Rademacher, uniform-sphere, Toeplitz all replicate; the orthogonal frame (square) does not collapse because $M=I$; near-duplicate breaks all. Exp.~20B: $\rho$ sweep localizes to the hard edge.
+\item \textbf{Discrete aspect-ratio sweep} (DONE, within the Gaussian ensemble). Exp.~20B varies $d$ over integer values, giving distinct geometries per point; the collapse localizes to $\rho=1$.
 \item \textbf{Perturbation amplification} (DONE). Exp.~21: ambient gain $3.6\times 10^{2}$ median, dual $=1.000$.
 \item \textbf{De-VSA-ified linear pipeline} (DONE). Exp.~21 reproduces the dichotomy without a resonator.
 \item \textbf{Operator zoo} (DONE). Exp.~23: $M^{+}$, Tikhonov ($\lambda=10^{-3}, 10^{-1}$), truncated SVD in both wirings. The dual gain equals $1$ exactly for $M^{-1}$; for $M^{+}$ on well-conditioned inputs the dual gain is also $1$, while on a deliberately ill-conditioned Gram ($\kappa \sim 10^{11}$) the truncated SVD inside the pseudo-inverse yields a gain of $0.992$, correctly reflecting the projector's loss of the near-null eigendirection. Tikhonov sits below $1$ by design ($\sigma_i^2/(\sigma_i^2+\alpha)$).
@@ -305,7 +302,7 @@ The connections to classical frame theory are direct: $C^{\top} M^{+} C$ is the 
 \section{Conclusion}
 \label{sec:conclusion}
 
-The phase diagram in $\rho$ provides a complete characterization of when resonator-based decoding works in FHRR and HRR. The ``binary collapse'' is observer-relative: it appears for Gram-based decoders exactly at $\rho=1$, where the hard edge of the square Wishart and the loop amplification meet (Def.~\ref{def:closure}). Pure resonators and learned decoders are unaffected. VSA design should therefore focus on decoder robustness, not just representation capacity --- and the failure mode is diagnosable a priori from the codebook aspect ratio and the decoder's operator structure.
+The experiments identify a reproducible square-point failure in the tested resonator configurations and characterize its spectral mechanism. The ``binary collapse'' is observer-relative: it appears for Gram-based decoders exactly at $\rho=1$, (Def.~\ref{def:closure}). Pure resonators and learned decoders are unaffected. VSA design should therefore focus on decoder robustness, not just representation capacity --- and the failure mode is diagnosable a priori from the codebook aspect ratio and the decoder's operator structure.
 
 \section*{Data availability}
 
