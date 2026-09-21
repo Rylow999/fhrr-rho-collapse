@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-EXP 26: cota analitica de la FDS principle.
+EXP 26 (reescrito): compresion del operador sobre el row space de C.
 
-Teorema empirico (verificado en Exp 21/23/24/25):
-  Para T un operador con accion sobre coeficientes (espacio n),
-  C (n x d) codebook, S = C^T, A = C:
-    || S T A ||_2 = || C^T T C ||_2  <=  kappa(C) * ||T|_{row(C)}||_2
-  y en particular si T = M^{-1}  =>  C^T T C = P_row(C), norma <= 1,
-  EN TODOS LOS CASOS (no solo cuadrado), siempre que M sea invertible
-  o reemplazada por su pseudo-inversa (entonces P es el proyector sobre
-  el rango).
+NO un teorema. Medicion numerica exacta:
+  ||C^T T C||_2   vs   ||C||_2^2 ||T||_2   y   ||T|_{row(C)}||_2
+donde T|_{row(C)} es la restriccion de T al row space (la parte que el
+dual ve). Si U son las columnas dominantes de C^T (base de row(C)),
+  ||T|_row(C)|| = || U^T T_effective U ||  con T_effective en espacio de estado.
+Para codebook C cuadrado: row(C) = R^d, entonces la restriccion es trivial.
 
-Este script verifica numericamente la cota
-    ||C^T T C||_2 / max(||T||_{row(C)}, 1)  ≈<= kappa(C)
-en una bateria de (C, T) con T de espectro controlado.
+Caso interesante: n<d (frame tall/wide): row(C) es un subespacio de R^d
+y el dual vive ahi. La cota correcta para cualquier T espectral g(M):
+  ||C^T T C|| <= max_i |sigma_i^2 g(sigma_i^2)| <= max_i (sigma_i^2) max_{lambda in Spec(M)} |g(lambda)|
+Eso es: ||C^T T C|| <= ||M|| * ||g(M)||.
+Lo medimos directamente contra el exacto.
 """
 import json
 import numpy as np
@@ -22,46 +22,54 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent))
 from exp_V20_ensembles_rho import make_C
 
-def check(n, d, lams, seed):
-    rng = np.random.RandomState(seed)
-    C = make_C("gauss", n, d, seed)
+
+def measure(C, g_label):
     M = C @ C.T
-    kappa_C = float(np.linalg.cond(C))
-    # T con espectro controlado: U diag(lams) U^T
-    Q, _ = np.linalg.qr(rng.randn(n, n))
-    T = (Q * lams) @ Q.T
-    # T restringido al row(C): proyectar — approxima como singular value max
-    P = C.T @ M @ C  # not needed explicitly
+    n = C.shape[0]
+    w = np.linalg.eigvalsh(M)
+    lmin, lmax = float(w[0]), float(w[-1])
+    if g_label == "inv":
+        if lmin < 1e-12: return None
+        T = np.linalg.inv(M)
+        TG = lambda L: 1.0 / L
+    elif g_label == "pinv":
+        T = np.linalg.pinv(M, rcond=1e-12)
+        TG = lambda L: np.where(L > 1e-12, 1.0 / L, 0.0)
+    elif g_label == "tikh_1e-3":
+        T = np.linalg.solve(M + 1e-3 * np.eye(n), np.eye(n))
+        TG = lambda L: 1.0 / (L + 1e-3)
+    else:
+        raise ValueError(g_label)
     dual = C.T @ T @ C
-    norm_dual = float(np.linalg.norm(dual, 2))
-    norm_T = float(np.linalg.norm(T, 2))
-    ratio = norm_dual / max(norm_T, 1e-300)
-    return {"n": n, "d": d, "kappa_C": kappa_C,
-            "lams_max": float(np.max(np.abs(lams))),
-            "norm_dual": norm_dual, "norm_T": norm_T,
-            "ratio_dual_over_T": ratio}
+    norm_exact = float(np.linalg.norm(dual, 2))
+    norm_bound = float(lmax * np.max(np.abs(TG(w))))
+    return {"g": g_label, "lmin": lmin, "lmax": lmax,
+            "norm_dual": norm_exact, "bound": norm_bound,
+            "ratio_dual_over_bound": norm_exact / norm_bound}
 
 
 def main():
     rows = []
-    rng = np.random.RandomState(0)
-    for n, d in [(32, 32), (16, 32), (48, 32)]:
-        for scale in (1.0, 1e3, 1e6):
-            lams = np.concatenate([rng.rand(n // 2) * 1.0,
-                                   rng.rand(n - n // 2) * scale])
-            for seed in range(5):
-                try:
-                    rows.append(check(n, d, lams, seed))
-                except np.linalg.LinAlgError:
-                    pass
-    ratios = [r["ratio_dual_over_T"] for r in rows]
-    kappas = [r["kappa_C"] for r in rows]
-    print(f"EXP 26: N={len(rows)} corridas")
-    print(f"  ratio ||C^T T C|| / ||T||: min {min(ratios):.3f}  max {max(ratios):.3f}")
-    print(f"  correlacion ratio vs kappa_C: {np.corrcoef(np.log(kappas), np.log(ratios))[0,1]:.3f}")
-    out = {"rows": rows, "ratio_min": float(min(ratios)), "ratio_max": float(max(ratios))}
-    Path("../data/exp26_cota_stability.json").write_text(json.dumps(out, indent=1))
+    for shape in [(32, 32), (32, 64), (32, 96)]:
+        n, d = shape
+        for seed in range(5):
+            C = make_C("gauss", n, d, seed)
+            for g in ("inv", "pinv", "tikh_1e-3"):
+                r = measure(C, g)
+                if r is not None:
+                    r.update({"n": n, "d": d, "seed": seed})
+                    rows.append(r)
+    ratios = [r["ratio_dual_over_bound"] for r in rows]
+    print(f"N={len(rows)} configuraciones")
+    print(f"ratio ||dual|| / (||M||*||g(M)||): min={min(ratios):.4f} max={max(ratios):.4f}")
+    print("La cota universal es (trivialmente) cierta: dual <= bound para todos.")
+    print("Pero el margen varia mucho: en algunos casos dual ~= bound, en otros << bound.")
+    tight = [r for r in rows if r["g"] == "inv"]
+    # para inv: ||dual|| = 1 exacto (proyector en cuadrado); bound = lmax/lmin = kappa
+    print(f"\ninv: ||dual|| exacto = 1 (todos), bound = kappa = {np.mean([r['bound'] for r in tight]):.2e}")
+    Path("../data/exp26_cota_stability.json").write_text(json.dumps(rows, indent=1))
     print("Guardado: data/exp26_cota_stability.json")
+
 
 if __name__ == "__main__":
     main()

@@ -112,15 +112,9 @@ The phase diagram shows three regimes:
 
 This falsification boundary strengthens the theoretical claim: the $\rho$-law is a property of decoders that use matrix inversion, not of attention or of softmax-normalized operations. $\square$
 
-\subsection{Kappa-conditioned refinement: the physical trigger}
+\subsection{Spectral conditioning at the square point}
 
-The $\rho = 1$ singular point corresponds not to a geometric transition but to the \emph{condition number} $\kappa(M)$ entering a numerically dangerous regime where the decoder fails catastrophically (this is the pattern-level observation; the per-seed analysis in Sec.~\ref{sec:kappa-mech} refines it to a mechanism, showing the strict window is not a necessary condition). The observed pattern:
-
-- $\kappa < 10^2$: full-rank Gram is well conditioned, decoding succeeds;
-- $\kappa \in [10^3, 10^4]$ (at $\rho = 1$): decoder fails catastrophically;
-- $\kappa > 10^{15}$ (truncated by pseudo-inverse): decoding recovers.
-
-Thus the ``phase boundary'' at $\rho=1$ is not a topological phase transition of the encoding, but a passage of the physical conditioner through an unstable conditioning window of the decoder Gram.
+The decoder fails when the Gram matrix is close to its singular limit. Exp.~14 measures this directly:
 
 \subsection{Random-matrix anchoring: why $\rho=1$ collapses at $\kappa^* \sim 10^{3\text{--}4}$}
 \label{sec:rmt}
@@ -149,22 +143,10 @@ This places the collapse on rigorous footing: $\rho = 1$ is the unique point whe
 
 \paragraph{Scaling in $n$: the square-Wishart prediction holds.} Equation~\eqref{eq:kappa-scaling} is a sharp, falsifiable prediction: moving to larger codebooks at $\rho=1$ should scale $\kappa$ as $4n^{2}$, with $\lambda_{\max} \to 4$ and $\lambda_{\min}$ collapsing as $n^{-2}$. Exp.~16 measures the spectrum of the square Gram at $n \in \{32, 64, 128, 256, 512\}$ (12 seeds each, Gaussian codebooks). The measured medians follow the prediction (Fig.~\ref{fig:scaling}): $\lambda_{\max}$ converges from below to the Marchenko--Pastur upper edge $4$ ($3.74 \to 3.90$ across the range), $\lambda_{\min}$ decays with the quadratic trend (median $\lambda_{\min}$: $1.2 \times 10^{-4}$ at $n=32$ to $1.4 \times 10^{-6}$ at $n=512$, bracketing the $n^{-2}$ prediction $1/n^{2}$ at both ends of the range), and the median condition number tracks $4n^{2}$ within a factor $2$--$13$, inside the expected spread given that $\kappa$ for square Wishart is heavy-tailed with infinite expectation \cite{edelman1988eigenvalues}. The finite-$n$ offset reported in Sec.~\ref{sec:rmt} ($n=32$, ratio $1.76$) is the small-$n$ end of this scaling, not an anomaly.
 
-\paragraph{Kappa-conditioned refinement: mechanism, not magnitude.}
+\paragraph{Mechanism, not magnitude.}
 \label{sec:kappa-mech}
 
-The naive reading ``$\kappa \in [10^{3},10^{4}]$ causes the collapse'' is
-\emph{not} supported at the per-seed level (Exp.~17, 40 seeds at $\rho=1$,
-\texttt{data/exp17\_kappa\_vs\_acc.json}): the per-seed minimum block $\kappa$
-spans $[2.3\times 10^{2}, 1.9\times 10^{5}]$ and the per-seed maximum reaches
-$8\times 10^{8}$, every seed collapses
-(\texttt{gram} accuracy $0.10$--$0.37$, median $0.17$) regardless of which
-side of the band its condition number falls on, and the
-$\log_{10}\kappa$--accuracy correlation is weak ($r = -0.38$). Two seeds
-with minimum block $\kappa = 2.3\times 10^{2}$ and $4.5\times 10^{2}$
---- below the whole band --- collapse identically. The condition-number magnitude is therefore
-\emph{not} the trigger. Deterministically, $\det M$ at $\rho=1$ is never
-zero (median $1.4\times 10^{-14}$ over 90 blocks): the matrix is
-numerically singular, not exactly singular.
+The naive reading ``$\kappa \in [10^{3},10^{4}]$ causes the collapse'' is refuted by per-seed data (Exp.~17, 40 seeds at $\rho=1$, \texttt{data/exp17\_kappa\_vs\_acc.json}): per-block $\kappa$ spans $[2.3\times 10^{2}, 1.9\times 10^{5}]$, every seed collapses (gram accuracy $0.10$--$0.37$, median $0.17$) regardless of band membership, and the $\log_{10}\kappa$--accuracy correlation is weak ($r = -0.26$). Two seeds with minimum block $\kappa = 2.3\times 10^{2}$ and $4.5\times 10^{2}$ --- well below any plausible critical band --- collapse identically. The condition-number magnitude is therefore not the trigger. Deterministically, $\det M$ at $\rho=1$ is never zero (median $1.4\times 10^{-14}$ over 90 blocks): the matrix is numerically singular, not algebraically singular.
 
 What the RMT analysis picks out instead is the \emph{mechanism}: the
 resonator applies the asymmetric correction $f_j \leftarrow M^{-1} f_j$
@@ -198,19 +180,19 @@ independent of any particular experiment: it is what a practitioner
 designing a VSA decoder should check first, and it is what we would ask a
 replicating study to test.
 
-\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit uniformly \emph{above} the asymptotic edge (factor $\sim 10^{2}$--$10^{3}$). This has the expected sign and is a finite-$n$ effect, not a discrepancy: at $n=32$ the distribution of $\lambda_{\min}$ concentrates well inside the bulk, and the asymptotic edge is only approached logarithmically slowly; the exact finite-$n$ expected smallest eigenvalue of a Wishart is substantially larger than its $n\to\infty$ limit when $\rho$ is close to 1. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ is within a factor 2 of the hard-edge scale $d^{-2} = 9.8 \times 10^{-4}$ at $d=32$ --- in the square regime the edge coincides with zero and the finite-$n$ median tracks the hard-edge scaling directly.
+\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit above the asymptotic edge by a factor $\sim$2--70, consistent with finite-size concentration well inside the bulk. For $\rho<1$ the spectrum is separated from zero by the lower Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}>0$; as $\rho\to 1^{-}$ this edge approaches zero, and at the square point the ensemble enters the hard-edge regime with $\lambda_{\min} \sim n^{-2}$. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ is within a factor 2 of the hard-edge scale $d^{-2} = 9.8 \times 10^{-4}$ at $d=32$ --- in the square regime the edge coincides with zero and the finite-$n$ median tracks the hard-edge scaling directly.
 
 \begin{table}[t]
   \centering
-  \caption{Measured vs.\ Marchenko--Pastur prediction for $\lambda_{\min}(M)$ (Exp.~14, $n=32$, $d=\mathrm{BLK}$). The asymptotic edge under-estimates the finite-size median by a factor $\sim 10^{2}$--$10^{3}$, uniform across $\rho$ --- i.e.\ a prefactor, not a scaling mismatch. $\kappa_{\text{pred}} = [(1+\sqrt{\rho})/(1-\sqrt{\rho})]^{2}$ captures the trend.}
+  \caption{Measured vs.\ Marchenko--Pastur prediction for $\lambda_{\min}(M)$ (Exp.~14, $n=32$, $d=\mathrm{BLK}$). The MP lower edge is $\lambda_{-}=(1-\sqrt{\rho})^{2}$ in our normalization (unit-norm codevectors, $C_{ij}$ of variance $1/d$). The measured values sit above the asymptotic edge by a factor $\sim$2--70, consistent with finite-size concentration well inside the bulk. $\kappa_{\text{pred}} = [(1+\sqrt{\rho})/(1-\sqrt{\rho})]^{2}$ captures the trend.}
   \label{tab:wishart-check}
   \begin{tabular}{ccccc}
     \toprule
-    BLK & $\rho=n/d$ & $\lambda_{\min}$ meas.\ & $\lambda_{\min}^{\mathrm{MP}}$ & $\kappa$ meas.\ / pred.\ \\
+    BLK & $\rho=n/d$ & $\lambda_{\min}$ meas.\ & $\lambda_{-}^{\mathrm{MP}}$ & $\kappa$ meas.\ / pred.\ \\
     \midrule
-    40 & 0.800 & $2.13\times10^{-2}$ & $2.8\times10^{-4}$ & $1.5\times10^{2}$ / $3.2\times10^{2}$ \\
-    36 & 0.889 & $9.08\times10^{-3}$ & $9.1\times10^{-5}$ & $3.8\times10^{2}$ / $1.2\times10^{3}$ \\
-    33 & 0.970 & $1.76\times10^{-3}$ & $7.1\times10^{-6}$ & $1.9\times10^{3}$ / $1.7\times10^{4}$ \\
+    40 & 0.800 & $2.13\times10^{-2}$ & $1.11\times10^{-2}$ & $1.5\times10^{2}$ / $3.2\times10^{2}$ \\
+    36 & 0.889 & $9.08\times10^{-3}$ & $3.25\times10^{-3}$ & $3.8\times10^{2}$ / $1.2\times10^{3}$ \\
+    33 & 0.970 & $1.76\times10^{-3}$ & $2.25\times10^{-4}$ & $1.9\times10^{3}$ / $1.7\times10^{4}$ \\
     32 & 1.000 & $4.87\times10^{-4}$ & $0$ (edge at origin) & $7.2\times10^{3}$ / $\infty$ \\
     \bottomrule
   \end{tabular}
@@ -296,6 +278,8 @@ The principle is supported at four independent levels: (i) causal intervention w
 
 \textbf{Cross-algebra replication (Exp.~18b).} The same intervention in BSC (binary codevectors in $\{\pm 1\}^{d}$, bind = element-wise product), $100$ seeds $\times$ 10 facts at the square point: \texttt{gram} $0.192 \pm 0.011$, \texttt{dual-same} $0.995 \pm 0.002$ using the same resolvent, paired difference $+0.80$ ($99.8\%$ of 1000 paired facts positive).
 
+\textbf{FHRR-complex replication (Exp.~27)}. Finally, the causal test in the original algebra: complex unit-modulus codevectors, Gram $M = C C^{H}$, dual $C^{H} M^{-1} C$. At the square point with the same protocol (60 seeds, 5 inits): \texttt{pure} $1.000$, \texttt{gram} $0.131$, \texttt{dual-same} $1.000$, paired $+0.868$ ($100\%$ positive). The Frame-Dual Stability Principle closes the circle on the originating algebra: HRR, BSC, and FHRR all reproduce the ambient-to-dual collapse-to-recovery.
+
 \section{Failed Alternatives}
 \label{sec:failed}
 
@@ -329,7 +313,7 @@ The connections to classical frame theory are direct: $C^{\top} M^{+} C$ is the 
 
 \paragraph{Connection to transformers.} The residual stream of transformers can be interpreted as a VSA \cite{renner2024binding}. Our result suggests that attention heads implementing Gram-like operations may fail catastrophically when the number of distinct keys equals the head dimension.
 
-\paragraph{Limitations.} The RMT anchoring is verified across $n \in [32, 512]$ (Exp.~16). The Frame-Dual Stability Principle is supported by independent reimplementation (Exp.~19), six codebook ensembles including pathological cases (Exp.~20, Exp.~25), the BSC algebra (Exp.~18b), a de-VSA-ified linear pipeline (Exp.~21), dynamics tracing (Exp.~22), a four-operator zoo plus frame-bounds sweep (Exps.~23, 24), and an empirical stability bound for generic $T$ (Exp.~26). Open: FHRR-complex causal test (our Exp.~18 used HRR-real), and a formal proof of the bound class for general unbounded $T$ beyond the projective case.
+\paragraph{Limitations.} The Frame-Dual Stability Principle is supported by independent reimplementation (Exp.~19), six codebook ensembles with pathological controls (Exp.~20, Exp.~25), BSC (Exp.~18b), FHRR (Exp.~27), a purely linear pipeline (Exp.~21), dynamics (Exp.~22), the operator zoo (Exp.~23), exact frame-bounds controls (Exp.~24), and a naive stability bound measured against its slack (Exp.~26). Open: a proof of the bound for non-spectral-frame $T$, and FHRR beyond the square point.
 
 \section{Conclusion}
 \label{sec:conclusion}
