@@ -8,8 +8,11 @@
 \usepackage{cleveref}
 \usepackage[numbers]{natbib}
 
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+
 \title{Frame duality governs compositional decoding in FHRR:\\ a phase diagram in $\rho$}
-\author{Luciano Benjam\'in Nieto\\General Alvear, Mendoza, Argentina}
+\author{Luciano Benjam\'in Nieto\\General Alvear, Mendoza, Argentina\\ \texttt{github.com/Rylow999}}
 \date{September 2026}
 
 \begin{document}
@@ -33,6 +36,8 @@ In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at hi
 
 \section{Background}
 \label{sec:background}
+
+\paragraph{Notation.} Throughout: $n$ = number of distinct codevectors per block ($n_{cv}$), $d$ = block dimensionality (BLK), $\rho = n/d$, $M = C C^{\top} \in \mathbb{R}^{n\times n}$ the block Gram matrix, $\lambda_{\min}, \lambda_{\max}$ its extreme eigenvalues, $\kappa = \lambda_{\max}/\lambda_{\min}$, $C \in \mathbb{R}^{n\times d}$ the stacked codevectors, $f_j$ the unbound candidate for role $j$, $T$ the resonator iteration count. Code available at \url{https://github.com/Rylow999/fhrr-rho-collapse}.
 
 \paragraph{FHRR and HRR.} FHRR (Fourier Holographic Reduced Representations) uses complex unit vectors with phase binding \cite{plate1995holographic}. HRR (Holographic Reduced Representations) uses real Gaussian vectors with circular convolution. The resonator network \cite{frady2020resonator} factorizes bound structures by iterative competition between codebooks.
 
@@ -66,7 +71,7 @@ The phase diagram shows three regimes:
   \item $\rho > 1$: all succeed (overcomplete frames are stable).
 \end{itemize}
 
-The fine sweep (Figure~\ref{fig:fine_rho}) localises the failure to the square point (Exp.~9). Note that the strictly-zero-width statement is partly an implementation property: outside $\rho=1$ the Gram correction is not applied (Methods), so the ``recovery'' at neighbouring $\rho$ is not evidence about Gram decoders away from the square point --- that question is answered separately by the MAP coefficient-space decoder (Exp.~11c), which works everywhere except $\rho > 1$.
+\paragraph{Fine sweep.} Figure~\ref{fig:fine_rho} shows that the Gram-based decoders fail exactly at $\rho=1.000$ while the pure resonator holds at $0.99$ at every sampled point. Note that the strictly-zero-width appearance is partly an implementation property: outside $\rho=1$ the Gram correction is not applied in our implementation (Methods), so the ``recovery'' at neighbouring $\rho$ is not by itself evidence about Gram decoders away from the square point --- that question is answered separately by the MAP coefficient-space decoder (Exp.~11c), which works everywhere except $\rho > 1$.
 
 \section{Empirical Validation}
 \label{sec:empirical}
@@ -173,7 +178,26 @@ loop. It also predicts why \texttt{pure} survives everywhere: it never
 forms $M^{-1}$. The observer-relative content survives intact --- it is
 strengthened, because the failed decoder is now characterised by the
 operator it applies (the resolvent $M^{-1}$, evaluated at the soft edge),
-not by a scalar band.
+not by a scalar band. We distill this into a reusable principle:
+
+\begin{definition}[closed-loop soft-edge condition]
+\label{def:closure}
+A compositional decoder over a block Gram $M$ satisfies the
+\emph{closed-loop soft-edge condition} if (i) the ensemble of $M$ has a
+soft spectral edge at $0$ (i.e.\ $\rho = n/d = 1$, the square Wishart), and
+(ii) the decoder re-applies $M^{-1}$ to the running estimate on every
+iteration. Decoders satisfying both factors collapse at $\rho=1$ with
+error amplification $1/\lambda_{\min} \sim n^{2}$ per iteration; decoders
+violating either factor (single-shot inversion, or no inversion at all)
+do not. The condition is checkable before running the system: it requires
+only the aspect ratio of the codebook block and the decoder's operator
+structure.
+\end{definition}
+
+Definition~\ref{def:closure} is the statement of this paper that is
+independent of any particular experiment: it is what a practitioner
+designing a VSA decoder should check first, and it is what we would ask a
+replicating study to test.
 
 \paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit uniformly \emph{above} the asymptotic edge (factor $\sim 10^{2}$--$10^{3}$). This has the expected sign and is a finite-$n$ effect, not a discrepancy: at $n=32$ the distribution of $\lambda_{\min}$ concentrates well inside the bulk, and the asymptotic edge is only approached logarithmically slowly; the exact finite-$n$ expected smallest eigenvalue of a Wishart is substantially larger than its $n\to\infty$ limit when $\rho$ is close to 1. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ matches the soft-edge scaling $\sigma^{2}/n = 9.8\times 10^{-4}$ within a factor 2 --- the unique regime where the asymptotic edge vanishes and the finite-$n$ and asymptotic descriptions coincide.
 
@@ -205,7 +229,7 @@ not by a scalar band.
 \section{Discussion}
 \label{sec:discussion}
 
-The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space.
+The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space --- concretely, the testable content of this claim is the closed-loop soft-edge condition (Def.~\ref{def:closure}).
 
 \paragraph{Connection to capacity theory.} Our finding that $\rho = 1$ is a point singularity complements capacity analyses \cite{thomas2023capacity} that focus on asymptotic scaling. The fine-grained structure at the phase boundary was not previously characterized. Through the Wishart lens (Sec.~\ref{sec:rmt}), the $\rho$ axis is exactly the aspect-ratio axis of the Marchenko--Pastur law \cite{marchenko1967distribution}, and the singular point corresponds to the soft-edge-to-hard-edge crossover of the square ensemble \cite{tracy1994level, edelman1988eigenvalues}.
 
@@ -216,7 +240,15 @@ The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed prop
 \section{Conclusion}
 \label{sec:conclusion}
 
-The phase diagram in $\rho$ provides a complete characterization of when resonator-based decoding works in FHRR and HRR. The ``binary collapse'' is observer-relative: it appears only for Gram-based decoders at $\rho=1$, a measure-zero set. Pure resonators and learned decoders are unaffected. This suggests that VSA design should focus on decoder robustness, not just representation capacity. Code and data are available at \url{https://github.com/Rylow999/fhrr-rho-collapse}.
+The phase diagram in $\rho$ provides a complete characterization of when resonator-based decoding works in FHRR and HRR. The ``binary collapse'' is observer-relative: it appears for Gram-based decoders exactly at $\rho=1$, where the soft edge of the square Wishart and the loop amplification meet (Def.~\ref{def:closure}). Pure resonators and learned decoders are unaffected. VSA design should therefore focus on decoder robustness, not just representation capacity --- and the failure mode is diagnosable a priori from the codebook aspect ratio and the decoder's operator structure.
+
+\section*{Data availability}
+
+All code, raw data, and figure scripts are available at \url{https://github.com/Rylow999/fhrr-rho-collapse}. Each number in the text is traceable to a file under \texttt{data/}; experiments are seeded and listed in \texttt{src/} (\texttt{exp\_V9\_fine\_rho}, \texttt{exp\_V14\_kappa\_law}, \texttt{exp\_V16\_scaling\_n}, \texttt{exp\_V17\_kappa\_vs\_acc}, \texttt{exp\_V11b/11c}, among others). The verification script described in the text reproduces every headline number from the shipped JSON files.
+
+\section*{Acknowledgments}
+
+The author thanks Nexus for assistance with auditing, experimental design, and the random-matrix analysis, and the anonymous external reviewer whose critique of the $\kappa$-band claim led to the current, stronger formulation.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
