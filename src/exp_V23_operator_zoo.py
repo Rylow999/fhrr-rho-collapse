@@ -2,7 +2,7 @@
 """
 EXP 23 — Zoo de operadores bajo ambos wirings (Capa F del roadmap final).
 
-Para cada T in {M^-1, M^+, Tikhonov(lambda), TruncSVD(k=n-2), LSQR-ish}:
+Para cada T in {M^-1, M^+, Tikhonov(lambda), TruncSVD(k=n-2)}:
   - ambiente:   y = T f
   - dual:       y = C^T T C f
 Medir: norma de operador exacta, ganancia de perturbacion, y error de

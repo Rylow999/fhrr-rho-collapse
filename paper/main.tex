@@ -112,18 +112,16 @@ The phase diagram shows three regimes:
 
 This falsification boundary strengthens the theoretical claim: the $\rho$-law is a property of decoders that use matrix inversion, not of attention or of softmax-normalized operations. $\square$
 
-\subsection{Spectral conditioning at the square point}
+The decoder fails when the Gram matrix is severely ill-conditioned. Exp.~14 measures this directly (Table~\ref{tab:wishart-check}); the RMT analysis of the next section explains why this is the square point (hard edge).
 
-The decoder fails when the Gram matrix is close to its singular limit. Exp.~14 measures this directly:
-
-\subsection{Random-matrix anchoring: why $\rho=1$ collapses at $\kappa^* \sim 10^{3\text{--}4}$}
+\section{Mechanism: hard edge and the asymmetric correction}
 \label{sec:rmt}
 
-The $\rho = 1$ singular point is not an artifact of a particular codebook realisation: it is the finite-size shadow of a \emph{square Wishart ensemble}. Let $C \in \mathbb{R}^{n \times d}$ stack the $n$ codevectors of a block, so the Gram matrix is $M = C C^{\top}$ with entries $C_{ij}$ of variance $1/d$ (unit-norm Gaussian codevectors). Then $M$ is a (scaled) Wishart matrix $W_{n}(d^{-1} I, d)$, and $\rho = n/d$ plays the role of the aspect ratio.
+The $\rho = 1$ point is the finite-size shadow of a \emph{square Wishart ensemble}. Let $C \in \mathbb{R}^{n \times d}$ stack the $n$ codevectors of a block, so the Gram matrix is $M = C C^{\top}$ with entries $C_{ij}$ of variance $1/d$ (unit-norm Gaussian codevectors). Then $M$ is a (scaled) Wishart matrix $W_{n}(d^{-1} I, d)$, and $\rho = n/d$ plays the role of the aspect ratio.
 
 Three classical facts from random-matrix theory map one-to-one onto our phase diagram:
 
-\paragraph{(i) $\rho > 1$ ($d < n$, under-complete).} $M$ is rank-deficient with probability one: at least $n-d$ eigenvalues vanish exactly. Gram inversion is undefined; this is regime~I.
+\paragraph{(i) $\rho > 1$ ($d < n$, over-complete).} $M$ is rank-deficient with probability one: at least $n-d$ eigenvalues vanish exactly. Gram inversion is undefined; this is regime~I.
 
 \paragraph{(ii) $\rho = 1$ ($n = d$, square).} The Marchenko--Pastur density $\mathrm{d}\mu_{1}(\lambda) = \frac{1}{2\pi}\sqrt{(4-\lambda)/\lambda}\,\mathrm{d}\lambda$ has support touching the origin: the lower edge is a \emph{hard edge} at $\lambda=0$ (the density diverges as $\lambda^{-1/2}$ there). For the square Wishart this is the hard-edge regime: $\lambda_{\min}$ scales as $n^{-2}$ in its typical size (rather than the $n^{-2/3}$ Tracy--Widom scale of a soft edge), so the condition number scales as
 \begin{equation}
@@ -180,7 +178,7 @@ independent of any particular experiment: it is what a practitioner
 designing a VSA decoder should check first, and it is what we would ask a
 replicating study to test.
 
-\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit above the asymptotic edge by a factor $\sim$2--70, consistent with finite-size concentration well inside the bulk. For $\rho<1$ the spectrum is separated from zero by the lower Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}>0$; as $\rho\to 1^{-}$ this edge approaches zero, and at the square point the ensemble enters the hard-edge regime with $\lambda_{\min} \sim n^{-2}$. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ is within a factor 2 of the hard-edge scale $d^{-2} = 9.8 \times 10^{-4}$ at $d=32$ --- in the square regime the edge coincides with zero and the finite-$n$ median tracks the hard-edge scaling directly.
+\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The spectrum of a well-conditioned Wishart is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit above the asymptotic edge by a factor $\sim$2--70, consistent with finite-size concentration well inside the bulk. For $\rho<1$ the spectrum is separated from zero by the lower Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}>0$; as $\rho\to 1^{-}$ this edge approaches zero, and at the square point the ensemble enters the hard-edge regime with $\lambda_{\min} \sim n^{-2}$. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ is within a factor 2 of the hard-edge scale $d^{-2} = 9.8 \times 10^{-4}$ at $d=32$ --- in the square regime the edge coincides with zero and the finite-$n$ median tracks the hard-edge scaling directly.
 
 \begin{table}[t]
   \centering
@@ -257,13 +255,13 @@ so its singular values are $\sigma_i^{2} g(\sigma_i^{2})$ acting on the directio
 Under ambient placement $T$ acts directly on the ambient state with $\|T\|_2$ unbounded as $\lambda_{\min} \to 0$; the dual placement $C^{\top} T C$ is bounded by $\|T\|$-weighted frame geometry and, for the projective operators, is exactly $\|P_{\operatorname{row}(C)}\|_2 = 1$. The critical decoding failure at $\rho=1$ is a property of operator placement, not of the frame.
 \end{proposition}
 
-The principle is supported at four independent levels: (i) causal intervention with fixed codebook, Gram, resolvent, states, facts, and iterations (Exp.~18); (ii) a from-scratch reimplementation with no shared code (Exp.~19); (iii) transfer across six codebook ensembles, the BSC algebra, and a de-VSA-ified purely linear pipeline (Exps.~20, 18b, 21); And (iv) a perturbation analysis showing that the stabilization extends to $T = M^{+}$, Tikhonov, and truncated SVD (Exp.~23), with the dual gain equal to $1$ exactly for the projective operators ($M^{-1}$, $M^{+}$) and slightly below one for the regularized variants (Tikhonov, truncated SVD --- they shrink the weak eigendirection by design). A numerical bound on $\|C^{\top} T C\|_2$ relative to $\|T\|$ is $O(1)$ across controlled spectra (Exp.~26).
+The principle is supported at four independent levels: (i) causal intervention with fixed codebook, Gram, resolvent, states, facts, and iterations (Exp.~18); (ii) a from-scratch reimplementation with no shared code (Exp.~19); (iii) transfer across six codebook ensembles, the BSC algebra, and a de-VSA-ified purely linear pipeline (Exps.~20, 18b, 21); and (iv) a perturbation analysis showing that the stabilization extends to $T = M^{+}$, Tikhonov, and truncated SVD (Exp.~23): the dual gain equals $1$ exactly for the projective constructions $M^{-1}$ and $M^{+}$, and sits slightly below $1$ for the regularized variants (Tikhonov, truncated SVD --- they shrink the weak eigendirection by design). A numerical bound on $\|C^{\top} T C\|_2$ relative to $\|T\|$ is measured in Exp.~26.
 
 \textbf{Independent replication (Exp.~19)}. A from-scratch reimplementation (60 seeds, 5 initializations per codebook, no shared code with the main harness) recovers the same effect: \texttt{pure} $0.982$, \texttt{gram} $0.159$, \texttt{dual-same} $0.982$, paired per-seed $+0.823$ with $100\%$ of seeds positive.
 
-\textbf{Ensemble generality (Exp.~20A)}. The same intervention across six codebook families at $\rho=1$: Gaussian ($0.160 \to 0.979$), Rademacher ($0.128 \to 0.986$), uniform-on-sphere ($0.164 \to 0.983$), and Toeplitz-correlated ($0.175 \to 0.947$) all replicate; a DFT-tight frame does not collapse (the ambient operator is undefined there rather than unstable); a deliberately pathological near-duplicate frame breaks all decoders, as expected.
+\textbf{Ensemble generality (Exp.~20A)}. The same intervention across six codebook families at $\rho=1$: Gaussian ($0.160 \to 0.979$), Rademacher ($0.128 \to 0.986$), uniform-on-sphere ($0.164 \to 0.983$), and Toeplitz-correlated ($0.175 \to 0.947$) all replicate; an orthogonal frame (QR factor of a Gaussian matrix; tight at $n=d$) does not collapse (the ambient operator is undefined there rather than unstable); a deliberately pathological near-duplicate frame breaks all decoders, as expected.
 
-\textbf{Aspect-ratio sweep (Exp.~20B)}. On the Gaussian ensemble, the collapse is localized to the hard-edge region: ambient decoding is benign at $\rho \le 0.95$ ($\kappa \lesssim 10^{3}$), collapses at $\rho \approx 1$ ($\kappa \sim 10^{5}$), and at $\rho > 1$ the Gram ceases to exist (rank-deficient) so the correction is not applicable.
+\textbf{Aspect-ratio sweep (Exp.~20B)}. On the Gaussian ensemble, the collapse is localized to the hard-edge region: ambient decoding is benign at $\rho \le 0.95$, collapses at $\rho = 1$ ($\kappa \sim 2.5\times 10^{3}$), and at $\rho > 1$ the Gram ceases to exist (rank-deficient) so the correction cannot be applied.
 
 \textbf{De-VSA-ified linear probe (Exp.~21)}. Bypassing the resonator entirely with $f \mapsto \{$ambient vs.\ dual$\}\,(f+\epsilon)$: ambient gain $= 3.6\times 10^{2}$ median (p99 $1.3\times 10^{3}$), dual gain $= 1.000$ exactly. HRR/VSA was the delivery vehicle, not the cause.
 
