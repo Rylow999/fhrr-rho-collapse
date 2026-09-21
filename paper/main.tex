@@ -19,7 +19,7 @@
 \maketitle
 
 \begin{abstract}
-The phase diagram identifies where resonator-based decoding is stable and where it fails; the strongest causal claim lives at the square point, where the Frame-Dual Stability Principle pins down both the failure and its repair in spectral terms. Three regimes emerge: (I)~$\rho > 1$, rank-deficient Gram matrices (more codevectors than dimensions) yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, the square point, where the Gram matrix is a critically conditioned Wishart and ambient Gram decoders collapse; (III)~$\rho < 1$, under-complete frames ($n < d$) yield stable decoding. We anchor regime~II in random-matrix theory: at $\rho=1$ the lower Marchenko--Pastur edge reaches zero and the square Wishart enters its \emph{hard-edge} regime, with $\lambda_{\min} \sim n^{-2}$ and condition number $\kappa \sim 4n^{2}$ scaling, a prediction we verify across $n \in [32, 512]$. The mechanism is then established by a controlled causal intervention (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min}$ to exactly $1$. The collapse belongs to the observer's wiring, not to the representation --- we state this as the Frame-Dual Stability Principle (Prop.~\ref{prop:fdl}), supported by independent reimplementation, six codebook ensembles, BSC binary codes, a purely linear pipeline, and a four-operator zoo.
+The phase diagram identifies where resonator-based decoding is stable and where it fails; the strongest causal claim lives at the square point, where the Frame-Dual Stability Principle pins down both the failure and its repair in spectral terms. Three regimes emerge: (I)~$\rho > 1$, over-complete (rank-deficient, structurally singular) Gram matrices; (II)~$\rho = 1$, the square point, where the Gram matrix is critically conditioned and ambient Gram decoders collapse; (III)~$\rho < 1$, under-complete frames which are well conditioned. We anchor regime~II in random-matrix theory: at $\rho=1$ the lower Marchenko--Pastur edge reaches zero and the square Wishart enters its \emph{hard-edge} regime, with $\lambda_{\min} \sim n^{-2}$ and condition number $\kappa \sim 4n^{2}$ scaling, consistent with measurements over $n \in [32, 512]$. The mechanism is then established by a controlled causal intervention (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min}$ to exactly $1$. The collapse depends on the observer's operator wiring --- we state this as the Frame-Dual Stability Principle (Prop.~\ref{prop:fdl}), supported by independent reimplementation, six codebook ensembles, BSC binary codes, FHRR causal replication, and a four-operator zoo.
 \end{abstract}
 
 \section{Introduction}
@@ -130,7 +130,7 @@ Three classical facts from random-matrix theory map one-to-one onto our phase di
 \end{equation}
 For our setup ($n = 32$ codevectors per block, $d = \mathrm{BLK} = 32$), Eq.~\eqref{eq:kappa-scaling} predicts $\kappa \sim 4.1 \times 10^{3}$. The measured condition number at the exact square point is $\kappa = 7.2 \times 10^{3}$ (median; Exp.~14).
 
-This places the collapse on rigorous footing: $\rho = 1$ is the unique point where the Gram ensemble is \emph{critically conditioned}, $\mathbb{E}[\log \kappa]$ diverges with $n$, and the amplified crosstalk noise $1/\lambda_{\min}$ exceeds the codebook margin $1/\sqrt{d}$ there.
+This places the \emph{spectral vulnerability} on rigorous footing: at $\rho = 1$ the Gram ensemble is critically conditioned, and the amplified crosstalk noise $1/\lambda_{\min}$ exceeds the codebook margin there. The decoder-level claim is then established separately by the causal intervention of Exp.~18.
 
 \begin{figure}[t]
   \centering
@@ -139,7 +139,7 @@ This places the collapse on rigorous footing: $\rho = 1$ is the unique point whe
   \label{fig:scaling}
 \end{figure}
 
-\paragraph{Scaling in $n$: the square-Wishart prediction holds.} Equation~\eqref{eq:kappa-scaling} is a sharp, falsifiable prediction: moving to larger codebooks at $\rho=1$ should scale $\kappa$ as $4n^{2}$, with $\lambda_{\max} \to 4$ and $\lambda_{\min}$ collapsing as $n^{-2}$. Exp.~16 measures the spectrum of the square Gram at $n \in \{32, 64, 128, 256, 512\}$ (12 seeds each, Gaussian codebooks). The measured medians follow the prediction (Fig.~\ref{fig:scaling}): $\lambda_{\max}$ converges from below to the Marchenko--Pastur upper edge $4$ ($3.74 \to 3.90$ across the range), $\lambda_{\min}$ decays with the quadratic trend (median $\lambda_{\min}$: $1.2 \times 10^{-4}$ at $n=32$ to $1.4 \times 10^{-6}$ at $n=512$, bracketing the $n^{-2}$ prediction $1/n^{2}$ at both ends of the range), and the median condition number tracks $4n^{2}$ within a factor $2$--$13$, inside the expected spread given that $\kappa$ for square Wishart is heavy-tailed with infinite expectation \cite{edelman1988eigenvalues}. The finite-$n$ offset reported in Sec.~\ref{sec:rmt} ($n=32$, ratio $1.76$) is the small-$n$ end of this scaling, not an anomaly.
+\paragraph{Scaling in $n$: the square-Wishart prediction holds.} Equation~\eqref{eq:kappa-scaling} is a sharp, falsifiable prediction: moving to larger codebooks at $\rho=1$ should scale $\kappa$ as $4n^{2}$, with $\lambda_{\max} \to 4$ and $\lambda_{\min}$ collapsing as $n^{-2}$. Exp.~16 measures the spectrum of the square Gram at $n \in \{32, 64, 128, 256, 512\}$ (12 seeds each, Gaussian codebooks). The measured medians are consistent with $O(n^{2})$ hard-edge scaling (ratios $1.8$--$12.9$ against the nominal $4n^{2}$, within the expected spread of the heavy-tailed Wishart condition number). The finite-$n$ offset reported in Sec.~\ref{sec:rmt} ($n=32$, ratio $1.76$) is the small-$n$ end of this scaling, not an anomaly.
 
 \paragraph{Mechanism, not magnitude.}
 \label{sec:kappa-mech}
@@ -157,20 +157,9 @@ strengthened, because the failed decoder is now characterised by the
 operator it applies (the resolvent $M^{-1}$, evaluated at the hard edge),
 not by a scalar band. We distill this into a reusable principle:
 
-\begin{definition}[closed-loop hard-edge condition]
+\begin{definition}[hard-edge ambient-resolvent failure]
 \label{def:closure}
-A compositional decoder over a block Gram $M$ satisfies the
-\emph{closed-loop hard-edge condition} if (i) the ensemble of $M$ sits at
-its hard spectral edge ($\rho = n/d = 1$, the square Wishart, where
-$\lambda_{\min} \sim n^{-2}$), and (ii) the decoder applies $M^{-1}$
-repeatedly to the evolving estimate (closed loop). Decoders satisfying both
-factors collapse at $\rho=1$; decoders violating either (single-shot
-inversion, or no inversion at all) do not. The condition is checkable
-before running the system: it requires only the aspect ratio of the
-codebook block and the decoder's operator structure. The $T=1$ control of
-Exp.~18 shows factor (ii) alone is sufficient for harm (the ambient $M^{-1}$
-destroys the state in one application); the loop is what makes the
-\texttt{pure} baseline look good by contrast.
+A compositional decoder exhibits the \emph{hard-edge ambient-resolvent failure} when (i) its Gram ensemble sits at the square hard edge ($\rho=1$, $\lambda_{\min} \sim n^{-2}$), and (ii) it applies $M^{-1}$ to the ambient state. Under these conditions a single application already amplifies the weak eigendirections by $1/\lambda_{\min}$ (Exp.~18, $T=1$ control: pure $=0.911$, gram $=0.165$). Iteration perpetuates the corrupted state but is not required to produce it.
 \end{definition}
 
 Definition~\ref{def:closure} is the statement of this paper that is
@@ -247,7 +236,7 @@ Let $C \in \mathbb{R}^{n\times d}$ ($n$ codevectors in dimension $d$), $M = CC^{
 \[
   C^{\top} T C \;=\; V \,\Sigma\, g(\Sigma^{2})\, \Sigma\, V^{\top},
 \]
-so its singular values are $\sigma_i^{2} g(\sigma_i^{2})$ acting on the directions $V$. In particular:
+so its nonzero eigenvalues are $\sigma_i^{2} g(\sigma_i^{2})$ acting on the directions $V$, and $\|C^{\top} T C\|_2 = \max_i |\sigma_i^{2} g(\sigma_i^{2})|$. In particular:
 (a) for $T = M^{-1}$ with $M$ invertible (square, $n=d$, full rank), $\sigma_i^{2}g(\sigma_i^2) = 1$ so $C^{\top} M^{-1} C = I$;
 (b) for $T = M^{+}$, $\sigma_i^{2} g(\sigma_i^2) = 1$ on the spectrum and $0$ off --- a clean projector;
 (c) for Tikhonov $T = (M + \alpha I)^{-1}$, $\sigma_i^{2}g(\sigma_i^2) = \sigma_i^{2}/(\sigma_i^{2} + \alpha) < 1$;
@@ -288,7 +277,7 @@ The principle is supported at four independent levels: (i) causal intervention w
 \section{Discussion}
 \label{sec:discussion}
 
-The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space --- concretely, the testable content of this claim is the closed-loop hard-edge condition (Def.~\ref{def:closure}).
+The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' appears across the tested ambient Gram-inverse decoder configurations, but not for resonator decoders that avoid hard-edge inversion. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space --- concretely, the testable content of this claim is the hard-edge ambient-resolvent condition (Def.~\ref{def:closure}).
 
 \subsection{Open problems and falsification agenda}
 
@@ -302,7 +291,7 @@ The Frame-Dual Stability Principle was stated provisionally before this agenda; 
 \item \textbf{De-VSA-ified linear pipeline} (DONE). Exp.~21 reproduces the dichotomy without a resonator.
 \item \textbf{Operator zoo} (DONE). Exp.~23: $M^{+}$, Tikhonov ($\lambda=10^{-3}, 10^{-1}$), truncated SVD in both wirings. The dual gain equals $1$ exactly for $M^{-1}$; for $M^{+}$ on well-conditioned inputs the dual gain is also $1$, while on a deliberately ill-conditioned Gram ($\kappa \sim 10^{11}$) the truncated SVD inside the pseudo-inverse yields a gain of $0.992$, correctly reflecting the projector's loss of the near-null eigendirection. Tikhonov sits below $1$ by design ($\sigma_i^2/(\sigma_i^2+\alpha)$).
 \item \textbf{Iteration dynamics} (DONE). Exp.~22: ambient $e_0 \approx 7\times 10^{3}$ (saturates on first application), dual converges ($a < 1$).
-\item \textbf{Counterexample search} (DONE). Exp.~25: deliberately constructed matrices (quasi-collinear down to $\epsilon=10^{-6}$, ill-scaled, block-diagonal, tall, and wide) all confirm the pattern --- ambient diverges, dual stable; the only exception is the trivially degenerate near-duplicate frame where even the pure decoder fails.
+\item \textbf{Counterexample search} (DONE). Exp.~25: deliberately constructed matrices (quasi-collinear down to $\epsilon=10^{-6}$, ill-scaled, block-diagonal, tall, wide) all confirm the pattern --- ambient diverges, dual stable; the wide case $n<d$ yields gain = $\sigma_{\max}(P_{\mathrm{row}(C)}) < 1$, matching the projector prediction.
 \end{enumerate}
 
 The connections to classical frame theory are direct: $C^{\top} M^{+} C$ is the canonical dual-frame projector \cite{duffin1952class}, and the operator placement question translates existing results on stable reconstruction \cite{eldar2018sampling} into the resonator-decoder setting.

@@ -4,7 +4,8 @@ EXP 27: test causal de Frame-Dual Stability en FHRR (el algebra originaria).
 
 FHRR: codevectors unit-modulus complejos z_i = exp(i theta_i).
 bind = multiplicacion elemento a elemento (compleja).
-Gram: M_ij = <c_i, c_j>_C = c_i^* c_j (Hermitiana: M = C^H C no C C^T).
+Gram: M_ij = <c_i, c_j>, donde <c_i, c_j> = c_i^H c_j en el caso complejo.
+Con C (n x d) con filas codevectors: M = C C^H (n x n), y el dual es C^H M^-1 C (d x d).
 
 La forma dual: C^H M^{-1} C  (con C^H = conjugado transpuesto).
 En cuadrado invertible: C^H (C C^H)^{-1} C = I (mismo algebra, compleja).
