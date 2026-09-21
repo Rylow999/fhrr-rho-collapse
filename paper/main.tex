@@ -19,13 +19,13 @@
 \maketitle
 
 \begin{abstract}
-We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho > 1$, rank-deficient Gram matrices (more codevectors than dimensions) yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, the square point, where the Gram matrix is a critically conditioned Wishart and ambient Gram decoders collapse; (III)~$\rho < 1$, over-complete frames ($n < d$) yield stable decoding. We anchor regime~II in random-matrix theory: the Gram matrix is a scaled square Wishart, whose smallest eigenvalue touches the soft edge at the origin and whose condition number scales as $\kappa \sim 4n^{2}$, a prediction we verify across $n \in [32, 512]$. The mechanism is then established by a controlled causal intervention (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min}$ to exactly $1$. The collapse belongs to the observer's wiring, not to the representation --- we state this as the provisional Frame-Duality Law (Prop.~\ref{prop:fdl}).
+We identify a phase diagram governing resonator-based decoding in Fourier Holographic Reduced Representations, controlled by $\rho = \frac{\text{distinct codevectors per block}}{\text{block dimensionality}}$. Three regimes emerge: (I)~$\rho > 1$, rank-deficient Gram matrices (more codevectors than dimensions) yield numerically unstable inverses that destroy decoding; (II)~$\rho = 1$, the square point, where the Gram matrix is a critically conditioned Wishart and ambient Gram decoders collapse; (III)~$\rho < 1$, over-complete frames ($n < d$) yield stable decoding. We anchor regime~II in random-matrix theory: at $\rho=1$ the lower Marchenko--Pastur edge reaches zero and the square Wishart enters its \emph{hard-edge} regime, with $\lambda_{\min} \sim n^{-2}$ and condition number $\kappa \sim 4n^{2}$ scaling, a prediction we verify across $n \in [32, 512]$. The mechanism is then established by a controlled causal intervention (Exp.~18): at $\rho=1$ with identical codebook, Gram matrix, resolvent, initial states and facts, swapping only the wiring from $M^{-1}$ (ambient) to $C^{\top} M^{-1} C$ (dual, same resolvent) moves decoding from $0.16$ to $0.99$, while the operator norm drops from $1/\lambda_{\min}$ to exactly $1$. The collapse belongs to the observer's wiring, not to the representation --- we state this as the provisional Frame-Duality Law (Prop.~\ref{prop:fdl}).
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at high superposition has been reported anecdotally for decades \cite{plate1995holographic, frady2020resonator}. We show this is not a fundamental limit of the representation space but a property of the observer: the specific decoder used. When the Gram matrix is inverted on a $\rho=1$ (square) block, the operator becomes singular; when a neural network is trained instead, the same vector is recoverable with 99\% accuracy.
+In vector symbolic architectures (VSA), the ``binary collapse'' phenomenon at high superposition has been reported anecdotally for decades \cite{plate1995holographic, frady2020resonator}. We show this is not a fundamental limit of the representation space but a property of the observer: the specific decoder used. At the square point $\rho=1$ the Gram matrix remains invertible almost surely but is severely ill-conditioned (its smallest eigenvalue $\lambda_{\min} \sim n^{-2}$), and the ambient application of $M^{-1}$ explodes; a learned decoder on the same vector recovers with 99\% accuracy.
 
 \begin{figure}[t]
   \centering
@@ -102,11 +102,11 @@ The phase diagram shows three regimes:
 
 \subsection{Cross-algebra validation: HRR, BSC, and attention mechanisms}
 
-\textbf{HRR real} (Gaussian phases). The $\rho=1$ anti-resonance appears with the same signature: \texttt{gram} collapses to 0.05, \texttt{pinv} to 0.13, \texttt{pure} maintains 0.98. The mechanism is identical: square Gram singular at exactly $\rho=1$.
+\textbf{HRR real} (Gaussian phases). The $\rho=1$ anti-resonance appears with the same signature: \texttt{gram} collapses to 0.05, \texttt{pinv} to 0.13, \texttt{pure} maintains 0.98. The mechanism is identical: at the square point the Gram is severely ill-conditioned (hard-edge scaling), not algebraically singular.
 
 \textbf{Binary Spatter Codes (BSC).} The $\rho=1$ transition holds in binary VSA (Exp.~11b, 8 seeds $\times$ 25 facts per cell, \texttt{data/exp11\_bsc\_rho.json}): at the square point (K=3 blocks, BLK=32, $n_{cv}=32$) \texttt{gram} collapses to $0.214$ and \texttt{pinv} to $0.244$, while \texttt{pure} maintains $0.988$. In the rank-deficient regime $\rho>1$ the truncated Gram ($\kappa \sim 10^{15}$) recovers decoding ($0.97$--$0.98$). The codevectors being $\{\pm1\}^{d}$ rather than Gaussian means the Wishart anchoring is replaced by its binary counterpart (Gram of i.i.d.\ Rademacher vectors, whose spectral measure obeys the same Marchenko--Pastur law up to the fourth cumulant). The causal test replicates here too: Exp.~18b recovers decoding at $\rho=1$ with the same resolvent in dual form (Sec.~\ref{sec:exp18}).
 
-\textbf{MAP (Multiply-Add-Permute).} MAP with per-role permutation binding (Exp.~11c, 8 seeds $\times$ 25 facts, \texttt{data/exp11c\_map\_rho.json}) refines the law in an unexpected way. In MAP, Gram decoding is \emph{single-shot} least squares over the mixing matrix $A = [P_1 C_1 \,|\, P_2 C_2]$ of the block: there is no closed-loop iteration. The collapse pattern reflects this: at $\rho = 1$ the median condition number is $\kappa = 1.06\times 10^{4}$ --- inside the critical band --- yet \texttt{gram} maintains $1.000$: the single-shot solver tolerates the band because the error is not re-injected. The collapse appears instead at $\rho > 1$ (rank-deficient), where \texttt{gram} drops to $0.239$ and $0.071$ while the truncated \texttt{pinv} recovers to $\sim 1.0$ and the \texttt{pure} resonator holds at $0.97$--$0.98$. Combining with Exp.~11b gives the refined picture: decoding failure requires (i) a Gram spectrum close to its singularity ($\rho=1$ soft edge, or $\rho>1$ rank-deficiency), \emph{and} (ii) for the soft-edge case, an iterative observer that re-projects the $1/\lambda_{\min}$-amplified error onto it.
+\textbf{MAP (Multiply-Add-Permute).} MAP with per-role permutation binding (Exp.~11c, 8 seeds $\times$ 25 facts, \texttt{data/exp11c\_map\_rho.json}) refines the law in an unexpected way. In MAP, Gram decoding is \emph{single-shot} least squares over the mixing matrix $A = [P_1 C_1 \,|\, P_2 C_2]$ of the block: there is no closed-loop iteration. The collapse pattern reflects this: at $\rho = 1$ the median condition number is $\kappa = 1.06\times 10^{4}$ --- inside the critical band --- yet \texttt{gram} maintains $1.000$: the single-shot solver tolerates the band because the error is not re-injected. The collapse appears instead at $\rho > 1$ (rank-deficient), where \texttt{gram} drops to $0.239$ and $0.071$ while the truncated \texttt{pinv} recovers to $\sim 1.0$ and the \texttt{pure} resonator holds at $0.97$--$0.98$. Combining with Exp.~11b gives the refined picture: decoding failure requires (i) a Gram spectrum close to its singularity ($\rho=1$ hard edge, or $\rho>1$ rank-deficiency), \emph{and} (ii) for the hard-edge case, an iterative observer that re-projects the $1/\lambda_{\min}$-amplified error onto it.
 
 \textbf{Transformers / attention.} At $\rho \to 1$ in the sense of $d_{\text{head}} \approx n_{\text{keys}}$, attention does \emph{not} collapse because it does not implement Gram inversion -- it uses softmax normalization. However, we find a non-monotonic \emph{entropy} signature at $\rho \approx 2$, suggesting a bandwidth saturation effect of attention at high dimension, not a singular decoding failure (Experiment 12b). The collapse-pcode is algebra-specific, not universal.
 
@@ -131,7 +131,7 @@ Three classical facts from random-matrix theory map one-to-one onto our phase di
 
 \paragraph{(i) $\rho > 1$ ($d < n$, under-complete).} $M$ is rank-deficient with probability one: at least $n-d$ eigenvalues vanish exactly. Gram inversion is undefined; this is regime~I.
 
-\paragraph{(ii) $\rho = 1$ ($n = d$, square).} The Marchenko--Pastur density $\mathrm{d}\mu_{1}(\lambda) = \frac{1}{2\pi}\sqrt{(4-\lambda)/\lambda}\,\mathrm{d}\lambda$ has support touching the origin: the lower edge is a \emph{soft edge} at $\lambda=0$. For a square Wishart, the smallest eigenvalue scales as $\lambda_{\min} \sim \sigma^{2}/n$ (Tracy--Widom fluctuations on the scale $n^{-2/3}$ around this edge), so the condition number scales as
+\paragraph{(ii) $\rho = 1$ ($n = d$, square).} The Marchenko--Pastur density $\mathrm{d}\mu_{1}(\lambda) = \frac{1}{2\pi}\sqrt{(4-\lambda)/\lambda}\,\mathrm{d}\lambda$ has support touching the origin: the lower edge is a \emph{hard edge} at $\lambda=0$ (the density diverges as $\lambda^{-1/2}$ there). For the square Wishart this is the hard-edge regime: $\lambda_{\min}$ scales as $n^{-2}$ in its typical size (rather than the $n^{-2/3}$ Tracy--Widom scale of a soft edge), so the condition number scales as
 \begin{equation}
 \kappa(M) = \frac{\lambda_{\max}}{\lambda_{\min}} \;\sim\; 4n^{2}.
 \label{eq:kappa-scaling}
@@ -167,31 +167,30 @@ zero (median $1.4\times 10^{-14}$ over 90 blocks): the matrix is
 numerically singular, not exactly singular.
 
 What the RMT analysis picks out instead is the \emph{mechanism}: the
-resonator loop applies the asymmetric correction $f_j \leftarrow M^{-1} f_j$
-at every iteration, so the error along the soft-edge eigendirections is
-multiplied by $1/\lambda_{\min} \sim 10^{4}$ \emph{per iteration}. The
-collapse requires (i) the soft edge ($\rho = 1$) supplying the small
-eigenvalue, and (ii) a closed loop that keeps re-projecting onto it. This
+resonator applies the asymmetric correction $f_j \leftarrow M^{-1} f_j$
+across its iterations; at the square point a single application already
+amplifies directions near the hard edge by $1/\lambda_{\min} \sim 10^{3}$, and the closed loop re-injects and perpetuates that error each cycle (the control at $T=1$, Sec.~\ref{sec:exp18}, shows the collapse is present after a single application --- the loop is a re-amplifier, not the cause). The collapse requires (i) a Gram spectrum close to its singularity (the $\rho=1$ hard edge, or $\rho>1$ rank-deficiency) \emph{and} (ii) an observer whose operator is sensitive to the small-eigenvalue directions. This
 predicts the MAP control (Exp.~11c): a single-shot application of the same
-inverse at the same $\kappa$ does \emph{not} collapse, because there is no
-loop. It also predicts why \texttt{pure} survives everywhere: it never
+inverse at the same $\kappa$ does \emph{not} collapse, because a one-shot least-squares does not feed the amplified error back into the operator. It also predicts why \texttt{pure} survives everywhere: it never
 forms $M^{-1}$. The observer-relative content survives intact --- it is
 strengthened, because the failed decoder is now characterised by the
-operator it applies (the resolvent $M^{-1}$, evaluated at the soft edge),
+operator it applies (the resolvent $M^{-1}$, evaluated at the hard edge),
 not by a scalar band. We distill this into a reusable principle:
 
-\begin{definition}[closed-loop soft-edge condition]
+\begin{definition}[closed-loop hard-edge condition]
 \label{def:closure}
 A compositional decoder over a block Gram $M$ satisfies the
-\emph{closed-loop soft-edge condition} if (i) the ensemble of $M$ has a
-soft spectral edge at $0$ (i.e.\ $\rho = n/d = 1$, the square Wishart), and
-(ii) the decoder re-applies $M^{-1}$ to the running estimate on every
-iteration. Decoders satisfying both factors collapse at $\rho=1$ with
-error amplification $1/\lambda_{\min} \sim n^{2}$ per iteration; decoders
-violating either factor (single-shot inversion, or no inversion at all)
-do not. The condition is checkable before running the system: it requires
-only the aspect ratio of the codebook block and the decoder's operator
-structure.
+\emph{closed-loop hard-edge condition} if (i) the ensemble of $M$ sits at
+its hard spectral edge ($\rho = n/d = 1$, the square Wishart, where
+$\lambda_{\min} \sim n^{-2}$), and (ii) the decoder applies $M^{-1}$
+repeatedly to the evolving estimate (closed loop). Decoders satisfying both
+factors collapse at $\rho=1$; decoders violating either (single-shot
+inversion, or no inversion at all) do not. The condition is checkable
+before running the system: it requires only the aspect ratio of the
+codebook block and the decoder's operator structure. The $T=1$ control of
+Exp.~18 shows factor (ii) alone is sufficient for harm (the ambient $M^{-1}$
+destroys the state in one application); the loop is what makes the
+\texttt{pure} baseline look good by contrast.
 \end{definition}
 
 Definition~\ref{def:closure} is the statement of this paper that is
@@ -199,7 +198,7 @@ independent of any particular experiment: it is what a practitioner
 designing a VSA decoder should check first, and it is what we would ask a
 replicating study to test.
 
-\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit uniformly \emph{above} the asymptotic edge (factor $\sim 10^{2}$--$10^{3}$). This has the expected sign and is a finite-$n$ effect, not a discrepancy: at $n=32$ the distribution of $\lambda_{\min}$ concentrates well inside the bulk, and the asymptotic edge is only approached logarithmically slowly; the exact finite-$n$ expected smallest eigenvalue of a Wishart is substantially larger than its $n\to\infty$ limit when $\rho$ is close to 1. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ matches the soft-edge scaling $\sigma^{2}/n = 9.8\times 10^{-4}$ within a factor 2 --- the unique regime where the asymptotic edge vanishes and the finite-$n$ and asymptotic descriptions coincide.
+\paragraph{(iii) $\rho < 1$ ($d > n$, over-complete).} The Wishart spectrum is bounded away from zero: $\lambda_{\min} \to \sigma^{2}(1-\sqrt{\rho})^{2} > 0$ as $n,d \to \infty$ with $n/d \to \rho < 1$. Gram inversion is stable; this is regime~III. Table~\ref{tab:wishart-check} compares the measured $\lambda_{\min}(BLK)$ against the asymptotic Marchenko--Pastur edge $(1-\sqrt{\rho})^{2}/d$. The measured values sit uniformly \emph{above} the asymptotic edge (factor $\sim 10^{2}$--$10^{3}$). This has the expected sign and is a finite-$n$ effect, not a discrepancy: at $n=32$ the distribution of $\lambda_{\min}$ concentrates well inside the bulk, and the asymptotic edge is only approached logarithmically slowly; the exact finite-$n$ expected smallest eigenvalue of a Wishart is substantially larger than its $n\to\infty$ limit when $\rho$ is close to 1. What the table establishes is (a) the monotone collapse of $\lambda_{\min}$ as $\rho \to 1^{-}$ (two orders of magnitude between $\rho=0.80$ and $\rho=0.97$), and (b) that at $\rho=1$ the measured $\lambda_{\min} = 4.87 \times 10^{-4}$ is within a factor 2 of the hard-edge scale $d^{-2} = 9.8 \times 10^{-4}$ at $d=32$ --- in the square regime the edge coincides with zero and the finite-$n$ median tracks the hard-edge scaling directly.
 
 \begin{table}[t]
   \centering
@@ -217,12 +216,12 @@ replicating study to test.
   \end{tabular}
 \end{table}
 
-\paragraph{Why the nonlinear decoder survives the transition.} The RMT picture also explains the survival of \texttt{pure} and of the MLP. Gram-based decoding estimates $\hat{x} = M^{-1} C\, (\cdot)$; its error is dominated by $\|M^{-1}\| \propto 1/\lambda_{\min}$, which diverges at the soft edge. The pure resonator, by contrast, never forms the inverse: it iterates the nonlinear map $v \leftarrow \mathrm{clamp}(C^{\top} v, \mathcal{C})$ whose convergence only requires that the correct fixed point be a strong attractor in the codebook metric --- a property governed by the \emph{top} of the Gram spectrum (the coherent direction), not by the soft edge. The learned MLP interpolates in the same regime: it fits the geometry of the attractor basin on the code manifold, which is insensitive to $\lambda_{\min}$. In RMT language: the collapse is a property of the \emph{resolvent} $(M - z)^{-1}$ near $z=0$; the resonator dynamics probes only the Stieltjes transform in the bulk. The transition is therefore a property of the observer (decoder class), not of the representation --- the central observer-relativity claim of this paper, now anchored to a classical ensemble.
+\paragraph{Why the nonlinear decoder survives the transition.} The RMT picture also explains the survival of \texttt{pure} and of the MLP. The Gram-based decoder's error is dominated by $\|M^{-1}\| \propto 1/\lambda_{\min}$, which diverges at the hard edge. The pure resonator, by contrast, never forms the inverse: it iterates the nonlinear map $v \leftarrow \mathrm{clamp}(C^{\top} v, \mathcal{C})$ whose convergence only requires that the correct fixed point be a strong attractor in the codebook metric --- a property governed by the \emph{top} of the Gram spectrum (the coherent direction), not by the hard edge. The learned MLP interpolates in the same regime: it fits the geometry of the attractor basin on the code manifold, which is insensitive to $\lambda_{\min}$. In RMT language: the collapse is a property of the \emph{resolvent} $(M - z)^{-1}$ near $z=0$; the resonator dynamics probes only the Stieltjes transform in the bulk. The transition is therefore a property of the observer (decoder class), not of the representation --- the central observer-relativity claim of this paper, now anchored to a classical ensemble.
 
 \section{Causal Test: Relocating the Resolvent}
 \label{sec:exp18}
 
-The preceding sections establish that Gram decoders fail at $\rho=1$ and that the failure mechanism is a soft-edge amplification in a closed loop. What remains is the causal question: is the resolvent $M^{-1}$ itself the problem, or is it \emph{where} it is applied?
+The preceding sections establish that Gram decoders fail at $\rho=1$ and that the failure mechanism is the hard-edge conditioning of the square Gram amplified (and re-injected) by the decoder loop. What remains is the causal question: is the resolvent $M^{-1}$ itself the problem, or is it \emph{where} it is applied?
 
 Experiment 18 answers this with a minimal intervention: same codebook $C$, same Gram $M = CC^{\top}$, same resolvent $M^{-1}$, same initial resonator state, same facts, same iteration count --- the only change is the operator wiring. Five observers are compared at the square point $\rho=1$ ($n=3$ blocks, BLK$=32$, $n_{cv}=32$, 200 seeds $\times$ 10 facts, $T=50$):
 
@@ -251,7 +250,7 @@ Experiment 18 answers this with a minimal intervention: same codebook $C$, same 
   \end{tabular}
 \end{table}
 
-The algebraic identity behind this is verified per block: $\|C^{\top} M^{-1} C - I\|_{F}$ has median $6\times 10^{-13}$ across all blocks --- the dual operator is numerically the identity, while the ambient operator has exact spectral norm $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, median $3.5\times 10^{3}$ at the square point (Fig.~\ref{fig:exp18}). The spectral attribution is direct: the same inverse acting on the soft-edge eigenvector amplifies by exactly $1/\lambda_{\min}$ when applied ambient, and by $1.000$ when placed dually. Statistics are reported per seed (200 independent codebooks, 10 facts each): bootstrap 95\% CIs on the per-seed mean, and paired per-seed differences --- the accuracy units are codebooks, not individual facts.
+The algebraic identity behind this is verified per block: $\|C^{\top} M^{-1} C - I\|_{F}$ has median $6\times 10^{-13}$ across all blocks --- the dual operator is numerically the identity, while the ambient operator has exact spectral norm $\|M^{-1}\|_2 = 1/\lambda_{\min}(M)$, median $3.5\times 10^{3}$ at the square point (Fig.~\ref{fig:exp18}). The spectral attribution is direct: the same inverse acting on the eigenvector of $\lambda_{\min}$ amplifies by exactly $1/\lambda_{\min}$ when applied ambient, and by $1.000$ when placed dually. Statistics are reported per seed (200 independent codebooks, 10 facts each): bootstrap 95\% CIs on the per-seed mean, and paired per-seed differences --- the accuracy units are codebooks, not individual facts.
 
 \begin{figure}[t]
   \centering
@@ -279,18 +278,18 @@ For a codebook $C \in \mathbb{R}^{n\times d}$ with Gram $M = CC^{\top}$, the dec
 \section{Discussion}
 \label{sec:discussion}
 
-The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space --- concretely, the testable content of this claim is the closed-loop soft-edge condition (Def.~\ref{def:closure}).
+The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space --- concretely, the testable content of this claim is the closed-loop hard-edge condition (Def.~\ref{def:closure}).
 
 \paragraph{Connection to capacity theory.} Our finding that $\rho = 1$ is a point singularity complements capacity analyses \cite{thomas2023capacity} that focus on asymptotic scaling. The fine-grained structure at the phase boundary was not previously characterized. Through the Wishart lens (Sec.~\ref{sec:rmt}), the $\rho$ axis is exactly the aspect-ratio axis of the Marchenko--Pastur law \cite{marchenko1967distribution}, and the singular point corresponds to the soft-edge-to-hard-edge crossover of the square ensemble \cite{tracy1994level, edelman1988eigenvalues}.
 
 \paragraph{Connection to transformers.} The residual stream of transformers can be interpreted as a VSA \cite{renner2024binding}. Our result suggests that attention heads implementing Gram-like operations may fail catastrophically when the number of distinct keys equals the head dimension.
 
-\paragraph{Limitations.} The RMT anchoring is verified across $n \in [32, 512]$ (Exp.~16), where the scaling exponents match the square-Wishart prediction; the remaining finite-size gap is the $\mathcal{O}(1)$--$\mathcal{O}(10)$ prefactor of $\kappa$, which is intrinsic to the heavy-tailed condition-number distribution at the soft edge and not a deficit of the model. We tested FHRR, HRR-real, BSC, and MAP quantitatively; sparse block codes and other bind operators are open. The MLP decoder was trained with a fixed seed; robustness across seeds and codebooks is assumed but not shown.
+\paragraph{Limitations.} The RMT anchoring is verified across $n \in [32, 512]$ (Exp.~16), where the scaling exponents match the square-Wishart prediction; the remaining finite-size gap is the $\mathcal{O}(1)$--$\mathcal{O}(10)$ prefactor of $\kappa$, which is intrinsic to the heavy-tailed condition-number distribution at the hard edge and not a deficit of the model. We tested FHRR, HRR-real, BSC, and MAP quantitatively; sparse block codes and other bind operators are open. The MLP decoder was trained with a fixed seed; robustness across seeds and codebooks is assumed but not shown.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-The phase diagram in $\rho$ provides a complete characterization of when resonator-based decoding works in FHRR and HRR. The ``binary collapse'' is observer-relative: it appears for Gram-based decoders exactly at $\rho=1$, where the soft edge of the square Wishart and the loop amplification meet (Def.~\ref{def:closure}). Pure resonators and learned decoders are unaffected. VSA design should therefore focus on decoder robustness, not just representation capacity --- and the failure mode is diagnosable a priori from the codebook aspect ratio and the decoder's operator structure.
+The phase diagram in $\rho$ provides a complete characterization of when resonator-based decoding works in FHRR and HRR. The ``binary collapse'' is observer-relative: it appears for Gram-based decoders exactly at $\rho=1$, where the hard edge of the square Wishart and the loop amplification meet (Def.~\ref{def:closure}). Pure resonators and learned decoders are unaffected. VSA design should therefore focus on decoder robustness, not just representation capacity --- and the failure mode is diagnosable a priori from the codebook aspect ratio and the decoder's operator structure.
 
 \section*{Data availability}
 

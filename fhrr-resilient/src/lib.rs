@@ -12,12 +12,14 @@
 //!   KAPPA_SAFE..KAPPA_SING -> FAILOVER to pure resonator (see CAVEAT below)
 //!   kappa > KAPPA_SING   -> truncated pseudo-inverse
 //!
-//! CAVEAT (Exp 17, 2026-09-20): the critical band [1e3, 1e4] is NOT a
-//! per-seed decision boundary. Per-block kappa at the square point spans
-//! [2e2, 2e5] and every seed collapses regardless. The meaningful router
-//! invariant is the LOOP structure: if your decoder re-applies M^{-1} on
-//! every iteration, take the failover as soon as kappa stops being << 1e2
-//! — the band edges are a coarse, conservative proxy, not a mechanism.
+//! CAVEAT (Exp 17/18, 2026-09-21): the kappa `band' was refuted as a
+//! necessary condition (Exp 17) and the mechanism is now understood as
+//! operator WIRING at the square (hard-edge) point (Exp 18): ambient M^-1
+//! fails, dual C' M^-1 C is a projector of norm 1. The routing constants
+//! below are kept as conservative fallbacks; the primary signal for new
+//! code should be the decoder's structure (closed-loop ambient inversion?)
+//! and the geometry (rho=1 hard edge / rho>1 rank-deficient), not kappa
+//! alone.
 //!
 //! No external crates: matrices are flat Vec<f64>, row-major.
 
