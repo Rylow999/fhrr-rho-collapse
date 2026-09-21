@@ -1,25 +1,14 @@
 //! fhrr-resilient — zero-dependency resilient VSA decoding.
 //!
-//! Core idea (paper: "Frame duality governs compositional decoding in FHRR",
-//! Sec. RMT + Sec. kappa-mech): Gram-inverse decoding in a CLOSED-LOOP
-//! resonator fails at the square point rho=1 because the asymmetric update
-//! f_j <- M^{-1} f_j re-amplifies the soft-edge error by 1/lambda_min per
-//! iteration. Outside the loop (single-shot, e.g. MAP) the same kappa is
-//! harmless. This crate estimates kappa at runtime in O(n^2) (power
-//! iteration + inverse power with Gaussian elimination) and routes:
-//!
-//!   kappa < KAPPA_SAFE   -> Gram inverse (fast, exact)
-//!   KAPPA_SAFE..KAPPA_SING -> FAILOVER to pure resonator (see CAVEAT below)
-//!   kappa > KAPPA_SING   -> truncated pseudo-inverse
-//!
-//! CAVEAT (Exp 17/18, 2026-09-21): the kappa `band' was refuted as a
-//! necessary condition (Exp 17) and the mechanism is now understood as
-//! operator WIRING at the square (hard-edge) point (Exp 18): ambient M^-1
-//! fails, dual C' M^-1 C is a projector of norm 1. The routing constants
-//! below are kept as conservative fallbacks; the primary signal for new
-//! code should be the decoder's structure (closed-loop ambient inversion?)
-//! and the geometry (rho=1 hard edge / rho>1 rank-deficient), not kappa
-//! alone.
+//! POST-EXP-17 WARNING: the kappa threshold routing below is the LEGACY
+//! behavior from before we understood the mechanism. Exp 17 showed kappa
+//! alone does not predict collapse; Exp 18/27 showed the collapse is about
+//! operator placement, not conditioning. This crate is kept as a
+//! conservative fallback for cases where the decoder structure cannot be
+//! inspected. If you can inspect the decoder, route on placement:
+//!   closed-loop ambient M^-1  ->  replace with dual or pure
+//!   rank-deficient Gram        ->  pseudo-inverse
+//! Kappa remains useful as a coarse diagnostic signal, no more.
 //!
 //! No external crates: matrices are flat Vec<f64>, row-major.
 

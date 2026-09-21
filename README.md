@@ -205,10 +205,7 @@ Two named, citable objects:
 
 ## Acknowledgments
 
-- Nexus (agent assistance with audit, experimental design, and the
-  random-matrix analysis)
-- The anonymous external reviewer whose critique of the κ-band claim led
-  to the stronger formulation
+- The anonymous external reviewer whose critiques sharpened the formulation
 
 ---
 
