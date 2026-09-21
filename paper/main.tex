@@ -280,6 +280,22 @@ For a codebook $C \in \mathbb{R}^{n\times d}$ with Gram $M = CC^{\top}$, the dec
 
 The $\rho$-phase diagram reveals that \emph{capacity} in VSA is not a fixed property but depends on the decoder class. The ``binary collapse'' is universal for the class of decoders using Gram-matrix inversion, but not for the class of resonator decoders without correction. This suggests that universal laws in distributed representations must be stated relative to observer classes, not as absolute properties of the space --- concretely, the testable content of this claim is the closed-loop hard-edge condition (Def.~\ref{def:closure}).
 
+\subsection{Open problems and falsification agenda}
+
+The Frame-Duality Law is stated provisionally. The following experiments, in order, would either strengthen it to Law status or refute it:
+
+\begin{enumerate}
+\item \textbf{Independent replication} (Capa 0). A from-scratch implementation of Exp.~18 with no shared code with this repository. If the effect survives, the harness-dependence concern closes. If it does not, Prop.~\ref{prop:fdl} needs to be weakened to a harness-specific statement.
+\item \textbf{Ensemble generalization} (Capa 1). Non-Gaussian $C$: Rademacher, uniform-on-sphere, Toeplitz-correlated, near-duplicate columns, tight frames, Hadamard and DFT-structured. If the effect is ensemble-specific, it is a random-matrix phenomenon, not a structural law.
+\item \textbf{Continuous $\rho$ sweep} (Capa 1). We currently measure at isolated aspect ratios. A fine sweep of $\rho \in [0.25, 4]$ measuring $\lambda_{\min}$, $\kappa$, $\|M^{-1}\|$, $\|C^{\top}M^{+}C\|$, and accuracy would identify the true predictor variable.
+\item \textbf{Perturbation amplification} (Capa 2). The quantity $\|\Delta y\|/\|\epsilon\|$ for $\epsilon$-perturbed inputs, as a direct stability measure --- this bypasses decoding and measures the operator action itself. Predicted: ambient $\sim 1/\lambda_{\min}$, dual $\sim 1$.
+\item \textbf{De-VSA-ification} (Capa 3). Remove the resonator entirely: a purely linear pipeline $x \to Cx \to A \to C^{\top}$ with $A$ the operator under test. If the same dichotomy holds, HRR/VSA is a delivery vehicle, not the cause.
+\item \textbf{Operator zoo} (Capa 3). Replace $M^{-1}$ with $M^{+}$, ridge $ (M+\lambda I)^{-1}$, truncated SVD, and a Krylov solver --- each in ambient and dual placement. Question: which operators are neutralized by frame-duality?
+\item \textbf{Iteration dynamics} (Capa 2). Track $e_t = \|f_t - f^*\|$ over $T$ and fit the growth factor. Distinguishes linear instability from loop-driven explosion; the $T=1$ point in Exp.~18 already shows the collapse is present after one application, but the growth law is unmapped.
+\end{enumerate}
+
+The connections to classical frame theory are direct: $C^{\top} M^{+} C$ is the canonical dual-frame projector \cite{duffin1952class}, and the operator placement question translates existing results on stable reconstruction \cite{eldar2018sampling} into the resonator-decoder setting.
+
 \paragraph{Connection to capacity theory.} Our finding that $\rho = 1$ is a point singularity complements capacity analyses \cite{thomas2023capacity} that focus on asymptotic scaling. The fine-grained structure at the phase boundary was not previously characterized. Through the Wishart lens (Sec.~\ref{sec:rmt}), the $\rho$ axis is exactly the aspect-ratio axis of the Marchenko--Pastur law \cite{marchenko1967distribution}, and the singular point corresponds to the soft-edge-to-hard-edge crossover of the square ensemble \cite{tracy1994level, edelman1988eigenvalues}.
 
 \paragraph{Connection to transformers.} The residual stream of transformers can be interpreted as a VSA \cite{renner2024binding}. Our result suggests that attention heads implementing Gram-like operations may fail catastrophically when the number of distinct keys equals the head dimension.
