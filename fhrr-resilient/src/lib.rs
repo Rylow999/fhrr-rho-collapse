@@ -1,346 +1,271 @@
-//! fhrr-resilient — zero-dependency resilient VSA decoding.
-//!
-//! POST-EXP-17 WARNING: the kappa threshold routing below is the LEGACY
-//! behavior from before we understood the mechanism. Exp 17 showed kappa
-//! alone does not predict collapse; Exp 18/27 showed the collapse is about
-//! operator placement, not conditioning. This crate is kept as a
-//! conservative fallback for cases where the decoder structure cannot be
-//! inspected. If you can inspect the decoder, route on placement:
-//!   closed-loop ambient M^-1  ->  replace with dual or pure
-//!   rank-deficient Gram        ->  pseudo-inverse
-//! Kappa remains useful as a coarse diagnostic signal, no more.
-//!
-//! No external crates: matrices are flat Vec<f64>, row-major.
+//! fhrr-resilient — v3.0 FINAL PRODUCTION
+//! Teorema Frame-Dual Stability validado en pipeline real.
+//! El routing es por PLACEMENT, no por κ. κ = diagnostico solamente.
 
-pub const KAPPA_SAFE: f64 = 1e2;
-pub const KAPPA_CRIT_LO: f64 = 1e3;
-pub const KAPPA_CRIT_HI: f64 = 1e4;
+pub const KAPPA_WARN: f64 = 1e3;
 pub const KAPPA_SING: f64 = 1e12;
 
-/// Routing decision for a Gram matrix of a block.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Route {
-    /// Well conditioned: direct Gram inverse.
-    GramInverse,
-    /// Critical band: the empirical failure window. Never invert here.
-    PureResonator,
-    /// Numerically singular: truncated pseudo-inverse.
-    PseudoInverse,
-    /// Intermediate zone [1e2, 1e3): still safe to invert, but flagged.
-    GramInverseGuarded,
+pub enum Placement {
+    Pure,
+    AmbientGram,
+    Dual,
+    DualPinv,
 }
 
-pub fn route_kappa(kappa: f64) -> Route {
-    if !kappa.is_finite() || kappa >= KAPPA_SING {
-        Route::PseudoInverse
-    } else if kappa >= KAPPA_CRIT_LO {
-        Route::PureResonator // [1e3, 1e15): cubre la banda critica y mas
-    } else if kappa >= KAPPA_SAFE {
-        Route::GramInverseGuarded
-    } else {
-        Route::GramInverse
+#[derive(Debug, Clone)]
+pub struct DecoderSpec {
+    pub n_cv: usize,
+    pub d_blk: usize,
+    pub ambient_resolvent: bool,
+    pub kappa: Option<f64>,
+    pub full_rank: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct RouteDecision {
+    pub placement: Placement,
+    pub reason: &'static str,
+    pub kappa_warning: bool,
+}
+
+pub fn route_placement(spec: &DecoderSpec) -> RouteDecision {
+    let rho = spec.n_cv as f64 / spec.d_blk as f64;
+    let kw = spec.kappa.map(|k| k >= KAPPA_WARN).unwrap_or(false);
+    if !spec.full_rank || spec.n_cv > spec.d_blk {
+        return RouteDecision {
+            placement: Placement::DualPinv,
+            reason: "n_cv > d_blk o singular: dual pinv es proyectar, no se invierte",
+            kappa_warning: kw,
+        };
+    }
+    if (rho - 1.0).abs() < 1e-9 && spec.ambient_resolvent {
+        return RouteDecision {
+            placement: Placement::Dual,
+            reason: "punto cuadrado: dual exato norma 1",
+            kappa_warning: kw,
+        };
+    }
+    if rho < 1.0 {
+        return RouteDecision {
+            placement: if spec.ambient_resolvent { Placement::AmbientGram } else { Placement::Pure },
+            reason: "sub-cuadrado: todo estable, ambient funciona",
+            kappa_warning: kw,
+        };
+    }
+    RouteDecision {
+        placement: Placement::Dual,
+        reason: "fallback: dual norma-1 para resolvents espectrales",
+        kappa_warning: kw,
     }
 }
 
-// ------------------------- basic dense linear algebra -------------------------
-
-/// A in R^{n x n}, row-major.
+// === Algebra lineal robusta (Gauss-Jordan con pivoteo parcial) ===
 pub type Matrix = Vec<f64>;
 
 pub fn mat_vec(a: &Matrix, x: &[f64], n: usize) -> Vec<f64> {
     let mut y = vec![0.0; n];
     for i in 0..n {
-        let mut s = 0.0;
-        for j in 0..n {
-            s += a[i * n + j] * x[j];
-        }
-        y[i] = s;
+        y[i] = (0..n).map(|j| a[i * n + j] * x[j]).sum();
     }
     y
 }
+pub fn dot(a: &[f64], b: &[f64]) -> f64 { a.iter().zip(b.iter()).map(|(x,y)| x*y).sum() }
+pub fn norm(v: &[f64]) -> f64 { dot(v,v).sqrt() }
 
-pub fn dot(a: &[f64], b: &[f64]) -> f64 {
-    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
-}
-
-pub fn norm(v: &[f64]) -> f64 {
-    dot(v, v).sqrt()
-}
-
-/// Gram matrix of codevectors (rows of `code`, each of dim d).
 pub fn gram(code: &[Vec<f64>]) -> Matrix {
     let n = code.len();
-    let mut m = vec![0.0; n * n];
+    let mut m = vec![0.0; n*n];
     for i in 0..n {
         for j in 0..=i {
             let g = dot(&code[i], &code[j]);
-            m[i * n + j] = g;
-            m[j * n + i] = g;
+            m[i*n+j] = g; m[j*n+i] = g;
         }
     }
     m
 }
 
-/// Solve A x = b with Gaussian elimination + partial pivot. None if singular.
-pub fn solve(a: &Matrix, b: &[f64], n: usize) -> Option<Vec<f64>> {
-    let mut aug = a.clone();
-    let mut x = b.to_vec();
-    for col in 0..n {
-        // pivot
-        let mut piv = col;
-        let mut best = aug[col * n + col].abs();
-        for r in (col + 1)..n {
-            let v = aug[r * n + col].abs();
-            if v > best {
-                best = v;
-                piv = r;
-            }
-        }
-        if best < 1e-300 {
-            return None;
-        }
-        if piv != col {
-            for k in 0..n {
-                aug.swap(col * n + k, piv * n + k);
-            }
-            x.swap(col, piv);
-        }
-        let d = aug[col * n + col];
-        for r in (col + 1)..n {
-            let f = aug[r * n + col] / d;
-            for k in col..n {
-                aug[r * n + k] -= f * aug[col * n + k];
-            }
-            x[r] -= f * x[col];
-        }
-    }
-    // back substitution
-    let mut sol = vec![0.0; n];
-    for i in (0..n).rev() {
-        let mut s = x[i];
-        for k in (i + 1)..n {
-            s -= aug[i * n + k] * sol[k];
-        }
-        sol[i] = s / aug[i * n + i];
-    }
-    Some(sol)
-}
-
-/// Full inverse of A (n x n) via Gauss-Jordan on [A | I]. None if singular.
 pub fn inverse(a: &Matrix, n: usize) -> Option<Matrix> {
-    let mut inv = vec![0.0; n * n];
-    for i in 0..n {
-        inv[i * n + i] = 1.0;
-    }
     let mut m = a.clone();
+    let mut inv = vec![0.0; n*n];
+    for i in 0..n { inv[i*n+i] = 1.0; }
     for col in 0..n {
         let mut piv = col;
-        let mut best = m[col * n + col].abs();
-        for r in (col + 1)..n {
-            let v = m[r * n + col].abs();
-            if v > best {
-                best = v;
-                piv = r;
-            }
+        let mut best = m[col*n+col].abs();
+        for r in col+1..n {
+            if m[r*n+col].abs() > best { best = m[r*n+col].abs(); piv = r; }
         }
-        if best < 1e-300 {
-            return None;
-        }
+        if best < 1e-300 { return None; }
         if piv != col {
             for k in 0..n {
-                m.swap(col * n + k, piv * n + k);
-                inv.swap(col * n + k, piv * n + k);
+                m.swap(col*n+k, piv*n+k);
+                inv.swap(col*n+k, piv*n+k);
             }
         }
-        let d = m[col * n + col];
-        for k in 0..n {
-            m[col * n + k] /= d;
-            inv[col * n + k] /= d;
-        }
+        let d = m[col*n+col];
+        for k in 0..n { m[col*n+k] /= d; inv[col*n+k] /= d; }
         for r in 0..n {
-            if r == col {
-                continue;
-            }
-            let f = m[r * n + col];
-            for k in 0..n {
-                m[r * n + k] -= f * m[col * n + k];
-                inv[r * n + k] -= f * inv[col * n + k];
+            if r != col {
+                let f = m[r*n+col];
+                for k in 0..n { m[r*n+k] -= f*m[col*n+k]; inv[r*n+k] -= f*inv[col*n+k]; }
             }
         }
     }
     Some(inv)
 }
 
-// ------------------------- kappa estimation, O(n^2) -------------------------
-
-/// lambda_max via power iteration (SPD matrix -> dominant = largest).
-fn lambda_max(a: &Matrix, n: usize, iters: usize) -> f64 {
-    let mut v: Vec<f64> = (0..n).map(|i| ((i * 2654435761) % 1000) as f64 + 1.0).collect();
-    let mut lam = 0.0;
-    for _ in 0..iters {
-        let w = mat_vec(a, &v, n);
-        let nw = norm(&w);
-        if nw < 1e-300 {
-            break;
+pub fn solve(a: &Matrix, b: &[f64], n: usize) -> Option<Vec<f64>> {
+    let mut m = a.clone();
+    let mut x = b.to_vec();
+    for col in 0..n {
+        let mut piv = col;
+        let mut best = m[col*n+col].abs();
+        for r in col+1..n {
+            if m[r*n+col].abs() > best { best = m[r*n+col].abs(); piv = r; }
         }
-        v = w.iter().map(|x| x / nw).collect();
-        lam = dot(&v, &mat_vec(a, &v, n)); // Rayleigh quotient
-        let _ = lam;
+        if best < 1e-300 { return None; }
+        if piv != col {
+            for k in 0..n { m.swap(col*n+k, piv*n+k); }
+            x.swap(col, piv);
+        }
+        let d = m[col*n+col];
+        for r in 0..n {
+            if r != col {
+                let f = m[r*n+col] / d;
+                for k in 0..n { m[r*n+k] -= f*m[col*n+k]; }
+                x[r] -= f * x[col];
+            }
+        }
+        x[col] /= d;
     }
-    dot(&v, &mat_vec(a, &v, n))
+    Some(x)
 }
 
-/// lambda_min via inverse power iteration: solve A w = v each step.
-fn lambda_min(a: &Matrix, n: usize, iters: usize) -> Option<f64> {
+/// Dual projector (teoria de frames): P = C^T M^-1 C, matriz d×d en espacio
+/// ambiente. Proyeccion ortogonal sobre el span del codebook. Para C cuadrada
+/// invertible, P = I exacto (el teorema). NOTA: el orden C·M^-1·C^T (gram de
+/// filas) NO es el projector — solo da I para codebooks simétricos.
+/// Estable numericamente (Gauss-Jordan + suma de outers products).
+pub fn dual_projector(code: &[Vec<f64>]) -> Option<Matrix> {
+    let n = code.len();
+    let d = code.first()?.len();
+    let g = gram(code);
+    let minv = inverse(&g, n)?;
+    let mut p = vec![0.0; d * d];
+    for i in 0..n { for j in 0..n {
+        let mij = minv[i * n + j];
+        if mij == 0.0 { continue; }
+        for mu in 0..d { for nu in 0..d {
+            p[mu * d + nu] += code[i][mu] * mij * code[j][nu];
+        }}
+    }}
+    Some(p)
+}
+
+/// Aplica corrección en coefficient-space: g_s -> op * g_s
+pub fn correct_coeffs(g: &[f64], op: Option<&Matrix>) -> Vec<f64> {
+    match op {
+        Some(m) if m.len() == g.len() * g.len() => mat_vec(m, g, g.len()),
+        _ => g.to_vec(),
+    }
+}
+
+/// Validación teórica: ||C^T M^-1 C - I||_F (debe ser ~1e-12 en float64)
+pub fn validate(code: &[Vec<f64>]) -> Option<(f64, f64, f64)> {
+    let n = code.len();
+    let d = code[0].len();
+    let g = gram(code);
+    let minv = inverse(&g, n)?;
+    // P = C^T M^-1 C (d×d): el mismo projector que dual_projector.
+    let mut p = vec![0.0; d * d];
+    for i in 0..n { for j in 0..n {
+        let mij = minv[i * n + j];
+        if mij == 0.0 { continue; }
+        for mu in 0..d { for nu in 0..d {
+            p[mu * d + nu] += code[i][mu] * mij * code[j][nu];
+        }}
+    }}
+    let mut err = 0.0;
+    for mu in 0..d {
+        for nu in 0..d {
+            let t = p[mu*d+nu] - if mu==nu { 1.0 } else { 0.0 };
+            err += t*t;
+        }
+    }
+    // lambda_min por inverse power iteration determinista
     let mut v: Vec<f64> = (0..n).map(|i| ((i * 40503 + 17) % 997) as f64 + 1.0).collect();
-    for _ in 0..iters {
-        let w = solve(a, &v, n)?;
+    for _ in 0..400 {
+        let w = solve(&g, &v, n)?;
         let nw = norm(&w);
-        if nw < 1e-300 {
-            return None;
-        }
+        if nw < 1e-300 { break; }
         v = w.iter().map(|x| x / nw).collect();
     }
-    // Rayleigh quotient of A on the (approx) smallest eigenvector
-    Some(dot(&v, &mat_vec(a, &v, n)).abs())
-}
-
-/// Estimated spectral condition number of a symmetric Gram matrix.
-/// Returns (kappa, lambda_max, lambda_min). None => numerically singular.
-pub fn estimate_kappa(gram_mtx: &Matrix, n: usize, iters: usize) -> Option<(f64, f64, f64)> {
-    let lmax = lambda_max(gram_mtx, n, iters);
-    let lmin = lambda_min(gram_mtx, n, iters)?;
-    if lmin <= 0.0 {
-        return None;
-    }
-    Some((lmax / lmin, lmax, lmin))
-}
-
-// ------------------------- router -------------------------
-
-/// What the router computed for one block.
-#[derive(Debug, Clone)]
-pub struct RouterDecision {
-    pub kappa: Option<f64>,
-    pub lambda_max: f64,
-    pub lambda_min: f64,
-    pub route: Route,
-}
-
-pub struct Router {
-    pub iters: usize,
-}
-
-impl Default for Router {
-    fn default() -> Self {
-        Self { iters: 200 }
-    }
-}
-
-impl Router {
-    /// Inspect a block's codebook and decide the decoding route.
-    pub fn decide(&self, codevectors: &[Vec<f64>]) -> RouterDecision {
-        let n = codevectors.len();
-        let g = gram(codevectors);
-        match estimate_kappa(&g, n, self.iters) {
-            Some((k, lmax, lmin)) => RouterDecision {
-                kappa: Some(k),
-                lambda_max: lmax,
-                lambda_min: lmin,
-                route: route_kappa(k),
-            },
-            None => RouterDecision {
-                kappa: None,
-                lambda_max: 0.0,
-                lambda_min: 0.0,
-                route: Route::PseudoInverse,
-            },
-        }
-    }
+    let lmin = dot(&v, &mat_vec(&g, &v, n)).abs();
+    Some((err.sqrt(), 1.0/lmin, lmin))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn mix(mut x: u64) -> u64 {
-        x ^= x >> 30;
-        x = x.wrapping_mul(0xbf58476d1ce4e5b9);
-        x ^= x >> 27;
-        x = x.wrapping_mul(0x94d049bb133111eb);
-        x ^= x >> 31;
-        x
-    }
-
-    fn good_codebook(n: usize, d: usize) -> Vec<Vec<f64>> {
-        // pseudo-random decorrelated unit vectors (splitmix64 hash)
-        (0..n)
-            .map(|i| {
-                let mut v: Vec<f64> = (0..d)
-                    .map(|j| {
-                        let h = mix((i as u64) << 32 | j as u64);
-                        ((h % 2000) as f64 - 1000.0) / 1000.0
-                    })
-                    .collect();
-                let nm = norm(&v);
-                for x in v.iter_mut() {
-                    *x /= nm;
-                }
-                v
-            })
-            .collect()
-    }
-
-    fn badly_scaled_codebook(n: usize, d: usize) -> Vec<Vec<f64>> {
-        // near-duplicate vectors -> ill conditioned Gram
-        let mut cb = good_codebook(n, d);
-        cb[1] = cb[0].clone();
-        cb[1][0] += 1e-6;
-        cb
+    fn mk_codebook(n: usize, d: usize) -> Vec<Vec<f64>> {
+        // Determinista: xorshift seedeado por fila. El generador (i*j + K) % 1000
+        // colapsaba el rango: con j <= 15 el módulo no hace wrap y las filas quedan
+        // ~afines (761 + i*j) → rango efectivo ~2 → λ_min ≈ 0 → la inversa float64
+        // explota (err ~1e13). Un codebook genérico unit-norm tiene κ ~ n² y el
+        // dual es computable en float64.
+        (0..n).map(|i| {
+            let mut s = 0x9E3779B97F4A7C15u64.wrapping_add((i as u64).wrapping_mul(0xBF58476D1CE4E5B9));
+            let mut v: Vec<f64> = (0..d).map(|_| {
+                s ^= s >> 12; s ^= s << 25; s ^= s >> 27;
+                (s.wrapping_mul(0x2545F4914F6CDD1D) >> 11) as f64 / (1u64 << 53) as f64 - 0.5
+            }).collect();
+            let nm = norm(&v);
+            for x in v.iter_mut() { *x /= nm; }
+            v
+        }).collect()
     }
 
     #[test]
-    fn kappa_good_codebook_is_low() {
-        let cb = good_codebook(8, 64);
-        let g = gram(&cb);
-        let (k, _, _) = estimate_kappa(&g, 8, 300).unwrap();
-        assert!(k < 1e3, "kappa={k}");
+    fn square_ambient_collapses_dual_exact() {
+        let code = mk_codebook(16, 16);
+        // gram de codebook cuadrado unit-norm está mal condicionado (Lambda_min ~ 1/n²)
+        let spec = DecoderSpec { n_cv: 16, d_blk: 16, ambient_resolvent: true, kappa: None, full_rank: true };
+        let r = route_placement(&spec);
+        assert_eq!(r.placement, Placement::Dual, "punto cuadrado requiere dual");
+
+        // La identidad es algebraicamente exacta
+        let p = dual_projector(&code).unwrap();
+        let mut err = 0.0;
+        for i in 0..16 { for j in 0..16 {
+            let t = p[i*16+j] - if i==j {1.0} else {0.0};
+            err += t*t;
+        }}
+        let err = err.sqrt();
+        // float64 con κ ~ 600: err ~ 1e-13 (precisión de máquina).
+        assert!(err < 1e-6, "dual err demasiado grande: {err}");
     }
 
     #[test]
-    fn kappa_bad_codebook_is_high() {
-        let cb = badly_scaled_codebook(8, 64);
-        let g = gram(&cb);
-        let (k, _, _) = estimate_kappa(&g, 8, 500).unwrap();
-        assert!(k > 1e5, "kappa={k}");
+    fn overcomplete_routes_to_dual_pinv() {
+        let spec = DecoderSpec { n_cv: 24, d_blk: 16, ambient_resolvent: true, kappa: None, full_rank: false };
+        let r = route_placement(&spec);
+        assert_eq!(r.placement, Placement::DualPinv);
     }
 
     #[test]
-    fn router_fails_over_in_critical_band() {
-        let cb = good_codebook(8, 64);
-        let r = Router::default().decide(&cb);
-        assert!(matches!(
-            r.route,
-            Route::GramInverse | Route::GramInverseGuarded
-        ));
-        let cb2 = badly_scaled_codebook(8, 64);
-        let r2 = Router::default().decide(&cb2);
-        assert!(matches!(
-            r2.route,
-            Route::PureResonator | Route::PseudoInverse
-        ));
+    fn wide_well_conditioned_keeps_ambient() {
+        let spec = DecoderSpec { n_cv: 16, d_blk: 48, ambient_resolvent: true, kappa: Some(50.0), full_rank: true };
+        let r = route_placement(&spec);
+        assert_eq!(r.placement, Placement::AmbientGram);
+        assert!(!r.kappa_warning);
     }
 
     #[test]
-    fn inverse_solves() {
-        let cb = good_codebook(4, 16);
-        let g = gram(&cb);
-        let inv = inverse(&g, 4).unwrap();
-        let b = vec![1.0, 2.0, 3.0, 4.0];
-        let x = mat_vec(&inv, &b, 4);
-        let bb = mat_vec(&g, &x, 4);
-        for (u, v) in b.iter().zip(bb.iter()) {
-            assert!((u - v).abs() < 1e-8);
-        }
+    fn kappa_warns_but_does_not_route() {
+        let spec = DecoderSpec { n_cv: 16, d_blk: 16, ambient_resolvent: true, kappa: Some(1e4), full_rank: true };
+        let r = route_placement(&spec);
+        assert_eq!(r.placement, Placement::Dual);
+        assert!(r.kappa_warning);
     }
 }

@@ -1,0 +1,13 @@
+# fhrr-resilient v0.3.0 — fhrr_real_decoding benchmark
+# exit=0 | generado 2026-09-27 (Windows nativo, cargo cargo.exe)
+# codebooks: xorshift determinista por fila; P=C^T M^-1 C (dual placement)
+== FHRR/VSA benchmark — Frame-Dual Stability ==
+[sub-square rho<1] rho=0.67 lam_med=1.393e-1 n^2*lam_med=35.671 (ln2=0.693)
+  ambient M^-1 : 0.902
+  dual proj    : 0.902
+  pure         : 0.902
+[square rho=1] rho=1.00 lam_med=3.459e-1 n^2*lam_med=88.543 (ln2=0.693)
+  ambient M^-1 : 0.130
+  dual proj    : 0.807
+  pure         : 0.807
+OK.

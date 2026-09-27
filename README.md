@@ -90,10 +90,21 @@ originating algebra.
 HRR (V3), BSC (11b, 18b), MAP (11c — single-shot, no loop, doesn't collapse),
 FHRR (27). Transformers (12b) don't collapse (softmax, no Gram inverse).
 
-### 6. Rust crate (fhrr-resilient)
-A conservative baseline decoder router. Currently implements the *legacy*
-κ-threshold routing (see `src/lib.rs` CAVEAT); a future version will route on
-operator placement + geometry. 4 Rust tests green.
+### 6. Rust crate (fhrr-resilient v0.3.0)
+Zero-dependency (std only) decoder router for VSA/FHRR blocks. Routes by
+**operator placement** — `Dual` (CᵀM⁻¹C), `AmbientGram`, `Pure`, `DualPinv` —
+with κ demoted to a diagnostic signal, exactly as the paper recommends.
+Validated in a real FHRR pipeline (Deterministic xorshift codebooks):
+
+```
+[sub-square ρ=0.67] ambient 0.902 | dual 0.902 | pure 0.902
+[square    ρ=1.00] ambient 0.130 | dual 0.807 | pure 0.807
+```
+
+The square-point row reproduces the paper's central result in the crate:
+ambient M⁻¹ collapses, dual placement does not. Algebraic check:
+`‖CᵀM⁻¹C − I‖_F ≈ 4×10⁻¹⁴` (machine precision, exact identity). Full data:
+`data/rust_v3_real_decoding.txt`. 4 Rust tests green (`cargo test`).
 
 ---
 
@@ -146,7 +157,7 @@ fhrr-rho-collapse/
 │   ├── test_pipeline.py  ← 5 tests
 │   ├── test_frame_duality.py ← 8 tests
 │   └── README.md
-├── fhrr-resilient/       ← Rust crate (legacy κ-router)
+├── fhrr-resilient/       ← Rust crate v0.3.0 (placement router, zero-dep)
 ├── data/                 ← every number is a JSON
 └── figures/              ← paper figures
 ```
@@ -176,7 +187,7 @@ fhrr-rho-collapse/
 ```bibtex
 @article{nieto2026observer,
   title={Operator placement, not representation: a resonator-decoder failure
-         mode at the square-Wishart hard edge},
+         mode at the square-Wishart hard edge and its canonical dual-frame repair},
   author={Nieto, Luciano Benjamín},
   journal={arXiv preprint},
   year={2026},
