@@ -127,7 +127,7 @@ The decoder fails when the Gram matrix is severely ill-conditioned. Exp.~14 meas
 \section{Mechanism: hard edge and the asymmetric correction}
 \label{sec:rmt}
 
-The $\rho=1$ point is calibrated by the classical square Wishart ensemble. For the reference RMT experiment (Exp.~16), $C_{ij}$ are i.i.d. with variance $1/d$, so $M=CC^{\top}$ is a scaled Wishart matrix and $\rho=n/d$ is its aspect ratio. The main resonator harness instead draws Gaussian vectors and normalizes each row to unit norm; its Gram is therefore a normalized correlation-type Gram, not literally Wishart. We use the Wishart ensemble as the random-matrix reference for the hard-edge scaling \citep{johnstone2001distribution} and verify the actual normalized-codebook spectrum separately in Exp.~14.
+The $\rho=1$ point is calibrated by the classical square Wishart ensemble. For the reference RMT experiment (Exp.~16), $C_{ij}$ are i.i.d. with variance $1/d$, so $M=CC^{\top}$ is a scaled Wishart matrix and $\rho=n/d$ is its aspect ratio. The main resonator harness instead draws Gaussian vectors and normalizes each row to unit norm; its Gram is therefore a normalized correlation-type Gram, not literally Wishart. We use the Wishart ensemble as the random-matrix reference for the hard-edge scaling \citep{johnstone2001distribution} --- an anchoring justified by Chen--Liu--Zhou: a constraint applied globally to each realization (our row normalization) does not alter local correlations in the large-$N$ limit \citep{chen2010smallest} --- and verify the actual normalized-codebook spectrum separately (Exp.~14; Exp.~28 confirms the convergence of the normalized spectrum to the same hard-edge law).
 
 Three classical facts from random-matrix theory map onto the observed regimes:
 

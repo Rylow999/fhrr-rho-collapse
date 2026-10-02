@@ -86,6 +86,16 @@ The loop is not the mechanism.
 **FHRR (Exp 27):** 0.131 → 1.000, paired +0.868, closes the circle on the
 originating algebra.
 
+**Hard-edge convergence (Exp 28):** with 200–1200 seeds per size (n up to
+1024), the fitted exponent of λ_min(n) at the square point is **−2.058** (all
+sizes; tail n≥256: −2.061) — λ_min ~ n⁻² confirmed (Exp 16's −1.6 with few
+seeds was extreme-value sampling noise). And the row-normalized codebook (a
+per-realization global constraint) shares the same hard-edge law as the
+literal Wishart ensemble: medians of λ_min·n² agree within 2% at n=512 and
+within 12% at n=1024 (0.25–0.33 range overall) — the Chen–Liu–Zhou asymptotic
+prediction, verified experimentally (`data/exp28_hardedge_convergence.json`;
+two-sample KS ≤ 0.06 at every size).
+
 ### 5. Universality across algebras
 HRR (V3), BSC (11b, 18b), MAP (11c — single-shot, no loop, doesn't collapse),
 FHRR (27). Transformers (12b) don't collapse (softmax, no Gram inverse).
@@ -120,7 +130,7 @@ pip install -r requirements.txt
 python verify.py                       # 31 checks against data/*.json
 
 # Tests
-pytest tests/ -v                       # 13 Python tests
+pytest tests/ -v                       # 15 Python tests
 cd fhrr-resilient && cargo test        # 4 Rust tests
 
 # Reproduce causal experiments
@@ -129,6 +139,7 @@ python exp_V18_frame_duality.py        # HRR
 python exp_V18b_bsc_duality.py         # BSC
 python exp_V27_fhrr_duality.py         # FHRR
 python exp_V16_scaling_n.py            # spectral scaling
+python exp_V28_hardedge_convergence.py # hard-edge convergence (rho=1)
 ```
 
 Compile the paper: see `paper/README.md`.
@@ -156,6 +167,7 @@ fhrr-rho-collapse/
 ├── tests/
 │   ├── test_pipeline.py  ← 5 tests
 │   ├── test_frame_duality.py ← 8 tests
+│   ├── test_hardedge.py  ← 2 tests (Exp 28)
 │   └── README.md
 ├── fhrr-resilient/       ← Rust crate v0.3.0 (placement router, zero-dep)
 ├── data/                 ← every number is a JSON
@@ -180,6 +192,7 @@ fhrr-rho-collapse/
 | Frame bounds | `data/exp24_frame_bounds.json` |
 | Counterexamples | `data/exp25_contraejemplos.json` |
 | Stability bound | `data/exp26_cota_stability.json` |
+| Hard-edge convergence | `data/exp28_hardedge_convergence.json` |
 | BSC/MAP phase | `data/exp11_bsc_rho.json`, `exp11c_map_rho.json` |
 
 ## Citation
