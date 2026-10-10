@@ -215,3 +215,46 @@ Anonymous external reviewers whose critiques sharpened the formulation.
 ---
 
 *Per Aspera, Ad Astra.*
+---
+
+# Auditoria bajo el Metodo Integral (2026-10-10)
+
+*Protocolo: HORIZON/DOCUMENTATION/METODO_INTEGRAL.md. Estados obligatorios.*
+
+## Teoremas y verificaciones (estado honesto)
+
+| Pieza | Estado | Detalle |
+|---|---|---|
+| Identidad C^T M^-1 C = I (codebook cuadrado invertible) | **PROBADO (algebra)** | la identidad del dual frame; ||P-I||_F ~ 4e-14 en float64 (Exp 28/crate) |
+| Colocacion causa el colapso (Exp 18) | **PROBADO (intervencion controlada)** | mismo codebook/Gram/resolvente, solo cambia colocacion: ambient 0.160 vs dual-same 0.985 [boot95], 200/200 semillas + replica Exp 19 + BSC 18b + FHRR 27 (0.131->1.000) |
+| Hard edge: lambda_min ~ n^-2 | **PROBADO (anclaje teorico) + EVIDENCIA fuerte** | anclaje: Marchenko-Pastur/Chen-Liu-Zhou; evidencia: Exp 28 exponente -2.058 (200-1200 seeds, n hasta 1024); unit-norm = Wishart de traza fija por CLZ: verificada (KS<=0.06 toda n) |
+| Teorema 1 (umbral condicional a LEH del paper) | **PROBADO CONDICIONAL** | condicionalidad explicita en el paper; no se esconde |
+| Kappa NO es el trigger (Exp 17) | **EVIDENCIA REFUTATIVA** | 40 seeds, todas colapsan sin importar kappa en [2.3e2, 1.9e5], corr=-0.26 — refuta la lectura de banda critica |
+| Exp 20A/20B (ensembles/aspecto) | **EVIDENCIA CONCORDANTE** | 6 familias replican; ortogonal no colapsa (M=I); near-dup falla (control) |
+| Crate Rust v0.3.0 | **PROBADO (implementacion)** | 4/4 tests + benchmark: square rho=1 ambient 0.130 vs dual 0.807; zero-dependency preservada |
+| Transformers (analisis extenso) | ver `docs/transformers_frame_dual.md` | PREDICCIONES FALSABLES P1-P4 pre-registradas (rank collapse in width = fallo ambient; fix dual; capacidad de contexto; L2 de Pandora) |
+
+## Metodos vs tabla del protocolo
+
+| Metodo | Clase | Veredicto |
+|---|---|---|
+| Intervencion controlada (Exp 18) | el "puente" (A6) | **legitimo**: la unica variable que cambia es la colocacion — es el estandar de causalidad del protocolo |
+| Ensembles + controls (Exp 20/25) | falsacion | legitimo: incluye control negativo (near-dup falla) |
+| Barrido fino rho (Exp 9) + null matched | falsacion | legitimo |
+| Analisis RMT (Exp 16/28) | teorema + evidencia | anclaje CLZ probado; scaling -2.058 evidencia (no prueba para codebooks entrenados — declarado) |
+| Analisis transformers | prediccion falsable | **nuevo**: P1-P4 pre-registradas — resultado tipo "medio" por 1.5 |
+
+## Barreras identificadas
+
+1. **Barrera de extension a keys entrenadas (A6/4.2):** el teorema vale
+   para frames generales; la identificacion keys~frame cuadrado en
+   transformers entrenados es hipotesis puente de P1-P3 — declarada, no
+   probada.
+2. **Barrera de circuitos:** si un head implementa M^-1·x es una pregunta
+   empirica de interpretabilidad — fuera del alcance del repo (abierta).
+
+## Pendientes con estado
+
+- CI del repo falla desde run #1 (pre-existente; requiere token para
+  diagnosticar) — **pendiente externo**.
+- Falsacion de P1-P4 (transformers) — **abierto, pre-registradas**.
