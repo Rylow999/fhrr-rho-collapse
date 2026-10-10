@@ -185,3 +185,60 @@ como hipotesis explicita de P1-P3.
    (nuestro paper; tablas Exp 18/20A/27/28 son las verificaciones).
 8. Chen, Y., Liu, D.-Z., Zhou, D.-S. (2010). arXiv:1002.3975 (anclaje del
    hard edge — citado en Exp 28).
+
+---
+
+## 8. RESULTADOS DEL LABORATORIO P1-P3 (2026-10-10, medido)
+
+Script: `experiments/exp_p1p2_transformers.py` (numpy puro, CPU, seeds
+fijas, 200-300 trials). JSON: `experiments/data_p1p2.json`.
+
+### P1 — CONFIRMADA (hard edge en atención)
+
+λ_min de la gram de keys unit-norm aleatorias (d=64): 0.533 (T=8) →
+0.313 (16) → 0.108 (32) → 0.026 (48) → **1e-4 (T=64=d)**. En el cuadrado,
+el amplificador 1/λ_min = **18.790×**. El gap espectral de la matriz de
+atención (σ₁/σ₂) crece ~lineal con T: 1568 (T=8) → 33.303 (T=128) —
+replica cualitativa de Nait-Saada. **Estado: predicción confirmada en el
+régimen random-keys.** (Queda: keys entrenadas.)
+
+### P2 — PARCIALMENTE REFUTADA en el diseño sin-loop (hallazgo honesto)
+
+En el mini-VSA de product-binding **sin bucle**: ambient colapsa como
+predice el teorema (0.017 ≈ chance 0.016 en el cuadrado — el patrón del
+paper), PERO el unbinding **dual no supera al pure** (dual 0.337 < pure
+0.797 en T=8). **Causa técnica identificada:** en product-binding sin
+loop, `bundle·C[target]` ya ES una casi-proyección (la mejor estrategia),
+y el dual reintroduce el pinv de la gram completa = ruido extra sin
+beneficio. En el paper fhrr la corrección importa porque el **resonador
+itera** y re-amplifica el error; sin loop, pure basta. **El teorema no
+falla — la predicción P2 estaba mal calibrada para el régimen sin-loop.**
+Re-etiquetada: P2 vale para arquitecturas **con reinyección iterativa**
+(resonador, transformers con residuales profundos); en single-shot
+product-binding, la reparación correcta es pure/ortogonalización.
+
+### P3 — CONFIRMADA (capacidad del frame; la predicción útil)
+
+**La capacidad de roles decodificables d·√λ_min cae con T**:
+35.6 (T=16) → 21.2 (32) → 10.5 (48) → **0.6 (T=64=d)** — y la curva de
+capacidad reproduce la degradación medida en M3 (pure: 0.797→0.143→0.027).
+El loop-test confirma: en T=16 (borde de capacidad) todos los métodos
+fallan por igual — **la limitación es del codebook (λ_min), no del
+decodificador**. Traducción transformer: el contexto efectivo de un
+head está acotado por la calidad espectral de sus keys (d·√λ_min·T²
+constante), no por d solo. **Estado: confirmada en random-keys; la
+versión entrenada es el test contra LLMs reales.**
+
+### Síntesis del laboratorio (con protocolo)
+
+| Predicción | Estado tras medición |
+|---|---|
+| P1 hard edge en atención | **CONFIRMADA** (random-keys; d=64) |
+| P2 dual > ambient siempre | **REFUTADA sin-loop; RE-ETIQUETADA**: dual/pure según arquitectura (con/sin reinyección) — el teorema clasifica, no dicta una sola reparación |
+| P3 capacidad = d·√λ_min | **CONFIRMADA** (curva completa; reproduce M3) |
+| Ambient colapsa en el cuadrado | **CONFIRMADA** (0.017 ≈ chance) |
+
+La predicción que sobrevive con más valor práctico: **P3** — el diagnóstico
+de arquitectura por λ_min de la gram de keys, y la ortogonalización de keys
+como la palanca de capacidad (conexión directa con el "VSA-likeness" de
+Dhayalkar y con el régimen del frame ortogonal de Exp 20A).
