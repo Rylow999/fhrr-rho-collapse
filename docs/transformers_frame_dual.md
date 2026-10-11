@@ -310,3 +310,70 @@ implementaciones practicas (diagnostico por lambda_min, regularizacion
 del edge, capacidad como cota de contexto) quedan especificadas con
 su instrumento de medicion. Lo que sigue para un test en escala (Llama/
 GPT-3) es solo computo.
+
+---
+
+## 10. INTERVENCION CONTROLADA: MiniLLM edge-reg (2026-10-10 — EL NO-GO HONESTO)
+
+Script: `experiments/exp_minillm_intervencion.py` (torch CPU, 3 modelos,
+presupuesto identico 1500 steps, seeds fijas, evaluacion con generador
+distinto). Predicciones PR1-PR4 pre-registradas ANTES de correr. JSON:
+`experiments/data_minillm.json`.
+
+### Resultado (dosis-respuesta completa)
+
+| alpha (dosis edge-reg) | lmin final | loss final | recall T=6 | recall T=40 |
+|---|---|---|---|---|
+| 0.0 (baseline) | 0.0058 | 3.49 | **0.165** | 0.027 |
+| 0.5 | 0.2556 | 3.97 | 0.143 | 0.027 |
+| 2.0 | 0.5797 | 4.23 | 0.031 | 0.013 |
+
+### Veredicto por prediccion (protocolo)
+
+- **PR1 (la intervencion sube lmin): CONFIRMADA** — x44 con alpha=0.5,
+  x100 con alpha=2. El instrumento funciona.
+- **PR2 (mejora recall en T grande): REFUTADA** — en este diseno. Ninguna
+  dosis mejoro el recall en ningun T; alpha=2 lo degrado seriamente.
+- **PR3 (no dana en T chico): REFUTADA** — ya con alpha=0.5 el recall
+  T=6 bajo de 0.165 a 0.143; con alpha=2 a 0.031.
+- **PR4 (curva desplazada): REFUTADA.**
+
+### La lectura con causa (barrera metodologica, no teorica)
+
+**El trade-off lmin-tarea es real y medible.** El edge-reg compite por
+gradiente con la tarea misma: ortogonalizar las keys cuesta representacion
+util en un presupuesto corto. En este regimen (1500 steps, ambos modelos
+sub-entrenados: el baseline apenas alcanza 0.165 en T=6 contra chance
+0.016), cada unidad de ortogonalizacion se paga con aprendizaje.
+
+QUE NO REFUTA esto (protocolo 1.3):
+- NO refuta el teorema ni el hard edge (medido en GPT-2 y en el lab);
+- NO refuta que lmin sea el diagnostico correcto (P1/P3 confirmadas);
+- NO dice que el trade-off sea eterno: dice que a presupuesto corto y
+  dosis altas, la regularizacion directa de -log(lmin) es un mal gasto
+  de gradiente.
+
+LAS DOS VIAS QUE QUEDAN ABIERTAS (redisenyo especifico):
+1. **Dosis baja en regimen saturado:** entrenar hasta que el baseline
+   sature la tarea (o el codo de recall), y aplicar edge-reg recien
+   entonces (curriculum: primero aprender, despues ortogonalizar) —
+   el trade-off desaparece si el modelo ya no esta gastando gradiente
+   en aprender lo basico. Requiere GPU (CPU: ~2h por modelo).
+2. **Intervencion arquitectonica en vez de perdida:** inicializar
+   Wk con bloque ortogonal por head (QR de la proyeccion) y solo
+   regularizar despues — arrancar del edge sano y ver si se mantiene.
+
+### Estado epistemico del programa transformers (FINAL de la jornada)
+
+| Capa | Resultado | Estado |
+|---|---|---|
+| Teoria (frame-dual) | teorema + laboratorio + GPT-2 real | **PROBADO/MEDIDO** |
+| Diagnostico (lmin/head) | GPT-2: hard edge confirmado, capacidad ~2 roles | **CONFIRMADO** |
+| Reparacion por regularizacion directa | dosis 0.5 y 2.0: NO-GO | **BARRERA MEDIDA** |
+| Reparacion por curriculum/arquitectura | no testeada (via abierta) | **PENDIENTE (GPU)** |
+
+El resultado mas util para produccion sigue siendo el diagnostico (P3):
+saber QUE head esta al borde es accionable hoy (pruning, re-init). La
+reparacion por regularizacion directa queda como via cerrada en regimen
+corto; las vias 1 y 2 quedan especificadas para el proximo experimento
+con GPU.
