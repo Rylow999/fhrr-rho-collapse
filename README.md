@@ -118,6 +118,28 @@ ambient M⁻¹ collapses, dual placement does not. Algebraic check:
 
 ---
 
+### 7. Transformers: the hard edge in real attention (2026-10-10/11)
+
+The frame-dual mechanism measured in **GPT-2 124M** (pre-trained, real text):
+λ_min of the key-gram collapses exactly at T=d_head (curve 0.088→0 at T=64),
+the attention spectral gap grows with context (Nait-Saada replicated), and
+effective rank is 57-60/64 — trained keys beat random in the bulk but the
+**edge is untouched** → real capacity ~2 roles/head. Full analysis with 8
+verified references: `docs/transformers_frame_dual.md`.
+
+**Predictions pre-registered and tested** (protocolo Método Integral):
+- P1 hard edge in attention: **CONFIRMED** (GPT-2 + lab)
+- P3 capacity d·√λ_min: **CONFIRMED** (curve 35.6→0.6 roles)
+- P2 dual-repair always wins: **REFUTED/RE-ETIQUETADA** — in single-shot
+  product-binding, pure cleanup matches dual (the theorem CLASSIFIES
+  architectures, doesn't dictate one repair)
+- Edge-reg regularization (MiniLLM): **NO-GO measured** (dose-response:
+  λ_min ×100 but task degraded; gradient competition in short budgets)
+- Orthogonal init: **REFUTADA** (QR destroyed in <150 steps)
+- Exp B (softmax as causal stabilizer): **INCONCLUSIVE on CPU** (budget;
+  design ready for GPU — resonator hits 1.0 without training while the
+  transformer peaks at 0.23)
+
 ## How to run
 
 ```bash
@@ -171,6 +193,9 @@ fhrr-rho-collapse/
 │   └── README.md
 ├── fhrr-resilient/       ← Rust crate v0.3.0 (placement router, zero-dep)
 ├── data/                 ← every number is a JSON
+├── docs/transformers_frame_dual.md  ← transformers analysis (8 refs, audited)
+├── experiments/          ← GPT-2 keys, MiniLLM intervention, init-orthogonal,
+│                            Exp B softmax (scripts + JSONs, all pre-registered)
 └── figures/              ← paper figures
 ```
 
@@ -193,6 +218,9 @@ fhrr-rho-collapse/
 | Counterexamples | `data/exp25_contraejemplos.json` |
 | Stability bound | `data/exp26_cota_stability.json` |
 | Hard-edge convergence | `data/exp28_hardedge_convergence.json` |
+| GPT-2 hard edge in attention | `experiments/data_gpt2*.json`, `docs/transformers_frame_dual.md` |
+| MiniLLM edge-reg NO-GO | `experiments/data_minillm.json` |
+| Exp B softmax (inconclusive, CPU) | `experiments/data_expB_softmax.json` |
 | BSC/MAP phase | `data/exp11_bsc_rho.json`, `exp11c_map_rho.json` |
 
 ## Citation
