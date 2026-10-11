@@ -377,3 +377,47 @@ saber QUE head esta al borde es accionable hoy (pruning, re-init). La
 reparacion por regularizacion directa queda como via cerrada en regimen
 corto; las vias 1 y 2 quedan especificadas para el proximo experimento
 con GPU.
+
+---
+
+## 11. Exp B (softmax como mecanismo causal): NO-GO por presupuesto (2026-10-11)
+
+Script: `experiments/exp_B_softmax.py` (3 brazos, misma tarea pair-recall,
+presupuesto identico 1200 steps). JSON: `experiments/data_expB_softmax.json`.
+
+### Resultado (barrido T = roles simultaneos)
+
+| T | resonator (Exp 18) | attn + softmax (Exp 12b) | attn SIN softmax (la prediccion) |
+|---|---|---|---|
+| 4 | 1.00 | 0.229 | 0.083 |
+| 20 | 1.00 | 0.118 | 0.028 |
+| 32 | 0.93 | 0.028 | 0.021 |
+
+### Veredicto (protocolo)
+
+- **PR-B1 (sin softmax colapsa como resonator): INCONCLUSA** — el brazo
+  sin softmax degrada mas que con softmax en todo T (0.083 vs 0.229 en T=4),
+  consistente con la prediccion, PERO ningun brazo transformer aprendio la
+  tarea (max 0.23 vs chance 0.016 y resonator 1.0): deficit de presupuesto
+  de entrenamiento (CPU, 1200 steps), no senal.
+- **PR-B2 (softmax estabiliza): INCONCLUSA** por la misma causa.
+- **La senal real del experimento:** el resonator SIN entrenamiento clava
+  1.0 en todo el rango — la historia central del paper reproducida en
+  paralelo: el mecanismo algebraico funciona de fabrica; el transformer
+  necesita presupuesto para acercarse.
+
+**Barrera:** presupuesto de CPU (misma causa que init-ortogonal, ronda
+anterior). El diseno del experimento es correcto y queda listo para GPU:
+misma tarea, mismos 3 brazos, presupuesto 20-50x. Se re-registra.
+
+### Nota sobre la auditoria de la propuesta externa (10-10)
+
+La propuesta de experimentos A-D para Neural Computation fue auditada bajo
+protocolo contra nuestro propio programa: Exp A ya refutado por Exp 12b
+(no colapso de accuracy con softmax); Exp C matematicamente confuso y
+refutado por el NO-GO del MiniLLM; Exp D prematuro (hipotesis de circuits
+sin evidencia); **Exp B era el unico pedazo genuinamente nuevo** — y su
+version CPU da INCONCLUSA por presupuesto. El paper de Neural Computation
+se escribe con lo que TENEMOS (teorema + GPT-2 real + laboratorio P1-P3 +
+MiniLLM NO-GO x2 + Exp 12b/18) y el brazo sin-softmax queda como el
+experimento pendiente con GPU.
