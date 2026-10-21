@@ -2,8 +2,14 @@
 name = "fhrr-resilient"
 version = "0.3.0"
 edition = "2021"
-description = "Resilient VSA/FHRR decoding routed by operator placement (dual/ambient/pure); Frame-Dual Stability validated in a real pipeline. Kappa is a diagnostic signal only."
+description = "Resilient VSA/FHRR decoding routed by operator placement (dual/ambient/pure). The Frame-Dual Stability observation: at the square point rho=1, ambient Gram decoding collapses while the dual projector stays exact. Kappa is a diagnostic signal only."
 license = "MIT"
 authors = ["Luciano Benjamin Nieto"]
+repository = "https://github.com/Rylow999/fhrr-rho-collapse"
+homepage = "https://github.com/Rylow999/fhrr-rho-collapse"
+readme = "README.md"
+keywords = ["vsa", "hdc", "fhrr", "vector-symbolic", "hyperdimensional"]
+categories = ["algorithms", "science", "mathematics"]
+rust-version = "1.70"
 
 [dependencies]
