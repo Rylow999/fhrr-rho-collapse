@@ -242,47 +242,52 @@ Anonymous external reviewers whose critiques sharpened the formulation.
 
 ---
 
-*Per Aspera, Ad Astra.*
+
 ---
 
-# Auditoria bajo el Metodo Integral (2026-10-10)
+---
 
-*Protocolo: HORIZON/DOCUMENTATION/METODO_INTEGRAL.md. Estados obligatorios.*
+# Method Integral Audit (2026-10-10)
 
-## Teoremas y verificaciones (estado honesto)
+*Protocol: HORIZON/DOCUMENTATION/METODO_INTEGRAL.md. Mandatory status labels.*
 
-| Pieza | Estado | Detalle |
+## Theorems and verifications (honest status)
+
+| Piece | Status | Detail |
 |---|---|---|
-| Identidad C^T M^-1 C = I (codebook cuadrado invertible) | **PROBADO (algebra)** | la identidad del dual frame; ||P-I||_F ~ 4e-14 en float64 (Exp 28/crate) |
-| Colocacion causa el colapso (Exp 18) | **PROBADO (intervencion controlada)** | mismo codebook/Gram/resolvente, solo cambia colocacion: ambient 0.160 vs dual-same 0.985 [boot95], 200/200 semillas + replica Exp 19 + BSC 18b + FHRR 27 (0.131->1.000) |
-| Hard edge: lambda_min ~ n^-2 | **PROBADO (anclaje teorico) + EVIDENCIA fuerte** | anclaje: Marchenko-Pastur/Chen-Liu-Zhou; evidencia: Exp 28 exponente -2.058 (200-1200 seeds, n hasta 1024); unit-norm = Wishart de traza fija por CLZ: verificada (KS<=0.06 toda n) |
-| Teorema 1 (umbral condicional a LEH del paper) | **PROBADO CONDICIONAL** | condicionalidad explicita en el paper; no se esconde |
-| Kappa NO es el trigger (Exp 17) | **EVIDENCIA REFUTATIVA** | 40 seeds, todas colapsan sin importar kappa en [2.3e2, 1.9e5], corr=-0.26 — refuta la lectura de banda critica |
-| Exp 20A/20B (ensembles/aspecto) | **EVIDENCIA CONCORDANTE** | 6 familias replican; ortogonal no colapsa (M=I); near-dup falla (control) |
-| Crate Rust v0.3.0 | **PROBADO (implementacion)** | 4/4 tests + benchmark: square rho=1 ambient 0.130 vs dual 0.807; zero-dependency preservada |
-| Transformers (analisis extenso) | ver `docs/transformers_frame_dual.md` | PREDICCIONES FALSABLES P1-P4 pre-registradas (rank collapse in width = fallo ambient; fix dual; capacidad de contexto; L2 de Pandora) |
+| Identity C^T M^-1 C = I (invertible square codebook) | **PROVEN (algebra)** | the dual-frame identity; ||P-I||_F ~ 4e-14 in float64 (Exp 28/crate) |
+| Placement causes the collapse (Exp 18) | **PROVEN (controlled intervention)** | same codebook/Gram/resolvent, only placement changes: ambient 0.160 vs dual-same 0.985 [boot95], 200/200 seeds + replica Exp 19 + BSC 18b + FHRR 27 (0.131 to 1.000) |
+| Hard edge: lambda_min ~ n^-2 | **PROVEN (theoretical anchor) + STRONG EVIDENCE** | anchor: Marchenko-Pastur/Chen-Liu-Zhou; evidence: Exp 28 exponent -2.058 (200-1200 seeds, n up to 1024); unit-norm = fixed-trace Wishart per CLZ: verified (KS<=0.06 at every n) |
+| Theorem 1 (threshold conditional on LEH, in the paper) | **PROVEN CONDITIONAL** | conditionality is explicit in the paper; not hidden |
+| Kappa is NOT the trigger (Exp 17) | **REFUTATIVE EVIDENCE** | 40 seeds, all collapse regardless of kappa in [2.3e2, 1.9e5], corr=-0.26 — refutes the critical-band reading |
+| Exp 20A/20B (ensembles/aspect) | **CONCORDANT EVIDENCE** | 6 families replicate; orthogonal does not collapse (M=I); near-dup fails (control) |
+| Rust crate v0.3.0 | **PROVEN (implementation)** | 4/4 tests + benchmark: square rho=1 ambient 0.130 vs dual 0.807; zero-dependency preserved |
+| Transformers (extensive analysis) | see `docs/transformers_frame_dual.md` | FALSIFIABLE PREDICTIONS P1-P4 pre-registered (rank collapse in width = ambient failure; dual fix; context capacity; Pandora's L2) |
 
-## Metodos vs tabla del protocolo
+## Methods vs the protocol table
 
-| Metodo | Clase | Veredicto |
+| Method | Class | Verdict |
 |---|---|---|
-| Intervencion controlada (Exp 18) | el "puente" (A6) | **legitimo**: la unica variable que cambia es la colocacion — es el estandar de causalidad del protocolo |
-| Ensembles + controls (Exp 20/25) | falsacion | legitimo: incluye control negativo (near-dup falla) |
-| Barrido fino rho (Exp 9) + null matched | falsacion | legitimo |
-| Analisis RMT (Exp 16/28) | teorema + evidencia | anclaje CLZ probado; scaling -2.058 evidencia (no prueba para codebooks entrenados — declarado) |
-| Analisis transformers | prediccion falsable | **nuevo**: P1-P4 pre-registradas — resultado tipo "medio" por 1.5 |
+| Controlled intervention (Exp 18) | the "bridge" (A6) | **legitimate**: the only changing variable is placement — the protocol's standard of causality |
+| Ensembles + controls (Exp 20/25) | falsification | legitimate: includes a negative control (near-dup fails) |
+| Fine rho sweep (Exp 9) + matched null | falsification | legitimate |
+| RMT analysis (Exp 16/28) | theorem + evidence | CLZ anchor proven; scaling -2.058 evidence (not a proof for trained codebooks — declared) |
+| Transformers analysis | falsifiable prediction | **new**: P1-P4 pre-registered — "medium"-type result by 1.5 |
 
-## Barreras identificadas
+## Identified barriers
 
-1. **Barrera de extension a keys entrenadas (A6/4.2):** el teorema vale
-   para frames generales; la identificacion keys~frame cuadrado en
-   transformers entrenados es hipotesis puente de P1-P3 — declarada, no
-   probada.
-2. **Barrera de circuitos:** si un head implementa M^-1·x es una pregunta
-   empirica de interpretabilidad — fuera del alcance del repo (abierta).
+1. **Barrier on extending to trained keys (A6/4.2):** the theorem holds
+   for general frames; the trained-transformer keys-to-square-frame
+   identification is a bridging hypothesis of P1-P3 — declared, not proven.
+2. **Circuit barrier:** whether a head implements M^-1*x is an empirical
+   interpretability question — outside this repo's scope (open).
 
-## Pendientes con estado
+## Open items with status
 
-- CI del repo falla desde run #1 (pre-existente; requiere token para
-  diagnosticar) — **pendiente externo**.
-- Falsacion de P1-P4 (transformers) — **abierto, pre-registradas**.
+- Repo CI failing since run #1 (pre-existing; needs a token to diagnose) —
+  **external pending**.
+- Falsification of P1-P4 (transformers) — **open, pre-registered**.
+
+## Motto
+
+*Per Aspera, Ad Astra.*
