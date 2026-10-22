@@ -1,0 +1,29 @@
+{
+  "experiment": "Exp 32 — spectral pruning criterion (P1 applied to a trained GPT-2)",
+  "date": "2026-10-24",
+  "protocol": {
+    "T": 64,
+    "square_point": "T == d_head == 64",
+    "lmin": "per-head lambda_min of the unit-normalized key-gram at the square point",
+    "importance": "KL divergence of next-token distribution when the head is ablated (0-ed) at the block output, GPT-2 124M, single text"
+  },
+  "results": {
+    "pearson_lmin_importance": {
+      "r": 0.1829,
+      "perm_p": 0.0271
+    },
+    "spearman_lmin_importance": {
+      "rho": 0.558,
+      "note": "numpy rank corr (no p-value computed)"
+    },
+    "bottom12_importance_mean_lmin": 0.000111,
+    "top12_importance_mean_lmin": 0.005636,
+    "near_zero_lmin_fraction": {
+      "bottom12": "9/12",
+      "top12": "0/12"
+    }
+  },
+  "pre_registered": "P1: heads with lmin*T^2 < c are the pruning-redundant ones (pruning literature cross-check pending)",
+  "verdict": "SUPPORT for the spectral pruning criterion: the 12 least-important heads have mean lambda_min 50x smaller than the 12 most-important; 9/12 of the least-important heads are already rank-collapsed (lmin < 1e-4) vs 0/12 of the most-important. lambda_min is a ZERO-TRAINING head-importance signal at the square point.",
+  "honest_label": "single text, single model (GPT-2 124M), Spearman 0.558 strong, Pearson 0.18 weak-but-significant (outlier-driven). Cross-check vs pruning literature (Michel 2019: 'are 16 heads really needed?') is the pre-registered next step. Not yet a deployment-ready pruning tool: needs multi-text robustness."
+}
