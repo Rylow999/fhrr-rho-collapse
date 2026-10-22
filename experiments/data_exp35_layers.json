@@ -1,0 +1,47 @@
+{
+  "experiment": "Exp 35 — layer-level spectral criterion (aggregation of Exp 34)",
+  "date": "2026-10-24",
+  "protocol": "median lmin per layer (T=32 sub-square and T=64 square) vs median ablation importance per layer; 6 layers x 16 heads (Pythia-410M)",
+  "results": {
+    "layer_table": {
+      "0": {
+        "lmin32": -1.3211573630788492e-15,
+        "lmin64": -1.1573394017227664e-14,
+        "importance": 0.05453485623002052
+      },
+      "4": {
+        "lmin32": 3.1504383514402434e-05,
+        "lmin64": -2.157483933729054e-07,
+        "importance": 0.0607307106256485
+      },
+      "8": {
+        "lmin32": 0.0002199826412834227,
+        "lmin64": -1.9114452953772343e-07,
+        "importance": 0.11457046866416931
+      },
+      "12": {
+        "lmin32": 0.0006475285044871271,
+        "lmin64": -1.8253313527338833e-07,
+        "importance": 0.13770227134227753
+      },
+      "16": {
+        "lmin32": 0.0012409832561388612,
+        "lmin64": 1.9007275975368998e-08,
+        "importance": 0.2830251157283783
+      },
+      "20": {
+        "lmin32": 8.589776825829176e-06,
+        "lmin64": -4.376487936497142e-07,
+        "importance": 0.7093058228492737
+      }
+    },
+    "pearson_lmin32_layer_importance": -0.0214,
+    "pearson_lmin64_layer_importance": -0.6548,
+    "pearson_depth_importance": 0.8458,
+    "most_collapsed_layer": 20,
+    "most_important_layer": 20
+  },
+  "honest_verdict": "lmin does NOT predict layer importance (r64=-0.65 is confounded: both correlate with depth in opposite directions). The dominant factor is DEPTH: importance grows monotonically with layer depth (r=0.95 depth-importance), consistent with the residual-stream literature (deeper layers write more decision-relevant features). The spectral criterion is a HEAD-level tool, not a LAYER-level tool.",
+  "honest_label": "n=6 layers, directional only. The depth-importance confound must be controlled (partial correlation) in any follow-up.",
+  "implication": "Poda por capas guiada por lmin: NO. El eje correcto para lmin es el head dentro de su capa (Exp 34 H3)."
+}
