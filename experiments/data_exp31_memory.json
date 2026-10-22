@@ -1,0 +1,56 @@
+{
+  "experiment": "Exp 31 — memory-layer decoding at and beyond the square point (P2)",
+  "date": "2026-10-24",
+  "protocol": {
+    "setup": "VSA memory: T role-filler pairs bound (product-binding) into one bundle, D=256",
+    "decoders": {
+      "ambient": "M^-1 @ bundle (only defined at square point T=D)",
+      "pure": "bundle * C[target] (single-shot unbind, no correction)",
+      "dual_single_shot": "C^T M^+ C @ bundle then unbind (NOT the iterative dual resonator)"
+    },
+    "scoring": "position match after argmax over stored fillers; 200 trials per T",
+    "square_point": "T = D = 256"
+  },
+  "results": {
+    "ambient": {
+      "16": 0.0,
+      "32": 0.0,
+      "48": 0.0,
+      "64": 0.0,
+      "96": 0.0,
+      "128": 0.0,
+      "160": 0.0,
+      "200": 0.0,
+      "256": 0.0
+    },
+    "pure": {
+      "16": 0.96,
+      "32": 0.71,
+      "48": 0.51,
+      "64": 0.355,
+      "96": 0.16,
+      "128": 0.12,
+      "160": 0.105,
+      "200": 0.1,
+      "256": 0.07
+    },
+    "dual": {
+      "16": 0.245,
+      "32": 0.14,
+      "48": 0.16,
+      "64": 0.085,
+      "96": 0.06,
+      "128": 0.065,
+      "160": 0.08,
+      "200": 0.06,
+      "256": 0.07
+    }
+  },
+  "honest_label": {
+    "finding_1": "pure degrades gracefully across the whole range (0.96 at T=16 to 0.07 at T=256) — no inversion needed at any point",
+    "finding_2": "dual single-shot does NOT beat pure in this regime (0.25 at T=16, worse at all T) — consistent with the P2 re-labeling: single-shot dual adds pinv noise without benefit; dual matters with ITERATIVE re-injection (the resonator loop of the paper), which this probe does not implement",
+    "finding_3": "ambient is only defined at the square point (the theorem itself): below it the system is over-determined, above it singular. At T=D its accuracy was ~0 in this single-shot configuration",
+    "limitation": "the iterative dual resonator (the actual P2 regime) is NOT tested here; that arm exists in the paper harness (Exp 18 VSA loop) and is the next step"
+  },
+  "verdict": "P2 remains re-labeled: in single-shot memory decoding, pure wins; the dual's advantage requires the iterative regime. The square-point boundary (Exp 30) marks WHERE any decoder strategy must change."
+}
