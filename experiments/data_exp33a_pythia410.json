@@ -1,0 +1,36 @@
+{
+  "experiment": "Exp 33a — spectral pruning on Pythia-410M (scale test)",
+  "date": "2026-10-24",
+  "model": "EleutherAI/pythia-410m (fp16, d=1024, 24 layers, 16 heads, d_head=64)",
+  "protocol": "same as Exp 32: lmin per head at square point (T=64) + ablation importance (KL) on 6 sampled layers (96 heads)",
+  "results": {
+    "lmin_range": [
+      -1.18e-06,
+      1.51e-06
+    ],
+    "lmin_all_collapsed": "384/384 heads with |lmin| < 1e-5 at the square point",
+    "pearson": {
+      "r": -0.1429,
+      "perm_p": 0.164
+    },
+    "spearman": -0.1092,
+    "bottom12_importance_mean_lmin": -0.0,
+    "top12_importance_mean_lmin": -0.0
+  },
+  "comparison_with_gpt2_124m": {
+    "gpt2": {
+      "lmin_range": "1.2e-5 - 1.8e-2 (varies across heads)",
+      "bottom12_vs_top12": "50x separation",
+      "pearson": 0.18,
+      "spearman": 0.558
+    },
+    "pythia_410m": {
+      "lmin_range": "-1.2e-6 - 1.5e-6 (ALL collapsed)",
+      "bottom12_vs_top12": "no separation possible",
+      "pearson": -0.14,
+      "spearman": -0.11
+    }
+  },
+  "honest_verdict": "The spectral criterion does NOT generalize as-is to Pythia-410M: ALL 384 heads are already rank-collapsed at the square point (lmin ~ 0 for everyone), so there is no variance for the criterion to discriminate. This is not a refutation of P1 — it shows Pythia-410M lives DEEPER in the collapse regime than GPT-2 124M (2x the layers, more training). Implication: for models in this regime, head-level pruning via lmin is moot (everything is collapsed); the criterion needs a different operating point (sub-square T) or a different target (pruning whole layers, or the memory-layer decoding of P2).",
+  "next": "Exp 33b candidates: (1) lmin measured BELOW the square point (T=d_head/2) where pythia still has variance; (2) prune LAYERS by mean lmin (24 layers may discriminate even when heads don't); (3) GPT-2 XL (1.5B, 48 layers) to test the scale direction where GPT-2's variance might persist."
+}
