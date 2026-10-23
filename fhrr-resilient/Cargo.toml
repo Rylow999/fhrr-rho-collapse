@@ -1,8 +1,8 @@
 [package]
 name = "fhrr-resilient"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
-description = "Resilient VSA/FHRR decoding routed by operator placement (dual/ambient/pure). The Frame-Dual Stability observation: at the square point rho=1, ambient Gram decoding collapses while the dual projector stays exact. Kappa is a diagnostic signal only."
+description = "Resilient VSA/FHRR decoding routed by operator placement + spectral head profiling. Frame-Dual Stability: ambient decoding collapses at the square point while the dual projector stays exact. Includes the zero-training pruning criterion (square vs sub-square recipe)."
 license = "MIT"
 authors = ["Luciano Benjamin Nieto"]
 repository = "https://github.com/Rylow999/fhrr-rho-collapse"

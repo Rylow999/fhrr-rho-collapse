@@ -1,146 +1,40 @@
 # Operator placement, not representation
 
-**Author:** Luciano Benjamín Nieto
-**Location:** General Alvear, Mendoza, Argentina
-**License:** MIT
-
-> The "binary collapse" of resonator VSA decoding at high superposition is not a
-> limit of the representation — it is a decoder wiring bug. At the square point
-> ρ = n/d = 1 the Gram matrix sits at the square-Wishart hard edge
-> (λ_min ~ n⁻², κ ~ 4n²), and applying M⁻¹ to the ambient state blows up by
-> 1/λ_min. The same resolvent in coefficient space (CᵀM⁻¹C) is the canonical
-> dual-frame projector — norm exactly 1 — and decodes perfectly.
-> Exp 18 demonstrates this by a controlled intervention: same codebook, same
-> Gram, same resolvent, only the placement changes.
-
----
+**The collapse of vector-symbolic decoding at the square point is a property of the observer, not the signal** — and the same geometry governs the keys of trained transformers. This repository is the complete research program behind that claim: 38 experiments across VSA algebras, trained language models, and controlled interventions, with every result labeled under an honest-audit protocol (pre-registration, evidence classes, explicit limitations).
 
 ## Summary
 
-Code, data, and figures for the paper
-*"Operator placement, not representation: a resonator-decoder failure mode
-at the square-Wishart hard edge"*.
-
-Three regimes by ρ = (distinct codevectors per block) / (block dimensionality):
-
-| Regime | rho | Gram matrix M | Decoding behaviour |
-|--------|-----|---------------|--------------------|
-| **I. Over-complete** | > 1 (n > d) | rank-deficient | Gram-inverse singular; pinv/pure stable |
-| **II. Square** | = 1 (n = d) | hard-edge conditioned | ambient resolvent collapses; dual does not |
-| **III. Under-complete** | < 1 (n < d) | well-conditioned | stable |
-
----
+1. **The frame-dual observation (VSA core).** When the number of codevectors equals the block dimension (the *square point*, rho = 1), the standard ambient decoder `M^-1 x` collapses (accuracy ~0.15) while the dual projector `C^T M^-1 C x` stays exact (~0.99). Controlled intervention on 200/200 seeds: the trigger is *operator placement*, not the condition number. The hard edge of Wishart matrices (lambda_min ~ n^-2) explains the geometry (Exp 16, 28; Chen-Liu-Zhou, Edelman).
+2. **The square point is where attention keys live (transformers).** Sweeping context length T in three architecture families (GPT-2, Pythia/GPTNeoX, OPT), the smallest eigenvalue of every head's key-gram crosses zero exactly at T = d_head and stays rank-deficient beyond (Exp 29, 30). The bridge hypothesis `trained keys ~ quasi-random frames` holds cross-family.
+3. **The law of training exposure.** Pythia-160m (12 layers, ~84B tokens) is fully collapsed where GPT-2 124M (12 layers, ~10B tokens) retains variance — same depth, different training scale (Exp 37). The driver is *training exposure*, not depth: keys converge to the corpus's intrinsic redundancy as tokens accumulate.
+4. **The mechanism is content, not position.** Zeroing or randomizing positional embeddings does not restore any spectral variance (Exp 38). The collapse is the redundancy of language itself, learned faithfully. Positional surgery will not fix it; decoder-side defenses (dual/resonator) are the only route.
+5. **A zero-training pruning criterion.** In lightly-trained models, per-head lambda_min at the square point separates vital from redundant heads (50x; 9/12 vs 0/12, Spearman 0.558 — Exp 32). In heavily-trained models all heads collapse, but the *sub-square* measurement (T = d_head/2) restores the criterion (Exp 34: pearson 0.236, p = 0.018; collapse signature is head-stable, r = 0.66). Operational recipe: **measure sub-square, prune at square**.
 
 ## Key results
 
-### 1. The collapse at ρ=1 is a single-point failure of ambient Gram decoding
-Fine sweep (Exp 9, 14 ρ values, 10 seeds × 20 facts): ambient `gram` drops to
-0.148 at ρ=1.000; `pure` holds 0.99. (Implementation note: the ambient Gram
-correction is dimensionally applicable only at the square point in our harness —
-the cross-decoder comparison is measured at ρ=1.)
+| Finding | Evidence | Status |
+|---|---|---|
+| Placement causes the collapse (same codebook, only placement changes) | Exp 18/19: 200/200 + 100/100 seeds, +0.82 paired | Proven (controlled intervention) |
+| Hard edge lambda_min ~ n^-2 at the square point | Exp 16, 28: 200-1200 seeds/size, exponent -2.058 | Proven anchor (CLZ) + strong evidence |
+| Universal crossing at T = d_head in trained models | Exp 29/30: GPT-2, Pythia, OPT | Confirmed (3 families) |
+| Law of training exposure (not depth) | Exp 37: 12L-vs-12L natural experiment | Confirmed (corpus confound declared) |
+| Collapse driven by content redundancy, not position | Exp 38: wpe zeroed/randomized controls | Confirmed (single model/text) |
+| Spectral pruning criterion (square point) | Exp 32: 50x separation, Spearman 0.558 | Confirmed (lightly trained) |
+| Sub-square criterion for heavily trained models | Exp 34: pearson 0.236, p=0.018; head-stability r=0.66 | Confirmed |
+| Layer-level spectral criterion | Exp 35: no signal (depth-importance confound r=0.85) | Refuted (honest negative) |
+| Dual single-shot does not beat pure | Exp 31: pure degrades gracefully, dual adds pinv noise | P2 re-labeled: iterative regime only |
 
-### 2. The square-Wishart anchoring
-Gram M = C Cᵀ with unit-norm codevectors is a scaled square Wishart. At ρ=1,
-λ_min ~ n⁻² (hard edge) and κ ~ 4n² (median κ measured vs 4n² within the
-heavy-tailed Wishart spread). Verified across n ∈ [32, 512] (Exp 16,
-`data/exp16_scaling_n.json`).
+## The Rust crate: fhrr-resilient
 
-### 3. The trigger is NOT a κ-band
-Per-seed (Exp 17, 40 seeds at ρ=1): every seed collapses regardless of κ
-(κ_min spans [2.3e2, 1.9e5]), corr(log κ, acc) = −0.26. The "critical band"
-reading is refuted; the trigger is the hard-edge geometry + ambient placement.
+Zero-dependency (std only) decoder router for VSA/FHRR blocks. Routes by operator placement (`Dual`, `AmbientGram`, `Pure`, `DualPinv`) with kappa demoted to a diagnostic. Validated in a real FHRR pipeline; square-point ambient collapse and dual recovery reproduce in the crate's own benchmark.
 
-### 4. The Frame-Dual Stability Observation (Exp 18, replicated)
-Defined at the square point; the causal claim is placement-specific:
-
-| Observer | Operator | Accuracy at ρ=1 [boot95] |
-|----------|----------|--------------------------|
-| pure | f | 0.985 [0.982, 0.987] |
-| gram (ambient) | M⁻¹f | 0.160 [0.152, 0.169] |
-| pinv | M⁺f | 0.161 [0.152, 0.169] |
-| dual (pinv) | CᵀM⁺Cf | 0.985 [0.982, 0.987] |
-| **dual-same (same M⁻¹)** | **CᵀM⁻¹Cf** | **0.985 [0.982, 0.987]** |
-
-Per-seed stats: N=200 codebooks × 10 facts, bootstrap 95%. Paired per-seed
-difference +0.824, positive in 200/200 seeds (p ≤ 2⁻²⁰⁰, exact). Operator
-norms: ‖M⁻¹‖₂ = 1/λ_min (median 3.5×10³); ‖CᵀM⁻¹C‖₂ = 1.000;
-‖CᵀM⁻¹C − I‖_F median 6×10⁻¹³.
-
-**Independent replication (Exp 19):** pure 0.982, gram 0.159, dual 0.982,
-paired +0.823, 100% of seeds, no shared code.
-
-**Ensembles (Exp 20A):** Gaussian, Rademacher, sphere, Toeplitz replicate.
-Orthogonal frame at square → no collapse (M=I). Near-duplicate pathological
-frame: all decoders fail (control).
-
-**ρ sweep (Exp 20B):** ambient collapses only at ρ=1.
-
-**Linear-only (Exp 21):** gain ambient 362× vs dual 1.000 — VSA was the
-vehicle, not the cause.
-
-**Iteration dynamics (Exp 22):** gram fails at t=0 already (e₀ ~ 7×10³).
-The loop is not the mechanism.
-
-**BSC (Exp 18b):** 0.192 → 0.995, paired +0.80.
-
-**FHRR (Exp 27):** 0.131 → 1.000, paired +0.868, closes the circle on the
-originating algebra.
-
-**Hard-edge convergence (Exp 28):** with 200–1200 seeds per size (n up to
-1024), the fitted exponent of λ_min(n) at the square point is **−2.058** (all
-sizes; tail n≥256: −2.061) — λ_min ~ n⁻² confirmed (Exp 16's −1.6 with few
-seeds was extreme-value sampling noise). And the row-normalized codebook (a
-per-realization global constraint) shares the same hard-edge law as the
-literal Wishart ensemble: medians of λ_min·n² agree within 2% at n=512 and
-within 12% at n=1024 (0.25–0.33 range overall) — the Chen–Liu–Zhou asymptotic
-prediction, verified experimentally (`data/exp28_hardedge_convergence.json`;
-two-sample KS ≤ 0.06 at every size).
-
-### 5. Universality across algebras
-HRR (V3), BSC (11b, 18b), MAP (11c — single-shot, no loop, doesn't collapse),
-FHRR (27). Transformers (12b) don't collapse (softmax, no Gram inverse).
-
-### 6. Rust crate (fhrr-resilient v0.3.0)
-Zero-dependency (std only) decoder router for VSA/FHRR blocks. Routes by
-**operator placement** — `Dual` (CᵀM⁻¹C), `AmbientGram`, `Pure`, `DualPinv` —
-with κ demoted to a diagnostic signal, exactly as the paper recommends.
-Validated in a real FHRR pipeline (Deterministic xorshift codebooks):
-
-```
-[sub-square ρ=0.67] ambient 0.902 | dual 0.902 | pure 0.902
-[square    ρ=1.00] ambient 0.130 | dual 0.807 | pure 0.807
+```bash
+cargo add fhrr-resilient   # once published; or path/git dependency today
+cargo test                 # 4/4 tests
+cargo run --example fhrr_real_decoding   # the square-point benchmark
 ```
 
-The square-point row reproduces the paper's central result in the crate:
-ambient M⁻¹ collapses, dual placement does not. Algebraic check:
-`‖CᵀM⁻¹C − I‖_F ≈ 4×10⁻¹⁴` (machine precision, exact identity). Full data:
-`data/rust_v3_real_decoding.txt`. 4 Rust tests green (`cargo test`).
-
----
-
-### 7. Transformers: the hard edge in real attention (2026-10-10/11)
-
-The frame-dual mechanism measured in **GPT-2 124M** (pre-trained, real text):
-λ_min of the key-gram collapses exactly at T=d_head (curve 0.088→0 at T=64),
-the attention spectral gap grows with context (Nait-Saada replicated), and
-effective rank is 57-60/64 — trained keys beat random in the bulk but the
-**edge is untouched** → real capacity ~2 roles/head. Full analysis with 8
-verified references: `docs/transformers_frame_dual.md`.
-
-**Predictions pre-registered and tested** (protocolo Método Integral):
-- P1 hard edge in attention: **CONFIRMED** (GPT-2 + lab)
-- P3 capacity d·√λ_min: **CONFIRMED** (curve 35.6→0.6 roles)
-- P2 dual-repair always wins: **REFUTED/RE-ETIQUETADA** — in single-shot
-  product-binding, pure cleanup matches dual (the theorem CLASSIFIES
-  architectures, doesn't dictate one repair)
-- Edge-reg regularization (MiniLLM): **NO-GO measured** (dose-response:
-  λ_min ×100 but task degraded; gradient competition in short budgets)
-- Orthogonal init: **REFUTADA** (QR destroyed in <150 steps)
-- Exp B (softmax as causal stabilizer): **INCONCLUSIVE on CPU** (budget;
-  design ready for GPU — resonator hits 1.0 without training while the
-  transformer peaks at 0.23)
-
-## How to run
+## How to run the research artifacts
 
 ```bash
 git clone https://github.com/Rylow999/fhrr-rho-collapse.git
@@ -148,145 +42,71 @@ cd fhrr-rho-collapse
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Reproduce the numbers in the paper
-python verify.py                       # 31 checks against data/*.json
+python verify.py                        # 31 checks against data/*.json
+pytest tests/ -v                        # Python tests
+cd fhrr-resilient && cargo test         # Rust tests
 
-# Tests
-pytest tests/ -v                       # 15 Python tests
-cd fhrr-resilient && cargo test        # 4 Rust tests
+# Cross-architecture key spectra (Exp 29/30)
+python experiments/exp29_cross_arch.py gpt2 EleutherAI/pythia-70m facebook/opt-125m
+python experiments/exp30_sweep_gpt2.py
 
-# Reproduce causal experiments
-cd src
-python exp_V18_frame_duality.py        # HRR
-python exp_V18b_bsc_duality.py         # BSC
-python exp_V27_fhrr_duality.py         # FHRR
-python exp_V16_scaling_n.py            # spectral scaling
-python exp_V28_hardedge_convergence.py # hard-edge convergence (rho=1)
+# Spectral pruning criterion (Exp 32/34)
+python experiments/exp32_pruning.py     # GPT-2 124M square point
+python experiments/exp34_subsquare.py   # sub-square recipe
+
+# Confound and mechanism (Exp 37/38)
+python experiments/exp37_confound.py
+python experiments/exp38_mechanism.py
 ```
-
-Compile the paper: see `paper/README.md`.
 
 ## Repository layout
 
 ```
-fhrr-rho-collapse/
-├── README.md
-├── LICENSE  (MIT)
-├── requirements.txt      ← numpy, matplotlib, pytest
-├── pytest.ini
-├── CITATION.cff          ← GitHub citation metadata
-├── verify.py             ← reproduction checks
-├── docs/
-│   ├── ROADMAP.md        ← falsification program (closed)
-│   └── archive/          ← older internal notes (historical)
-├── paper/
-│   ├── main.tex          ← the paper
-│   ├── main.pdf          ← compiled (tectonic)
-│   ├── references.bib
-│   ├── README.md         ← how to compile
-│   └── figures/
-├── src/                  ← exp_V*.py (18 experiments)
-├── tests/
-│   ├── test_pipeline.py  ← 5 tests
-│   ├── test_frame_duality.py ← 8 tests
-│   ├── test_hardedge.py  ← 2 tests (Exp 28)
-│   └── README.md
-├── fhrr-resilient/       ← Rust crate v0.3.0 (placement router, zero-dep)
-├── data/                 ← every number is a JSON
-├── docs/transformers_frame_dual.md  ← transformers analysis (8 refs, audited)
-├── experiments/          ← GPT-2 keys, MiniLLM intervention, init-orthogonal,
-│                            Exp B softmax (scripts + JSONs, all pre-registered)
-└── figures/              ← paper figures
+experiments/    # Exp B..38: every experiment script + its results JSON
+data/           # VSA experiment data (Exp 1-28 of the paper)
+docs/           # transformers_frame_dual.md: the pre-registered P1-P4 + results
+fhrr-resilient/ # the Rust crate
+src/            # VSA harness (base_fhrr, exp_V1-V28)
+tests/          # Python test suite
+paper/          # LaTeX paper (main.tex, references.bib)
+figures/        # all figures
 ```
 
-## Claims → evidence
+## Claims to evidence map
 
-| Claim | Evidence |
-|-------|----------|
-| Point failure at ρ=1 | `data/out_V9_fine_rho.json` |
-| κ ~ 4n² scaling | `data/exp16_scaling_n.json` |
-| κ-band refutation | `data/exp17_kappa_vs_acc.json` |
-| Frame-Dual Stability (HRR) | `data/exp18_summary.json` |
-| Independent replication | `data/exp19_independent_replica.json` |
-| BSC replication | `data/exp18_bsc_summary.json` |
-| FHRR replication | `data/exp27_fhrr_duality.json` |
-| Ensemble sweep | `data/exp20_ensembles_rho.json` |
-| Linear-only | `data/exp21_linear_amp.json` |
-| Dynamics | `data/exp22_iteration_dynamics.json` |
-| Operator zoo | `data/exp23_operator_zoo.json` |
-| Frame bounds | `data/exp24_frame_bounds.json` |
-| Counterexamples | `data/exp25_contraejemplos.json` |
-| Stability bound | `data/exp26_cota_stability.json` |
-| Hard-edge convergence | `data/exp28_hardedge_convergence.json` |
-| GPT-2 hard edge in attention | `experiments/data_gpt2*.json`, `docs/transformers_frame_dual.md` |
-| MiniLLM edge-reg NO-GO | `experiments/data_minillm.json` |
-| Exp B softmax (inconclusive, CPU) | `experiments/data_expB_softmax.json` |
-| BSC/MAP phase | `data/exp11_bsc_rho.json`, `exp11c_map_rho.json` |
+Every claim in the README maps to a versioned artifact in `experiments/` or `data/`. Claims labeled *proven* carry algebra or a controlled intervention; *confirmed* carry measured evidence with stated scope; negatives are kept as negatives. The full audit trail lives in the Method Integral Audit section below and in each experiment JSON's `honest_label` field.
+
+## Method Integral Audit (2026-10-10)
+
+| Piece | Status | Detail |
+|---|---|---|
+| Identity C^T M^-1 C = I (invertible square codebook) | Proven (algebra) | dual-frame identity; \|P-I\|_F ~ 4e-14 in f64 |
+| Placement causes the collapse (Exp 18) | Proven (controlled intervention) | 200/200 seeds + Exp 19 replica + BSC 18b + FHRR 27 |
+| Hard edge lambda_min ~ n^-2 | Proven anchor (CLZ) + strong evidence | Exp 28: -2.058, 200-1200 seeds |
+| Kappa is NOT the trigger (Exp 17) | Refutative evidence | 40 seeds, all collapse regardless of kappa |
+| Transformers: P1 hard edge | Confirmed (random + trained keys, 3 families) | Exp 29/30; bridge keys~frame |
+| Spectral pruning criterion | Confirmed with operating recipe | Exp 32 (square) + Exp 34 (sub-square) |
+| Law of training exposure | Confirmed (12L-vs-12L) | Exp 37; corpus confound declared |
+| Mechanism: content not position | Confirmed | Exp 38 (wpe controls) |
+
+Identified barriers: (1) extension to trained keys requires the bridge hypothesis (declared, not proven for all distributions); (2) circuit-level interpretation of M^-1 heads remains open; (3) the iterative dual resonator regime (P2) is the remaining untested arm for memory layers.
+
+Open items: falsification of P1-P4 pre-registrations on deployment-scale models (needs GPU); KV-cache compression pilot (the industrial application this geometry enables); text-sensitivity sweep of the collapse regime.
 
 ## Citation
 
 ```bibtex
-@article{nieto2026observer,
-  title={Operator placement, not representation: a resonator-decoder failure
-         mode at the square-Wishart hard edge and its canonical dual-frame repair},
-  author={Nieto, Luciano Benjamín},
-  journal={arXiv preprint},
-  year={2026},
-  url={https://github.com/Rylow999/fhrr-rho-collapse}
+@software{nieto2026fhrr,
+  author = {Nieto, Luciano Benjam{\'i}n},
+  title = {fhrr-rho-collapse: operator placement, not representation},
+  year = {2026},
+  url = {https://github.com/Rylow999/fhrr-rho-collapse}
 }
 ```
 
 ## Acknowledgments
 
 Anonymous external reviewers whose critiques sharpened the formulation.
-
----
-
-
----
-
----
-
-# Method Integral Audit (2026-10-10)
-
-*Protocol: HORIZON/DOCUMENTATION/METODO_INTEGRAL.md. Mandatory status labels.*
-
-## Theorems and verifications (honest status)
-
-| Piece | Status | Detail |
-|---|---|---|
-| Identity C^T M^-1 C = I (invertible square codebook) | **PROVEN (algebra)** | the dual-frame identity; ||P-I||_F ~ 4e-14 in float64 (Exp 28/crate) |
-| Placement causes the collapse (Exp 18) | **PROVEN (controlled intervention)** | same codebook/Gram/resolvent, only placement changes: ambient 0.160 vs dual-same 0.985 [boot95], 200/200 seeds + replica Exp 19 + BSC 18b + FHRR 27 (0.131 to 1.000) |
-| Hard edge: lambda_min ~ n^-2 | **PROVEN (theoretical anchor) + STRONG EVIDENCE** | anchor: Marchenko-Pastur/Chen-Liu-Zhou; evidence: Exp 28 exponent -2.058 (200-1200 seeds, n up to 1024); unit-norm = fixed-trace Wishart per CLZ: verified (KS<=0.06 at every n) |
-| Theorem 1 (threshold conditional on LEH, in the paper) | **PROVEN CONDITIONAL** | conditionality is explicit in the paper; not hidden |
-| Kappa is NOT the trigger (Exp 17) | **REFUTATIVE EVIDENCE** | 40 seeds, all collapse regardless of kappa in [2.3e2, 1.9e5], corr=-0.26 — refutes the critical-band reading |
-| Exp 20A/20B (ensembles/aspect) | **CONCORDANT EVIDENCE** | 6 families replicate; orthogonal does not collapse (M=I); near-dup fails (control) |
-| Rust crate v0.3.0 | **PROVEN (implementation)** | 4/4 tests + benchmark: square rho=1 ambient 0.130 vs dual 0.807; zero-dependency preserved |
-| Transformers (extensive analysis) | see `docs/transformers_frame_dual.md` | FALSIFIABLE PREDICTIONS P1-P4 pre-registered (rank collapse in width = ambient failure; dual fix; context capacity; Pandora's L2) |
-
-## Methods vs the protocol table
-
-| Method | Class | Verdict |
-|---|---|---|
-| Controlled intervention (Exp 18) | the "bridge" (A6) | **legitimate**: the only changing variable is placement — the protocol's standard of causality |
-| Ensembles + controls (Exp 20/25) | falsification | legitimate: includes a negative control (near-dup fails) |
-| Fine rho sweep (Exp 9) + matched null | falsification | legitimate |
-| RMT analysis (Exp 16/28) | theorem + evidence | CLZ anchor proven; scaling -2.058 evidence (not a proof for trained codebooks — declared) |
-| Transformers analysis | falsifiable prediction | **new**: P1-P4 pre-registered — "medium"-type result by 1.5 |
-
-## Identified barriers
-
-1. **Barrier on extending to trained keys (A6/4.2):** the theorem holds
-   for general frames; the trained-transformer keys-to-square-frame
-   identification is a bridging hypothesis of P1-P3 — declared, not proven.
-2. **Circuit barrier:** whether a head implements M^-1*x is an empirical
-   interpretability question — outside this repo's scope (open).
-
-## Open items with status
-
-- Repo CI failing since run #1 (pre-existing; needs a token to diagnose) —
-  **external pending**.
-- Falsification of P1-P4 (transformers) — **open, pre-registered**.
 
 ## Motto
 

@@ -55,6 +55,34 @@ with deterministic RNG. Run it with:
 cargo run --example fhrr_real_decoding
 ```
 
+
+## Spectral profiling and pruning (v0.4.0)
+
+The campaign findings (see the repository README) are exposed as a small API:
+
+```rust
+use fhrr_resilient::*;
+
+// 1) measure per-head key-gram spectra at your operating point T
+let keys: Vec<Vec<f64>> = /* unit-normalized key rows, T rows x d_head cols */;
+let (lmin, lmax) = head_key_spectrum(&keys).unwrap();
+
+// 2) classify the slice
+let profile = classify_profile(&lmins_per_head);
+
+// 3) get the recipe the science prescribes
+match prune_recommendation(&profile) {
+    PruneAdvice::RankByLmin => { /* rank heads by lmin ascending; prune lowest (Exp 32) */ }
+    PruneAdvice::ReMeasureSubSquare => { /* collapsed at square: re-measure at T = d_head/2 (Exp 34) */ }
+    PruneAdvice::NotApplicable => { /* spectral pruning N/A for this slice */ }
+}
+```
+
+The recommendation encodes the **law of training exposure** (Exp 37): lightly
+trained models keep spectral variance at the square point, so ranking works
+there; heavily trained models are fully collapsed, and the signal moves to
+the sub-square regime.
+
 ## Test
 
 ```bash
