@@ -350,12 +350,15 @@ pub fn classify_profile(lmins: &[f64]) -> SpectralProfile {
 /// Law of training exposure (Exp 37): heavily trained models are fully
 /// collapsed at the square point, so the criterion loses signal there.
 /// The measured profile tells you which operating point to trust:
-///   - regime "variance"  -> rank by lmin; prune the lowest (Exp 32 recipe)
+///   - regime "variance"  -> rank by lmin DESCENDING; prune the highest
+///     (most diffuse). [Exp 41: LOW lmin = selective/vital; high lmin = redundant]
 ///   - regime "collapsed"  -> re-measure at sub-square T = d_head/2 (Exp 34 recipe);
 ///                            if still collapsed, the criterion is N/A for this slice.
 pub enum PruneAdvice {
-    /// Rank heads by lambda_min ascending; the lowest are pruning candidates.
-    RankByLmin,
+    /// Rank heads by lambda_min DESCENDING; the most diffuse (highest lmin)
+    /// are pruning candidates. [Exp 41 correction: low-lmin heads are the
+    /// selective, vital ones — do NOT prune them.]
+    RankByLminDescending,
     /// Fully collapsed at the square point: measure at T = d_head/2 and call again.
     ReMeasureSubSquare,
     /// Collapsed even sub-square: spectral pruning not applicable here.
@@ -366,7 +369,7 @@ pub fn prune_recommendation(profile: &SpectralProfile) -> PruneAdvice {
     if profile.heads == 0 { return PruneAdvice::NotApplicable; }
     let frac = profile.collapsed as f64 / profile.heads as f64;
     if frac < 0.5 {
-        PruneAdvice::RankByLmin
+        PruneAdvice::RankByLminDescending
     } else if profile.regime == "collapsed" {
         // Caller measured at square; the sub-square check is theirs to run —
         // we signal the recipe from Exp 34.
@@ -391,7 +394,7 @@ mod spectral_tests {
             .collect();
         let p = classify_profile(&lmins);
         assert_eq!(p.regime, "variance");
-        assert!(matches!(prune_recommendation(&p), PruneAdvice::RankByLmin));
+        assert!(matches!(prune_recommendation(&p), PruneAdvice::RankByLminDescending));
     }
 
     #[test]

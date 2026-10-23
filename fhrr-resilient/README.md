@@ -72,16 +72,16 @@ let profile = classify_profile(&lmins_per_head);
 
 // 3) get the recipe the science prescribes
 match prune_recommendation(&profile) {
-    PruneAdvice::RankByLmin => { /* rank heads by lmin ascending; prune lowest (Exp 32) */ }
+    PruneAdvice::RankByLminDescending => { /* rank by lmin DESCENDING; prune the most diffuse (Exp 41 correction) */ }
     PruneAdvice::ReMeasureSubSquare => { /* collapsed at square: re-measure at T = d_head/2 (Exp 34) */ }
     PruneAdvice::NotApplicable => { /* spectral pruning N/A for this slice */ }
 }
 ```
 
-The recommendation encodes the **law of training exposure** (Exp 37): lightly
-trained models keep spectral variance at the square point, so ranking works
-there; heavily trained models are fully collapsed, and the signal moves to
-the sub-square regime.
+The recommendation encodes the campaign's corrected findings (Exp 41): the
+heads with the LOWEST lambda_min are the selective, vital ones (concentrated
+key geometry = sharp retrieval); the heads with the HIGHEST lambda_min are
+the diffuse, redundant ones. Prune the diffuse, keep the sharp.
 
 ## Test
 

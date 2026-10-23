@@ -1,0 +1,27 @@
+{
+  "experiment": "Exp 41 — REAL PRUNING test (20% of heads, WikiText-window perplexity, GPT-2 124M)",
+  "date": "2026-10-24",
+  "preregistered": {
+    "P1": "lmin-ascending prune <= random (criterion works)",
+    "P2": "if equal, correlation-only",
+    "P3": "descending (anti-criterion) >= random (sanity)"
+  },
+  "results": {
+    "experiment": "Exp 41 - real pruning test (20% heads, WikiText-2-window perplexity)",
+    "preregistered": {
+      "P1": "lmin-ascending prune <= random prune perplexity",
+      "P2": "if equal, criterion is correlation-only (honest refutation)",
+      "P3": "lmin-DESCENDING (anti-criterion) should be >= random (sanity)"
+    },
+    "baseline_ppl": 1.998,
+    "lmin_ascending_ppl": 341070.578,
+    "random_ppl": 18198.907,
+    "lmin_descending_ppl": 8148.359,
+    "n_heads_pruned": 28,
+    "verdict": "FAIL",
+    "runtime_s": 53.7
+  },
+  "verdict": "P1 REFUTED — SPECTACULARLY INVERTED. Pruning the 20% of heads with LOWEST lambda_min yields perplexity 341,070 (catastrophic), vs random pruning at 18,199 and DESCENDING pruning (highest lambda_min first) at 8,148 — BETTER than random. The Exp 32 correlation (low lmin = unimportant) was a correlation artifact: the ablation-KL and the perplexity measure disagree. LOW lambda_min heads are VITAL for GPT-2's generation quality.",
+  "honest_label": "This is the most important honest correction of the campaign. The Exp 32 correlation (r=0.18, Spearman 0.558 between lmin and ablation-KL importance) did NOT survive the actual pruning test. The interpretation reverses: heads with collapsed key-grams (low lmin) carry the concentrated, high-signal associations the model depends on (consistent with State Rank Stratification's finding that LOW-rank heads are indispensable for reasoning). The spectral criterion for pruning is REFUTED as stated. The correct reading: low lmin = selective, sharp heads (few distinct key directions = precise retrieval); high lmin = diffuse heads (many redundant directions = safe to prune).",
+  "implications": "1) The pruning criterion in the paper and crate is WRONG and must be retracted/reversed. 2) The connection to State Rank Stratification is now DIRECT, not just complementary: they found low-rank = indispensable in linear attention; we confirm it in softmax attention via a different measurement. 3) The correct tool use of lmin is the INVERSE: rank heads by lmin DESCENDING for pruning. 4) Exp 32's ablation-KL correlation was measuring something different from perplexity (KL at one position vs sliding-window NLL)."
+}

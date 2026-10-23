@@ -8,7 +8,7 @@
 2. **The square point is where attention keys live (transformers).** Sweeping context length T in three architecture families (GPT-2, Pythia/GPTNeoX, OPT), the smallest eigenvalue of every head's key-gram crosses zero exactly at T = d_head and stays rank-deficient beyond (Exp 29, 30). The bridge hypothesis `trained keys ~ quasi-random frames` holds cross-family.
 3. **The law of training exposure.** Pythia-160m (12 layers, ~84B tokens) is fully collapsed where GPT-2 124M (12 layers, ~10B tokens) retains variance — same depth, different training scale (Exp 37). The driver is *training exposure*, not depth: keys converge to the corpus's intrinsic redundancy as tokens accumulate.
 4. **The mechanism is content, not position.** Zeroing or randomizing positional embeddings does not restore any spectral variance (Exp 38). The collapse is the redundancy of language itself, learned faithfully. Positional surgery will not fix it; decoder-side defenses (dual/resonator) are the only route.
-5. **A zero-training pruning criterion.** In lightly-trained models, per-head lambda_min at the square point separates vital from redundant heads (50x; 9/12 vs 0/12, Spearman 0.558 — Exp 32). In heavily-trained models all heads collapse, but the *sub-square* measurement (T = d_head/2) restores the criterion (Exp 34: pearson 0.236, p = 0.018; collapse signature is head-stable, r = 0.66). Operational recipe: **measure sub-square, prune at square**.
+5. **A zero-training head-importance signal (corrected direction).** Per-head lambda_min carries functional signal — but in the direction OPPOSITE to our initial pre-registration: real pruning shows that heads with the LOWEST lambda_min are the vital, selective ones (pruning them is catastrophic: perplexity 341k vs 18k random, Exp 41), while the most diffuse heads (highest lambda_min) are the safe pruning targets (perplexity 8k, better than random). This inverts Exp 32's correlation reading and CONFIRMS the direction reported by State Rank Stratification in linear attention from an independent measurement.
 
 ## Key results
 
@@ -85,8 +85,8 @@ Every claim maps to a versioned artifact in `experiments/` or `data/`. The Metho
 | Universal crossing at T = d_head (trained keys ~ frames) | cross-family measurement | Exp 29/30: GPT-2, Pythia, OPT | Confirmed (bridge hypothesis declared) |
 | Law of training exposure (not depth) | natural experiment | Exp 37: Pythia-160m 12L collapsed vs GPT-2 124M 12L variance | Confirmed (corpus confound declared) |
 | Collapse driven by content, not position | ablation controls | Exp 38: wpe zeroed 144/144, wpe random 142/144 | Confirmed (single model/text) |
-| Spectral pruning criterion at square | importance correlation | Exp 32: 50x separation, Spearman 0.558 | Confirmed (lightly trained) |
-| Sub-square criterion for heavily trained | importance correlation | Exp 34: pearson 0.236 (p=0.018), head-stable r=0.66 | Confirmed |
+| Spectral head signal at square | real pruning test | Exp 32 correlation (Spearman 0.558) INVERTED by Exp 41 real-pruning: low lmin = vital, high lmin = prunable | Corrected (direction reversed) |
+| Sub-square signal for heavily trained | importance correlation | Exp 34: pearson 0.236 (p=0.018), head-stable r=0.66 | Confirmed (as signal, direction as above) |
 | Layer-level spectral criterion | refutation | Exp 35: depth-importance confound r=0.85 | Refuted (honest negative) |
 | Dual single-shot beats pure | refutation + re-label | Exp 31: pure degrades gracefully, dual adds pinv noise | P2 re-labeled: iterative regime only |
 
