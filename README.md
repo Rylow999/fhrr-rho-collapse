@@ -72,26 +72,25 @@ paper/          # LaTeX paper (main.tex, references.bib)
 figures/        # all figures
 ```
 
-## Claims to evidence map
+## Evidence and status
 
-Every claim in the README maps to a versioned artifact in `experiments/` or `data/`. Claims labeled *proven* carry algebra or a controlled intervention; *confirmed* carry measured evidence with stated scope; negatives are kept as negatives. The full audit trail lives in the Method Integral Audit section below and in each experiment JSON's `honest_label` field.
+Every claim maps to a versioned artifact in `experiments/` or `data/`. The Method Integral protocol (pre-registration, evidence classes, explicit limitations) governs all of it; `honest_label` fields in each experiment JSON carry the per-experiment audit.
 
-## Method Integral Audit (2026-10-10)
+| Claim | Class | Evidence | Status |
+|---|---|---|---|
+| Identity C^T M^-1 C = I (invertible square codebook) | algebra | \|P-I\|_F ~ 4e-14 in f64 | Proven |
+| Placement causes the VSA collapse (only variable changed) | controlled intervention | Exp 18/19: 200/200 + 100/100 seeds, +0.82 paired | Proven |
+| Hard edge lambda_min ~ n^-2 at the square point | theorem + measurement | CLZ anchor; Exp 28: -2.058 (200-1200 seeds/size) | Proven anchor + strong evidence |
+| Kappa is NOT the trigger | refutation | Exp 17: 40 seeds, all collapse regardless of kappa | Refutative evidence |
+| Universal crossing at T = d_head (trained keys ~ frames) | cross-family measurement | Exp 29/30: GPT-2, Pythia, OPT | Confirmed (bridge hypothesis declared) |
+| Law of training exposure (not depth) | natural experiment | Exp 37: Pythia-160m 12L collapsed vs GPT-2 124M 12L variance | Confirmed (corpus confound declared) |
+| Collapse driven by content, not position | ablation controls | Exp 38: wpe zeroed 144/144, wpe random 142/144 | Confirmed (single model/text) |
+| Spectral pruning criterion at square | importance correlation | Exp 32: 50x separation, Spearman 0.558 | Confirmed (lightly trained) |
+| Sub-square criterion for heavily trained | importance correlation | Exp 34: pearson 0.236 (p=0.018), head-stable r=0.66 | Confirmed |
+| Layer-level spectral criterion | refutation | Exp 35: depth-importance confound r=0.85 | Refuted (honest negative) |
+| Dual single-shot beats pure | refutation + re-label | Exp 31: pure degrades gracefully, dual adds pinv noise | P2 re-labeled: iterative regime only |
 
-| Piece | Status | Detail |
-|---|---|---|
-| Identity C^T M^-1 C = I (invertible square codebook) | Proven (algebra) | dual-frame identity; \|P-I\|_F ~ 4e-14 in f64 |
-| Placement causes the collapse (Exp 18) | Proven (controlled intervention) | 200/200 seeds + Exp 19 replica + BSC 18b + FHRR 27 |
-| Hard edge lambda_min ~ n^-2 | Proven anchor (CLZ) + strong evidence | Exp 28: -2.058, 200-1200 seeds |
-| Kappa is NOT the trigger (Exp 17) | Refutative evidence | 40 seeds, all collapse regardless of kappa |
-| Transformers: P1 hard edge | Confirmed (random + trained keys, 3 families) | Exp 29/30; bridge keys~frame |
-| Spectral pruning criterion | Confirmed with operating recipe | Exp 32 (square) + Exp 34 (sub-square) |
-| Law of training exposure | Confirmed (12L-vs-12L) | Exp 37; corpus confound declared |
-| Mechanism: content not position | Confirmed | Exp 38 (wpe controls) |
-
-Identified barriers: (1) extension to trained keys requires the bridge hypothesis (declared, not proven for all distributions); (2) circuit-level interpretation of M^-1 heads remains open; (3) the iterative dual resonator regime (P2) is the remaining untested arm for memory layers.
-
-Open items: falsification of P1-P4 pre-registrations on deployment-scale models (needs GPU); KV-cache compression pilot (the industrial application this geometry enables); text-sensitivity sweep of the collapse regime.
+Open items: P1-P4 pre-registrations at deployment scale (needs GPU); KV-cache compression pilot; text-sensitivity sweep of the collapse regime; circuit-level interpretation of M^-1 heads.
 
 ## Citation
 

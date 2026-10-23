@@ -113,15 +113,37 @@ spectral gap as the cause of collapse \emph{in width}. Both treat the
 attention \emph{output} matrix. We measure the \emph{key-gram} --- the
 input-side geometry that retrieval and memory layers must invert --- and
 we identify its cause (exposure) and mechanism (content redundancy).
+Separately, \citet{kalvakolanu2026phase} reports a phase reversal ---
+SVD compression suppresses rank collapse at random initialization but
+accelerates it on pretrained weights, driven by which subspace the
+truncation selects --- an independent confirmation, from the compression
+side, of the central claim we establish causally: trained and random keys
+differ, and the difference is acquired by exposure.
 
-\paragraph{Low-rank keys and compression.} Loki \citep{loki2024} and Eigen
-Attention \citep{eigenattn2024} exploit the low-rank structure of keys for
-KV-cache compression; \citet{staterank2026} describe a rank stratification
-of linear-attention heads as an acquired property. Our contribution is the
-causal dissection: a controlled depth-matched comparison isolating
-exposure, positional ablations isolating content, and a VSA-theoretic
-account (the Wishart hard edge) predicting \emph{where} the degeneracy
-becomes lethal to retrieval: exactly at $T = d_{\text{head}}$.
+\paragraph{Key spectra and compression.} Loki \citep{loki2024} and Eigen
+Attention \citep{eigenattn2024} exploit the low-rank structure of keys
+for KV-cache compression; both are empirical: neither identifies why keys
+are degenerate nor predicts where the degeneracy becomes fatal to
+retrieval. \citet{staterank2026} is the closest work: they document a
+stable stratification of \emph{linear-attention} heads into high-rank and
+low-rank camps, invariant across time and data domain, and conclude it is
+``acquired during pre-training'' --- describing \emph{what} without testing
+\emph{what drives it}. Our contribution is precisely that causal account
+(a depth-matched natural experiment isolating exposure), the mechanism
+(positional ablations ruling out saturation), and the predictive theory
+(the Wishart hard edge locating the lethal point at $T = d_{\text{head}}$).
+Our softmax-attention results and their linear-attention stratification
+are complementary: the exposure law we establish explains why their
+stratification is a training product rather than an architectural one.
+One apparent tension deserves a footnote: they find low-rank heads
+\emph{indispensable} where we find collapsed heads \emph{prunable}. The
+measurements target different objects --- their effective rank is of the
+recurrent state $S = \sum k_t v_t^\top$ (the accumulated key--value
+memory), ours is of the key-gram $K K^\top$ (the retrieval geometry). A
+head whose keys are near-identical (collapsed key-gram) can carry few but
+sharp associations (low state rank) or many diffuse ones; the two ranks
+are not the same quantity, and reconciling their pruning implications is
+an open question we flag rather than resolve.
 
 \paragraph{VSA reading of attention.} \citet{dhayalkar2025binding} proposes
 attention as soft binding and hyperdimensional memory layers. Our results
@@ -145,10 +167,25 @@ companion repository.
 \section{Results}
 
 \subsection{The universal crossing}
-[Figure 1: $\lambda_{\min}(T)/d_h$ curves for the three families,
-crossing zero at $T/d_h \in [0.75, 1.0]$.]
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{fig1_crossing.png}
+\caption{Median $\lambda_{\min}$ of unit-normalized key-grams across
+context length, three architecture families (Exp 30). All curves cross
+zero between $T/d_{\text{head}} = 0.75$ and $1.0$ and remain
+rank-deficient beyond.}
+\label{fig:crossing}
+\end{figure}
 
 \subsection{Exposure, not depth}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{fig2_exposure.png}
+\caption{The natural experiment: Pythia-160m and GPT-2 124M share
+architectural depth (12 layers, $d_{\text{head}} = 64$) but differ in
+training exposure. Same depth, different collapse (Exp 37, 36).}
+\label{fig:exposure}
+\end{figure}
 Pythia-160m (12L, The Pile) vs GPT-2 124M (12L, WebText): 144/144 heads
 collapsed vs.\ an $\lambda_{\min}$ range spanning $[1.2\times 10^{-5},
 1.8\times 10^{-2}]$. Pythia-70m (6L) is already fully collapsed ---
@@ -159,6 +196,15 @@ Zeroing $w_{pe}$: 144/144 stay collapsed. Random $w_{pe}$ (norm-matched):
 142/144. Positional surgery cannot restore spectral variance.
 
 \subsection{The pruning criterion and its recipe}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\linewidth]{fig3_pruning.png}
+\caption{The spectral pruning criterion at the square point (Exp 32):
+the 12 least-important heads have 50$\times$ smaller mean
+$\lambda_{\min}$ and are 9/12 rank-collapsed; the 12 most-important are
+0/12.}
+\label{fig:pruning}
+\end{figure}
 Lightly trained (GPT-2 124M at square): bottom-12 importance heads have
 mean $\lambda_{\min} = 1.1\times 10^{-4}$ vs $5.6\times 10^{-3}$ for the
 top-12; 9/12 of the former are collapsed, 0/12 of the latter; Spearman
@@ -214,7 +260,7 @@ data structures.
 \newblock \emph{arXiv:2007.03748}, 2020.
 
 \bibitem[Fu et al.(2024)]{loki2024}
-Fu et al.
+Y.~Fu et al.
 \newblock Loki: Low-rank keys for efficient sparse attention.
 \newblock \emph{arXiv:2406.02542}, 2024.
 
@@ -246,16 +292,22 @@ T.~A. Plate.
 \newblock Holographic reduced representations.
 \newblock \emph{IEEE Trans. Neural Networks}, 6(3):623--641, 1995.
 
-\bibitem[Anonymous(2026)]{staterank2026}
-Anonymous.
+\bibitem[Sun et al.(2026)]{staterank2026}
+A.~Sun, H.~Zhang, H.~Zhou, et al.
 \newblock State rank dynamics in linear attention LLMs.
 \newblock \emph{arXiv:2602.02195}, 2026.
 
-\bibitem[Anonymous(2026)]{eigenattn2024}
-Anonymous.
+\bibitem[Bhattacharjee et al.(2024)]{eigenattn2024}
+S.~Bhattacharjee et al.
 \newblock Eigen attention: Attention in low-rank space for KV cache
 compression.
 \newblock \emph{arXiv:2408.05646}, 2024.
+
+\bibitem[Kalvakolanu(2026)]{kalvakolanu2026phase}
+A.~T.~S. Kalvakolanu.
+\newblock Linear algebra foundations of efficient attention: A phase
+reversal in rank collapse under SVD compression.
+\newblock \emph{arXiv:2609.06341}, 2026.
 
 \bibitem[Voita et al.(2019)]{voita2019analyzing}
 E.~Voita, D.~Talbot, F.~Moiseev, R.~Sennrich, I.~Titov.
