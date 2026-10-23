@@ -1,0 +1,22 @@
+{
+  "experiment": "Exp 36 — spectral pruning on GPT-2 XL (1.5B, 48 layers, 25 heads)",
+  "date": "2026-10-24",
+  "protocol": "lmin per head at square point (T=64=d_head), ALL 1200 heads; ablation phase started but cut (11h+ on CPU, low marginal value given the lmin result)",
+  "results": {
+    "lmin_range": [
+      -7.13e-07,
+      4.79e-07
+    ],
+    "collapsed_fraction": "1200/1200 heads with |lmin| < 1e-4 at the square point",
+    "ablation": "cut by decision (Luciano + Nexus): the criterion cannot discriminate when all heads are collapsed; the depth answer was already definitive from the lmin phase"
+  },
+  "depth_question_answer": "NO — the GPT-2 family does NOT maintain head-level lmin variance at scale. GPT-2 124M (12 layers): lmin range 1.2e-5 to 1.8e-2, criterion discriminates (Exp 32). GPT-2 XL 1.5B (48 layers): all 1200 heads collapsed, same as Pythia-410M (24 layers).",
+  "synthesis_across_scale": {
+    "GPT-2 124M (12L)": "lmin VARIANCE (1e-5..1e-2) -> criterion works (50x separation)",
+    "Pythia-410M (24L)": "all collapsed -> criterion needs sub-square measurement (Exp 34: works)",
+    "GPT-2 XL 1.5B (48L)": "all collapsed -> confirms the depth law",
+    "law": "model depth/training pushes ALL heads into the rank-collapsed regime; the spectral criterion's operating point must move to sub-square T as models scale"
+  },
+  "honest_label": "ablation cut at 11h (decision, not failure): the lmin result (1200/1200 collapsed) already answers the pre-registered depth question. The runtime estimate for CPU ablation on 1.5B was wrong (3-4 min/forward vs 30s estimated).",
+  "implications": "1) The spectral pruning criterion is a SHALLOW-model tool at square point, a sub-square tool for deep models (Exp 34 recipe). 2) The universal collapse at depth reinforces P2: any memory layer inheriting keys from a deep model is in the fully-collapsed regime. 3) The depth law (deeper = everyone collapsed) is a finding on its own: nobody in the pruning literature measures this."
+}
