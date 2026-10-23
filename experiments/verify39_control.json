@@ -1,0 +1,17 @@
+{
+  "verification": "Exp 39 interpretation control: random init vs trained",
+  "random_init_gpt2": {
+    "lmin_med": 1.77e-05,
+    "collapsed": "127/144",
+    "variance_heads": 17
+  },
+  "trained_gpt2_124m": {
+    "lmin_med": -2.56e-07,
+    "collapsed": "144/144"
+  },
+  "pythia_70m_step0": {
+    "lmin_med": -1.02e-07,
+    "collapsed": "48/48"
+  },
+  "verdict": "REVISED INTERPRETATION: random init has MORE spectral variance than the trained model. Training on natural language REMOVES the variance that initialization provides. The bridge hypothesis (random keys ~ quasi-random frames, mostly collapsed) holds at init; training pushes to FULLY collapsed. The 'exposure law' is correct in direction but the baseline was wrong: it's not 'exposure creates collapse from variance' but 'exposure completes the collapse that init only starts'."
+}

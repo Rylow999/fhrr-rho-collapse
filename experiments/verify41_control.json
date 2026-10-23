@@ -1,0 +1,11 @@
+{
+  "verification": "Exp 41 independent control",
+  "eval_text": "diverse 10-topic text (no repetition), 268 tokens",
+  "random_seed": "123 (different from Exp 41's 42)",
+  "control_b": "ablation hook verified: output changes when head zeroed",
+  "baseline_ppl": 51.01,
+  "lmin_ascending_ppl": 7530833.87,
+  "random_ppl": 110356.64,
+  "lmin_descending_ppl": 29687.49,
+  "verdict": "CONFIRMED: the inversion (ascending > random > descending) holds on independent text with a different seed. The Exp 41 result is real. Baseline ppl of 51 (vs Exp 41's artificial 2.0 from repeated text) confirms the eval was flawed in the original but the DIRECTION was correct."
+}
