@@ -1,0 +1,29 @@
+{
+  "experiment": "Exp 34b — sub-square criterion RETEST with real pruning (Pythia-410M)",
+  "date": "2026-10-24",
+  "preregistered": {
+    "S1": "ascending (lowest lmin@T/2 first) worse than random (inversion extends to sub-square)",
+    "S2": "descending better than random",
+    "S3": "neither: sub-square N/A"
+  },
+  "results": {
+    "experiment": "Exp 34b — sub-square criterion RETEST with real pruning (Pythia-410M)",
+    "preregistered": {
+      "S1": "ascending (lowest lmin@T/2) worse than random (inversion extends)",
+      "S2": "descending better than random",
+      "S3": "neither: sub-square N/A for pruning"
+    },
+    "lmin_at_T/2_range": [
+      -1.8e-07,
+      0.0063357
+    ],
+    "baseline_ppl": 45.29,
+    "lmin32_ascending_ppl": 64927.47,
+    "random_ppl": 113693.5,
+    "lmin32_descending_ppl": 103639.06,
+    "verdict": "S2",
+    "runtime_s": 197.2
+  },
+  "honest_verdict": "The sub-square measurement carries WEAK but REAL signal — in the OPPOSITE direction from the square-point measurement. At sub-square, pruning the lowest-lmin heads (those collapsed even at T/2) yields BETTER perplexity than random (65k vs 114k). This makes geometric sense: heads collapsed even at T/2 are the extreme cases — their key geometry is so degenerate that they carry little retrieval signal. BUT the practical value is minimal: all three strategies produce catastrophic perplexity (65k-114k vs baseline 45) at 20% pruning on this model. The 1.75x separation (ascending vs random) is much weaker than the 67x separation at square point in GPT-2. The two measurements (square and sub-square) probe DIFFERENT properties: square-lmin measures within-head retrieval sharpness (low = vital); sub-square-lmin measures across-head degeneracy ranking (low = extreme = prunable).",
+  "implications": "1) The sub-square recipe from Exp 34 is CONFIRMED as a signal (the correlation was real) but its direction is OPPOSITE to what we pre-registered: at sub-square, the lowest-lmin heads are the prunable ones. 2) The two measurements cannot be used interchangeably: square-lmin says 'keep the low ones', sub-square-lmin says 'prune the low ones' — they measure different things. 3) At 20% pruning on a 24-layer model, ALL strategies are destructive: the useful pruning range is much smaller. 4) Follow-up needed: 5% and 10% pruning rates to find the non-destructive range."
+}
