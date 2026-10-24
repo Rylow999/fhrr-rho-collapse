@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fhrr-rho-collapse"
+version = "0.1.0"
+description = "Operator placement, not representation: frame-dual stability, spectral head analysis, and the rho-collapse law"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "Luciano Benjamin Nieto"}]
+dependencies = [
+    "numpy>=1.20",
+    "torch>=2.0",
+    "transformers>=4.30",
+]
+optional-dependencies = {test = ["pytest>=7.0"]}
+
+[tool.setuptools]
+py-modules = ["verify"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

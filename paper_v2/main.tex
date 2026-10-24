@@ -85,8 +85,15 @@ For each model (GPT-2 124M; Pythia 70m/160m/410m; OPT-125m), we hook
 the key projection per head, extract keys $K \in \mathbb{R}^{T \times d_h}$,
 row-normalize, and compute $\lambda_{\min}(K K^\top)$. Pruning is
 head-output zeroing; importance is sliding-window perplexity on diverse
-text. All pre-registrations (including the three that were refuted)
-are in the companion repository (\texttt{Rylow999/fhrr-rho-collapse}).
+text. The gradient-based baseline follows the mask-variable approach
+of \citet{michel2019sixteen} (per-head gating parameters, backward
+pass on calibration data) on a single calibration window; the
+original method averages over the full dataset, which makes it more
+accurate but proportionally more expensive. Our approximation
+underestimates the true gradient expectation, making the baseline
+cheaper but potentially weaker than the original. All
+pre-registrations (including the three that were refuted) are in the
+companion repository (\texttt{Rylow999/fhrr-rho-collapse}).
 
 \section{Results}
 
@@ -108,8 +115,11 @@ Positional surgery cannot restore spectral variance.
 
 \subsection{Training completes the collapse}
 Random-init GPT-2: 17/144 heads with variance. Trained GPT-2: 0/144.
-Pythia checkpoint step 0: already 48/48 collapsed. Training on natural
-text removes the variance that initialization provides
+Pythia checkpoint step 0: already 48/48 collapsed --- the GPTNeoX
+initialization scheme starts more collapsed than GPT-2's, a family
+difference that persists through training. Training on natural
+text removes the variance that initialization provides in both
+families
 (Fig.~\ref{fig:exposure}). Content matters: random tokens show 3
 orders more variance than prose.
 

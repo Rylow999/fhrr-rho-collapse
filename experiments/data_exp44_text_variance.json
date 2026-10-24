@@ -1,0 +1,55 @@
+{
+  "experiment": "Exp 44 — benchmark variance across 5 diverse text types",
+  "date": "2026-10-24",
+  "preregistered": "if variance across texts is high, method is text-sensitive and must be reported",
+  "results": {
+    "experiment": "Exp 44 — benchmark variance across 5 diverse texts",
+    "texts": [
+      "prose_diverse",
+      "technical",
+      "conversational",
+      "mixed_domains",
+      "code"
+    ],
+    "results": {
+      "prose_diverse": {
+        "baseline_ppl": 25.5,
+        "spectral_ppl": 1711.5,
+        "random_ppl": 1755.5,
+        "n_eval_tokens": 258
+      },
+      "technical": {
+        "baseline_ppl": 20.3,
+        "spectral_ppl": 220.2,
+        "random_ppl": 960.4,
+        "n_eval_tokens": 231
+      },
+      "conversational": {
+        "baseline_ppl": 7.4,
+        "spectral_ppl": 325.6,
+        "random_ppl": 278.7,
+        "n_eval_tokens": 213
+      },
+      "mixed_domains": {
+        "baseline_ppl": 11.8,
+        "spectral_ppl": 843.7,
+        "random_ppl": 706.2,
+        "n_eval_tokens": 201
+      },
+      "code": {
+        "baseline_ppl": 9.8,
+        "spectral_ppl": 46.0,
+        "random_ppl": 166.3,
+        "n_eval_tokens": 171
+      }
+    },
+    "summary": {
+      "ratio_mean": 2.14,
+      "ratio_std": 1.53,
+      "spectral_wins": "3/5"
+    },
+    "runtime_s": 32.0
+  },
+  "verdict": "TEXT-SENSITIVE with honest labeling: spectral wins on 3/5 texts (technical +4.4x, code +3.6x, prose +1.03x) but LOSES on 2/5 (conversational 0.86x, mixed 0.84x). The advantage is domain-dependent: strong on structured text (technical, code), weak on natural conversation. This is consistent with the mechanism: the key-gram collapse is more severe on redundant text, and technical/code text has MORE redundancy in its keys (more specialized vocabulary = more distinct key directions = more diffuse heads to prune). On conversational text the keys are more diverse and the spectral signal is weaker.",
+  "honest_label": "The benchmark result from Exp 42 (5-10% pruning, single diverse text) was favorable. Across 5 text types at 10% pruning, spectral beats random on 3/5 with mean ratio 2.14±1.53. The variance is HIGH — the method is not universally better than random. Its sweet spot is structured/technical text. This must be stated in the paper."
+}
