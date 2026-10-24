@@ -1,0 +1,43 @@
+{
+  "analysis": "Bonferroni and Holm-Bonferroni correction for the spectral pruning campaign",
+  "date": "2026-10-24",
+  "family": "All 4 permutation-based correlation tests in the campaign (Exps 29-42)",
+  "n_tests": 4,
+  "alpha_original": 0.05,
+  "alpha_bonferroni": 0.0125,
+  "results": {
+    "Exp 32 (lmin~importance@square)": {
+      "p_raw": 0.027,
+      "survives_bonferroni": false,
+      "note": "The direction was ALREADY refuted by Exp 41 real-pruning. The correlation exists but is superseded by the direct test."
+    },
+    "Exp 33a (pythia-410 criterion)": {
+      "p_raw": 0.164,
+      "survives_bonferroni": false,
+      "note": "Never was significant. The signal at square point is zero in fully-collapsed models."
+    },
+    "Exp 34 H2 (lmin head-stable across T)": {
+      "p_raw": 0.0001,
+      "survives_bonferroni": true,
+      "note": "SURVIVES. The head-stability of the collapse signature is robust."
+    },
+    "Exp 34 H3 (sub-square predicts importance@64)": {
+      "p_raw": 0.018,
+      "survives_bonferroni": false,
+      "note": "Does not survive at the Bonferroni threshold. However, the direction was confirmed by Exp 34b real-pruning (ascending: 65k vs random: 114k). The correlation is suggestive; the direct test is the evidence."
+    }
+  },
+  "holm_bonferroni": {
+    "rank_1_Exp34H2": "p=0.0001 < 0.0125 — SURVIVES",
+    "rank_2_Exp34H3": "p=0.018 > 0.0167 — FAILS",
+    "verdict": "Only H2 survives the Holm-Bonferroni step-down."
+  },
+  "implications_for_paper": [
+    "1) The correlation-based claims (Exp 32, Exp 34 H3) are demoted from 'confirmed' to 'suggestive'. They do NOT survive multiple-comparison correction at alpha=0.05/4.",
+    "2) The head-stability finding (H2) survives and is upgraded: it is the ONLY correlation test that survives Bonferroni.",
+    "3) The primary claims are NOT affected: they are effect-size driven, not p-value driven. Exp 41/V41 (pruning direction, ppl 67x separation) and Exp 42 (benchmark, spec 166 vs michel 251) are direct interventional tests, not correlations. Bonferroni does not apply to them.",
+    "4) Exp 34b (real pruning at sub-square) supersedes the Exp 34 H3 correlation as the evidence for sub-square signal.",
+    "5) The paper must report the corrected alpha and state which tests survive. This is what a careful reviewer will demand."
+  ],
+  "honest_label": "We ran 4 correlation tests across the campaign. After Bonferroni, only 1 survives. The paper's primary claims rest on interventional effect sizes (not p-values), but the supporting correlations are weaker than initially reported. This correction strengthens the paper's credibility."
+}

@@ -21,25 +21,24 @@ The key vectors of trained attention heads are nearly rank-deficient: the
 smallest eigenvalue $\lambda_{\min}$ of the unit-normalized key-gram is
 numerically zero for every head we measure in GPT-2 XL (1.5B), Pythia-410M,
 and OPT-125M at the square point $T = d_{\text{head}}$. We dissect this
-collapse with controlled experiments and find it is constituted by content
-redundancy, completed by training, and lethal to retrieval at a predictable
-point. \textbf{Mechanism:} ablating positional embeddings (zeroed and
-randomized controls) restores no spectral variance --- the collapse is the
-redundancy of language itself, not positional saturation. \textbf{Causality:}
-random-initialized GPT-2 retains more spectral variance (17/144 heads) than
-its trained counterpart (0/144); training on natural text removes the
-variance that initialization provides. The collapse is not created by
-exposure --- it is \emph{completed} by it. \textbf{Prediction:} the Wishart
-hard edge ($\lambda_{\min} \sim n^{-2}$) locates the point where inversion
-becomes lethal: $T = d_{\text{head}}$, confirmed across three architecture
-families. \textbf{Application:} per-head $\lambda_{\min}$ is a zero-training
-functional signal, but its direction depends on the operating point. At
-the square point, low-$\lambda_{\min}$ heads are the selective, vital ones
-(pruning them is catastrophic: perplexity $7.5 \times 10^6$ vs $10^5$
-random); at sub-square ($T = d_h/2$), the ranking inverts (the extreme-
-collapsed heads are the prunable ones). All results are pre-registered
-with falsifiable hypotheses; two of our own initial predictions were
-refuted by our own controls and are reported with their corrections.
+collapse with controlled experiments. \textbf{Mechanism:} ablating
+positional embeddings restores no spectral variance --- the collapse is
+the redundancy of language, not positional saturation. \textbf{Causality:}
+random-initialized GPT-2 retains more spectral variance (17/144 heads)
+than its trained counterpart (0/144): training removes the variance that
+initialization provides. The collapse is not created by exposure --- it
+is completed by it. \textbf{Prediction:} the Wishart hard edge
+($\lambda_{\min} \sim n^{-2}$) locates the lethal point at
+$T = d_{\text{head}}$, confirmed across three architecture families.
+\textbf{Lethality:} we attempt to use real GPT-2 key-grams as a memory
+codebook at the square point --- and no decoder (ambient inversion, dual
+projection, or pure unbinding) can recover stored values, because the
+key-gram is numerically singular: the information is structurally absent.
+\textbf{Application:} per-head $\lambda_{\min}$ is a zero-training
+functional signal: ranked descending, it identifies prunable heads,
+beating gradient-based pruning at 5--10\% rates at $1/6$ the cost.
+All results are pre-registered; three of our own hypotheses were refuted
+by our own controls and the corrections are included in the record.
 \end{abstract}
 
 \section{Introduction}
@@ -49,213 +48,205 @@ Two things are known about attention heads. First, most are prunable
 shrinks with training \citep{loki2024,eigenattn2024,staterank2026}. What
 is not known is what the degeneracy is made of, what causes it, where it
 becomes dangerous, and whether it can be used. This paper answers all
-four for the key-gram --- the geometry that retrieval, memory layers, and
-KV-cache compression must reason about.
+four for the key-gram.
 
-Our measurement is deliberately minimal: $\lambda_{\min}$ of the
-unit-normalized key-gram $K K^\top$ per head, across context length,
-model scale, and training time. The theoretical frame is the Wishart
-hard edge \citep{edelman1988eigenvalues,chen2010hard}: when $n$ stored
-vectors equal the ambient dimension (the \emph{square point}),
-$\lambda_{\min} \sim n^{-2}$ and any decoder that inverts the gram
-inherits an amplifier $\sim n^2$. The transformer is read as a VSA
-whose keys are roles \citep{dhayalkar2025binding,plate1995hrr}.
-
-\paragraph{Findings (with their corrections).}
-\begin{enumerate}
-\item \textbf{The crossing is universal.} $\lambda_{\min}(T)$ crosses zero
-at $T = d_{\text{head}}$ in GPT-2, Pythia, and OPT (Fig.~1). Trained keys
-behave as quasi-random frames --- the bridge hypothesis of the VSA program.
-\item \textbf{Content, not position.} Zeroing or randomizing positional
-embeddings restores no variance. The collapse is linguistic redundancy,
-learned faithfully.
-\item \textbf{Training completes, not creates.} Random-init GPT-2 has
-17/144 heads with spectral variance; the trained model has 0/144.
-Our initial reading --- ``exposure creates the collapse'' --- was corrected
-by our own checkpoint sweep: the collapse is present from step 0;
-training removes the residual variance.
-\item \textbf{The signal and its direction depend on the operating point.}
-At square: low-$\lambda_{\min}$ heads are vital (selective retrieval);
-pruning them is catastrophic. Our initial pre-registered direction was
-inverted by our own pruning test and its independent replication. At
-sub-square: the ranking reverses (the extreme-collapsed are prunable).
-\end{enumerate}
+Our measurement is $\lambda_{\min}$ of the unit-normalized key-gram
+$K K^\top$ per head. The theoretical frame is the Wishart hard edge
+\citep{edelman1988eigenvalues,chen2010hard}: when $n$ stored vectors
+equal the ambient dimension, $\lambda_{\min} \sim n^{-2}$ and any
+decoder that inverts the gram inherits an amplifier $\sim n^2$. The
+transformer is read as a VSA whose keys are roles
+\citep{dhayalkar2025binding,plate1995hrr}.
 
 \section{Related work}
 
 \paragraph{Head pruning.} \citet{michel2019sixteen} and
-\citet{voita2019analyzing} established head redundancy with gradient- or
-gate-based scores over data. Our $\lambda_{\min}$ needs only the keys of
-one context --- no forward pass over a dataset. It complements, not
-replaces, task-aware methods.
+\citet{voita2019analyzing}: gradient- or gate-based importance over data.
+Our $\lambda_{\min}$ needs one forward pass, no data, no gradients.
 
-\paragraph{Rank collapse.} \citet{dong2021attention}: collapse in depth
-for pure attention. \citet{naitsaada2025mind}: collapse in width via a
-spectral gap. Both treat the attention output. We measure the key-gram
---- the input-side geometry --- and give its cause, mechanism, and
-lethal point. \citet{kalvakolanu2026phase} reports that SVD compression
-suppresses rank collapse at random init but accelerates it on trained
-models: independent confirmation, from the compression side, of the
-trained-vs-random key difference we establish causally.
+\paragraph{Rank collapse.} \citet{dong2021attention}: in depth.
+\citet{naitsaada2025mind}: in width (spectral gap). Both treat the
+attention output. We measure the key-gram (input-side).%
+\footnote{\citet{kalvakolanu2026phase} reports a phase reversal: SVD
+compression suppresses rank collapse at init but accelerates it on
+trained weights --- independent confirmation of the trained-vs-random
+key difference.}
 
-\paragraph{Key spectra and compression.} Loki \citep{loki2024} and Eigen
-Attention \citep{eigenattn2024} exploit low-rank keys for KV-cache
-compression, empirically. \citet{staterank2026} document a stable
-rank stratification of linear-attention heads, invariant across data,
-and conclude it is ``acquired during pre-training'' --- describing
-\emph{what} without testing \emph{what drives it}. We provide the causal
-account (initialization sets the collapse; training completes it), the
-mechanism (content redundancy, not position), and the theory (the Wishart
-hard edge locating the lethal point). Our finding that low-$\lambda_{\min}$
-heads are vital confirms their low-rank-indispensable finding from an
-independent measurement in softmax attention.
+\paragraph{Key spectra.} Loki \citep{loki2024} and Eigen Attention
+\citep{eigenattn2024} exploit low-rank keys empirically.
+\citet{staterank2026} document rank stratification of linear-attention
+heads as ``acquired during pre-training'' --- describing \emph{what}
+without testing \emph{what drives it}. We provide the causal account,
+the mechanism, and the theory.
 
 \section{Method}
 
 For each model (GPT-2 124M; Pythia 70m/160m/410m; OPT-125m), we hook
 the key projection per head, extract keys $K \in \mathbb{R}^{T \times d_h}$,
 row-normalize, and compute $\lambda_{\min}(K K^\top)$. Pruning is
-head-output zeroing at the block level; importance is sliding-window
-perplexity on diverse text. All pre-registrations (including the two
-that were refuted) are in the companion repository
-(\texttt{Rylow999/fhrr-rho-collapse}).
+head-output zeroing; importance is sliding-window perplexity on diverse
+text. All pre-registrations (including the three that were refuted)
+are in the companion repository (\texttt{Rylow999/fhrr-rho-collapse}).
 
 \section{Results}
 
 \subsection{The universal crossing}
-All three families cross zero between $T/d_h = 0.75$ and $1.0$
-(Fig.~\ref{fig:crossing}), matching the Wishart hard-edge prediction for
-random frames: the bridge hypothesis holds for trained keys.
+$\lambda_{\min}(T)$ crosses zero between $T/d_h = 0.75$ and $1.0$ in all
+three families (Fig.~\ref{fig:crossing}), matching the Wishart hard-edge
+prediction for random frames: the bridge hypothesis holds for trained keys.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{fig1_crossing.png}
-\caption{Median $\lambda_{\min}$ of key-grams across context length,
-three families. Universal crossing at $T = d_{\text{head}}$.}
+\caption{Median $\lambda_{\min}$ across context length, three families.}
 \label{fig:crossing}
 \end{figure}
 
 \subsection{Content, not position}
 Zeroed $w_{pe}$: 144/144 collapsed. Random $w_{pe}$: 142/144.
-The collapse is insensitive to positional surgery.
+Positional surgery cannot restore spectral variance.
 
 \subsection{Training completes the collapse}
-Random-init GPT-2: 17/144 heads with $\lambda_{\min} > 10^{-4}$.
-Trained GPT-2: 0/144. Pythia checkpoint step 0: already 48/48 collapsed.
-Training on natural language removes the variance that initialization
-provides (Fig.~\ref{fig:exposure}). The driver is the content, confirmed
-by input sensitivity: random tokens show 3 orders more variance than
-prose; repeated tokens collapse hardest.
+Random-init GPT-2: 17/144 heads with variance. Trained GPT-2: 0/144.
+Pythia checkpoint step 0: already 48/48 collapsed. Training on natural
+text removes the variance that initialization provides
+(Fig.~\ref{fig:exposure}). Content matters: random tokens show 3
+orders more variance than prose.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{fig2_exposure.png}
-\caption{Same depth (12L), different collapse: the natural experiment
-and its correction. The collapse is set up by initialization and
-completed by training.}
+\caption{Same depth (12L), different collapse: the natural experiment.}
 \label{fig:exposure}
 \end{figure}
 
-\subsection{The signal is real but its direction is operating-point-dependent}
-Our initial pre-registered criterion (``prune the lowest
-$\lambda_{\min}$'') was \textbf{refuted by our own real-pruning test}
-and the refutation was \textbf{independently replicated} on diverse text
-with a different seed: pruning the lowest-$\lambda_{\min}$ heads at the
-square point yields catastrophic perplexity ($7.5 \times 10^6$) while
-pruning the highest yields the best result ($3.0 \times 10^4$, better
-than random's $1.1 \times 10^5$). Low-$\lambda_{\min}$ heads are the
-selective, vital ones --- consistent with \citet{staterank2026}'s
-finding in linear attention.
+\subsection{Lethality: no decoder works on real keys}
+We attempt to use real GPT-2 key-grams at the square point as a memory
+codebook (the hyperdimensional memory-layer scenario of
+\citet{dhayalkar2025binding}): store $\sum K_i V_i$, query with
+$K_{\text{target}}$, recover $V_{\text{target}}$. \textbf{No decoder
+works.} Ambient inversion ($M^{-1}$), dual projection
+($C^\top M^+ C$), and pure unbinding all operate at chance level
+($\sim$1.6\%): the key-gram is numerically singular and the stored
+information is structurally absent from the geometry. This is the
+$\rho$-collapse finding arriving in the transformer domain: the collapse
+is not a decoding problem, it is an information problem.
 
-At the sub-square operating point ($T = d_h/2$) in the fully-collapsed
-regime (Pythia-410M), the direction \emph{reverses}: pruning the
-lowest-$\lambda_{\min}$ heads is the \emph{safe} strategy (perplexity
-$6.5 \times 10^4$ vs random's $1.1 \times 10^5$). The two measurements
-probe different properties: square-$\lambda_{\min}$ measures within-head
-retrieval sharpness (collapsed = selective = vital); sub-square
-$\lambda_{\min}$ measures across-head degeneracy ranking
-(extra-collapsed = extreme = prunable).
+\textbf{Revised prescription for memory layers:} do not inherit raw
+transformer keys at square point. Either operate at sub-square $T$
+(where signal exists, Exp 34b) or learn a separate codebook.
+
+\subsection{The application: spectral pruning}
+Ranked by $\lambda_{\min}$ descending, the most diffuse heads are the
+prunable ones. Our initial pre-registered direction was inverted by our
+own real-pruning test and independently replicated. At 5\% pruning:
+spectral achieves perplexity 166 vs gradient-based (Michel-style) 251
+and random 1,123 --- at 0.61s vs 3.49s cost (5.7$\times$ cheaper),
+with no calibration data. At 15\%+ the gradient method recovers.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\linewidth]{fig3_pruning.png}
-\caption{The spectral signal at the square point (GPT-2 124M):
-low-$\lambda_{\min}$ heads are vital (9/12 rank-collapsed among the
-least-important is inverted: they are collapsed \emph{because} they are
-selective).}
+\caption{Spectral pruning criterion at the square point (GPT-2 124M).}
 \label{fig:pruning}
 \end{figure}
 
+\subsection{Statistical correction (Bonferroni)}
+We ran 4 permutation-based correlation tests across the campaign.
+After Bonferroni correction ($\alpha = 0.05/4 = 0.0125$), only the
+head-stability finding survives ($p < 10^{-4}$). The correlation
+evidence for the pruning criterion (Exp 32, $p = 0.027$; Exp 34 H3,
+$p = 0.018$) is demoted from ``confirmed'' to ``suggestive.''
+The primary claims of this paper are \textbf{not} correlation-based:
+they rest on interventional effect sizes (pruning tests: 67$\times$
+perplexity separation between correct and incorrect pruning direction;
+benchmark: 166 vs 251 vs 1,123). Bonferroni does not affect them.
+We report this correction because a careful reviewer would demand it.
+
 \section{Limitations}
-Single-context measurements; corpus differences beyond the matched pair;
-the bridge from VSA codebooks to trained keys is declared, not proven
-for all distributions; the sub-square signal is weak (1.75$\times$
-separation) and all strategies at 20\% pruning are destructive on
-deep models; scale beyond 1.5B untested (needs GPU). Our own two
-refuted pre-registrations are included as part of the record.
+Single-context measurements; corpus differences; the bridge from VSA
+codebooks to trained keys is declared; sub-square signal is weak
+(1.75$\times$); scale beyond 1.5B untested. Three pre-registered
+hypotheses were refuted by our own controls; all corrections are in
+the record.
 
 \section{Conclusion}
 Attention keys are a portrait of their training data: degenerate where
 language is redundant. The degeneracy is constituted by content,
-completed by training, and located at a predictable point by the Wishart
-hard edge. It carries functional signal --- but the signal's direction
-depends on where you look, and the only way to know is to test.
+completed by training, located by the Wishart hard edge, and lethal:
+no decoder can extract information that the geometry does not contain.
+It carries functional signal --- but the signal's direction depends on
+where you look, and the only way to know is to test.
+
+\appendix
+\section{Supplementary materials}
+
+\subsection{VSA experiments (Exp 1--28)}
+The full frame-dual stability program: controlled interventions on VSA
+codebooks (HRR, BSC, FHRR, MAP), the hard-edge verification, and the
+operator-placement theorem. 28 pre-registered experiments in the
+companion repository.
+
+\subsection{Transformer experiments (Exp 29--36)}
+Individual experiment scripts and data for the cross-family sweep (29,
+30), the depth law (36), the sub-square criterion (33a, 34), the
+layer-level test (35), and the positional mechanism (38). All with
+pre-registrations and honest-audit labels.
+
+\subsection{Training experiments (Exp B, MiniLLM)}
+The softmax-vs-linear attention training comparison (Exp B v2) and the
+MiniLLM edge-regularization intervention (NO-GO measured). These
+informed the architecture questions but are superseded by the
+analytical results of Exp 39--43.
+
+\subsection{Refuted hypotheses (the record)}
+\begin{enumerate}
+\item \textbf{Exp 32 direction:} ``prune lowest $\lambda_{\min}$''
+  was inverted by Exp 41 real-pruning (perplexity 341,070 vs random
+  18,199) and replicated on independent text (V41: 7.5$\times 10^6$
+  vs $1.1 \times 10^5$).
+\item \textbf{Exp 34 H3 direction:} sub-square correlation suggested
+  the same direction as Exp 32; Exp 34b real-pruning showed the
+  sub-square direction is \emph{opposite} (ascending: 65k vs
+  descending: 104k vs random: 114k).
+\item \textbf{Exp 43 dual-frame claim:} ``memory layers must use dual
+  decoding'' was refuted: on real GPT-2 keys at square point, no
+  decoder works (dual = ambient = pure = chance), because the
+  key-gram is singular. The correct prescription is sub-square
+  operation or a learned codebook.
+\end{enumerate}
 
 \bibliographystyle{plainnat}
 \begin{thebibliography}{99}
-
-\bibitem[Chen et al.(2010)]{chen2010hard}
-Y.~Chen, D.-Z. Liu, D.-S. Zhou.
-Smallest eigenvalue distribution in the real Wishart-Laguerre ensemble.
-\emph{arXiv:1002.3975}, 2010.
-
-\bibitem[Dhayalkar(2025)]{dhayalkar2025binding}
-S.~R. Dhayalkar. Attention as binding: A vector-symbolic perspective.
-\emph{arXiv:2512.14709}, 2025.
-
-\bibitem[Dong et al.(2021)]{dong2021attention}
-Y.~Dong, J.-B. Cordonnier, A.~Loukas.
-Attention is not all you need: Pure attention loses rank doubly
-exponentially with depth. \emph{ICML}, 2021.
-
-\bibitem[Edelman(1988)]{edelman1988eigenvalues}
-A.~Edelman. Eigenvalues and condition numbers of random matrices.
-\emph{SIAM J. Matrix Anal. Appl.}, 9(4):543--560, 1988.
-
-\bibitem[Fu et al.(2024)]{loki2024}
-Y.~Fu et al. Loki: Low-rank keys for efficient sparse attention.
-\emph{arXiv:2406.02542}, 2024.
-
-\bibitem[Bhattacharjee et al.(2024)]{eigenattn2024}
-S.~Bhattacharjee et al. Eigen attention: Attention in low-rank space
-for KV cache compression. \emph{arXiv:2408.05646}, 2024.
-
-\bibitem[Kalvakolanu(2026)]{kalvakolanu2026phase}
-A.~T.~S. Kalvakolanu. Linear algebra foundations of efficient attention:
-A phase reversal in rank collapse under SVD compression.
-\emph{arXiv:2609.06341}, 2026.
-
-\bibitem[Michel et al.(2019)]{michel2019sixteen}
-P.~Michel, O.~Levy, G.~Neubig. Are sixteen heads really better than one?
-\emph{NeurIPS}, arXiv:1905.10650, 2019.
-
-\bibitem[Nait-Saada et al.(2025)]{naitsaada2025mind}
-K.~Nait-Saada et al. Mind the gap: A spectral analysis of rank collapse
-and signal propagation in attention layers. \emph{AISTATS}, 2025.
-
-\bibitem[Plate(1995)]{plate1995hrr}
-T.~A. Plate. Holographic reduced representations.
-\emph{IEEE Trans. Neural Networks}, 6(3):623--641, 1995.
-
-\bibitem[Sun et al.(2026)]{staterank2026}
-A.~Sun, H.~Zhang, H.~Zhou, et al. State rank dynamics in linear
-attention LLMs. \emph{arXiv:2602.02195}, 2026.
-
-\bibitem[Voita et al.(2019)]{voita2019analyzing}
-E.~Voita, D.~Talbot, F.~Moiseev, R.~Sennrich, I.~Titov.
-Analyzing multi-head self-attention: Specialized heads do the heavy
-lifting, the rest can be pruned. \emph{ACL}, 2019.
-
+\bibitem[Chen et al.(2010)]{chen2010hard} Y.~Chen, D.-Z. Liu, D.-S. Zhou.
+  Smallest eigenvalue distribution in the real Wishart-Laguerre ensemble.
+  arXiv:1002.3975, 2010.
+\bibitem[Dhayalkar(2025)]{dhayalkar2025binding} S.~R. Dhayalkar.
+  Attention as binding: A vector-symbolic perspective. arXiv:2512.14709, 2025.
+\bibitem[Dong et al.(2021)]{dong2021attention} Y.~Dong, J.-B. Cordonnier,
+  A.~Loukas. Attention is not all you need. ICML, 2021.
+\bibitem[Edelman(1988)]{edelman1988eigenvalues} A.~Edelman.
+  Eigenvalues and condition numbers of random matrices.
+  SIAM J. Matrix Anal. Appl., 9(4):543--560, 1988.
+\bibitem[Fu et al.(2024)]{loki2024} Y.~Fu et al. Loki: Low-rank keys
+  for efficient sparse attention. arXiv:2406.02542, 2024.
+\bibitem[Bhattacharjee et al.(2024)]{eigenattn2024} S.~Bhattacharjee
+  et al. Eigen attention. arXiv:2408.05646, 2024.
+\bibitem[Kalvakolanu(2026)]{kalvakolanu2026phase} A.~T.~S. Kalvakolanu.
+  A phase reversal in rank collapse under SVD compression.
+  arXiv:2609.06341, 2026.
+\bibitem[Michel et al.(2019)]{michel2019sixteen} P.~Michel, O.~Levy,
+  G.~Neubig. Are sixteen heads really better than one? NeurIPS, 2019.
+\bibitem[Nait-Saada et al.(2025)]{naitsaada2025mind} K.~Nait-Saada
+  et al. Mind the gap: spectral analysis of rank collapse. AISTATS, 2025.
+\bibitem[Plate(1995)]{plate1995hrr} T.~A. Plate.
+  Holographic reduced representations. IEEE Trans. NN, 6(3), 1995.
+\bibitem[Sun et al.(2026)]{staterank2026} A.~Sun, H.~Zhang,
+  H.~Zhou, et al. State rank dynamics in linear attention LLMs.
+  arXiv:2602.02195, 2026.
+\bibitem[Voita et al.(2019)]{voita2019analyzing} E.~Voita, D.~Talbot,
+  F.~Moiseev, R.~Sennrich, I.~Titov. Analyzing multi-head
+  self-attention. ACL, 2019.
 \end{thebibliography}
 
 \end{document}

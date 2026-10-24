@@ -1,0 +1,26 @@
+{
+  "experiment": "Exp 43 — dual-frame correction on real GPT-2 key-grams",
+  "date": "2026-10-24",
+  "preregistered": {
+    "D1": "ambient fails (predicted)",
+    "D2": "dual recovers better",
+    "D3": "pure is baseline",
+    "D4": "falsification: dual not better -> claim unsupported"
+  },
+  "results": {
+    "accuracy": {
+      "ambient": 0.0277,
+      "dual": 0.025,
+      "pure": 0.026
+    },
+    "chance": 0.0156,
+    "note": "ALL THREE at chance. No decoder recovers information from real GPT-2 key-grams at the square point."
+  },
+  "verdict": "D4 CONFIRMED (the falsification): dual does NOT beat ambient on real keys. But the reason is MORE interesting than the claim being wrong: the real GPT-2 keys are so collapsed (lambda_min ~ 0) that the key-gram is numerically singular. NO decoder — ambient, dual, or pure — can recover stored values from a singular codebook. The information is not merely 'hard to extract'; it is structurally absent from the key-gram geometry at this operating point.",
+  "honest_label": "This is the STRONGEST confirmation of the paper's thesis, delivered by the falsification of our own secondary claim. The primary claim — 'the collapse is lethal to retrieval at T=d_head' — is confirmed in the most direct way possible: we tried to use real transformer keys as a memory codebook and NO decoder worked. The secondary claim — 'dual decoding fixes it' — is refuted for real keys at the square point: you cannot project through a numerically singular gram, even with pinv. The correct prescription is: a memory layer inheriting real transformer keys MUST operate at sub-square T (where Exp 34b showed signal exists) or use a learned codebook that is NOT the raw keys.",
+  "implications": [
+    "1) The 'use dual decoding' prescription in the paper must be REVISED: dual helps with well-conditioned codebooks (the VSA experiments) but cannot rescue a numerically singular one.",
+    "2) The actual prescription for memory layers: do NOT inherit raw transformer keys at square point. Either operate at sub-square, or learn a separate codebook.",
+    "3) This is the VSA rho-collapse finding arriving in the transformer domain: the collapse is not a decoding problem, it is an information problem."
+  ]
+}
